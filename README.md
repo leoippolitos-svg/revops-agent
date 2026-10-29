@@ -11,7 +11,7 @@ Medallion lakehouse · context documents · intent routing · RAG with evals · 
 ![Python](https://img.shields.io/badge/python-3.12-3776AB?logo=python&logoColor=white)
 ![DuckDB](https://img.shields.io/badge/DuckDB-lakehouse-FFF000?logo=duckdb&logoColor=black)
 ![dbt](https://img.shields.io/badge/dbt-transformations-FF694B?logo=dbt&logoColor=white)
-![Status](https://img.shields.io/badge/status-phase%201%20complete-brightgreen)
+![Status](https://img.shields.io/badge/status-phase%202%20complete-brightgreen)
 
 [Why](#why) · [How it works](#how-it-works) · [Architecture](#architecture) · [Project structure](#project-structure) · [Quick start](#quick-start) · [Roadmap](#roadmap) · [Decisions](#design-decisions)
 
@@ -85,7 +85,7 @@ flowchart LR
     A -. human correction .-> PR[Pull request] -.-> DOCS
 ```
 
-The dotted line is the step most teams skip: corrections flow back into the context layer, so the agent does not repeat the same mistake. Full description in [docs/architecture.md](docs/architecture.md).
+The dotted line is the step most teams skip: corrections flow back into the context layer, so the agent does not repeat the same mistake. Full description in [docs/architecture.md](docs/architecture.md); every table and column is in the [data catalog](docs/catalog.md).
 
 ## Project structure
 
@@ -130,6 +130,7 @@ pip install -r requirements.txt
 python tools/check_skills.py   # validates every skill against the standard
 python tools/check_leaks.py    # blocks real company terms (needs .leak-terms)
 python tools/check_context.py  # context documents and the dbt catalog must agree
+python tools/build_catalog.py  # rewrites docs/catalog.md from the dbt descriptions
 
 git config core.hooksPath tools/hooks   # run both checks before every commit
 ```
@@ -146,7 +147,7 @@ It generates fictional data, loads it into bronze, builds silver and gold with d
 
 - [x] **Phase 0** · Skeleton, standards, guardrails, CI
 - [x] **Phase 1** · Data generator and bronze → silver → gold
-- [ ] **Phase 2** · First five context documents and catalog checks
+- [x] **Phase 2** · First five context documents and catalog checks
 - [ ] **Phase 3** · Directives, intent router, RAG and a ~40-case eval
 - [ ] **Phase 4** · Business skills, MCP server, connector registry
 - [ ] **Phase 5** · With-context vs without-context comparison

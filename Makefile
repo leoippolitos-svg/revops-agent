@@ -13,3 +13,4 @@ check:  ## Run the repository checks
 	$(PYTHON) tools/check_leaks.py
 	$(PYTHON) tools/check_skills.py
 	$(PYTHON) tools/check_context.py
+	$(PYTHON) tools/build_catalog.py --check
