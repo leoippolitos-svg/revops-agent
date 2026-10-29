@@ -181,8 +181,7 @@ def test_form_submissions_reference_existing_contacts_and_campaigns(tmp_path):
         assert row["contact_id"] in contacts and row["campaign_id"] in campaigns
 
 
-def test_base_entities_do_not_depend_on_the_new_data(tmp_path):
-    # Part 1 files must keep the same rows; only contacts gained a column.
+def test_companies_minus_injected_duplicates_is_the_clean_count(tmp_path):
     generate.generate(seed=42, out_dir=tmp_path)
     companies = read_rows(tmp_path / "crm" / "companies.csv")
     clean = [c for c in companies if str(c["company_id"]) not in issue_ids(tmp_path, "duplicate_company")]
