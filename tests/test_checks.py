@@ -41,7 +41,11 @@ def mini_repo(tmp_path):
     (concepts / "revenue.md").write_text(
         "---\nid: revenue\ntitle: Revenue\nowner_team: RevOps\nstatus: draft\n"
         "last_reviewed: 2026-10-29\nrelated: []\n---\n\n# Revenue\n\n"
-        "Uses [[gold.revenue_monthly.month]] and [[gold.revenue_monthly]].\n", encoding="utf-8")
+        "## Definition\n\nRevenue is money in. It is counted per month.\n\n"
+        "## Rules\n\n- Uses [[gold.revenue_monthly.month]] and [[gold.revenue_monthly]].\n\n"
+        "## Gotchas\n\n- The last month is partial.\n\n"
+        "## Team differences\n\nNone.\n\n"
+        "## Examples\n\nJanuary revenue is the sum of January.\n", encoding="utf-8")
     index = {"concepts": [{"id": "revenue", "path": "concepts/revenue.md",
                            "summary": "Revenue", "status": "draft"}]}
     (tmp_path / "context" / "index.yaml").write_text(yaml.safe_dump(index), encoding="utf-8")
@@ -91,6 +95,43 @@ def test_a_document_whose_id_does_not_match_its_file_fails(mini_repo):
     doc = mini_repo / "context" / "concepts" / "revenue.md"
     doc.write_text(doc.read_text(encoding="utf-8").replace("id: revenue", "id: other"), encoding="utf-8")
     assert any("must all be revenue" in e for e in check_context.check(mini_repo))
+
+
+def rewrite_doc(repo, old, new):
+    doc = repo / "context" / "concepts" / "revenue.md"
+    text = doc.read_text(encoding="utf-8")
+    assert old in text
+    doc.write_text(text.replace(old, new), encoding="utf-8")
+
+
+def test_a_missing_section_fails(mini_repo):
+    rewrite_doc(mini_repo, "## Gotchas", "## Notes")
+    assert any("missing the section 'Gotchas'" in e for e in check_context.check(mini_repo))
+
+
+def test_an_empty_section_fails(mini_repo):
+    rewrite_doc(mini_repo, "- The last month is partial.", "")
+    assert any("section 'Gotchas' is empty" in e for e in check_context.check(mini_repo))
+
+
+def test_a_definition_longer_than_three_sentences_fails(mini_repo):
+    rewrite_doc(mini_repo, "It is counted per month.", "It is counted per month. It is in dollars. It is monthly.")
+    assert any("the definition has 4 sentences" in e for e in check_context.check(mini_repo))
+
+
+def test_dots_inside_an_annotation_do_not_count_as_sentences(mini_repo):
+    rewrite_doc(mini_repo, "Revenue is money in.", "Revenue is [[gold.revenue_monthly.month]] money in.")
+    assert check_context.check(mini_repo) == []
+
+
+def test_a_code_block_fails(mini_repo):
+    rewrite_doc(mini_repo, "None.", "```sql\nselect 1\n```")
+    assert any("remove the code block" in e for e in check_context.check(mini_repo))
+
+
+def test_missing_front_matter_fails(mini_repo):
+    rewrite_doc(mini_repo, "owner_team: RevOps\n", "")
+    assert any("front matter is missing owner_team" in e for e in check_context.check(mini_repo))
 
 
 # --- daily_check -----------------------------------------------------------------
