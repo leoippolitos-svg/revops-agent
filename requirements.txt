@@ -1,0 +1,16 @@
+# Pinned on purpose: the same versions everywhere, so a result on one laptop
+# is the result on every laptop and in CI. Change a version in its own PR.
+# Choices are covered by ADR-0001 (DuckDB) and ADR-0002 (dbt).
+
+# Lakehouse (ADR-0001)
+duckdb==2.0.0
+
+# Transformations (ADR-0002); dbt-duckdb is the adapter that lets dbt talk to DuckDB
+dbt-core==1.12.6
+dbt-duckdb==1.11.1
+
+# Repo checks (tools/check_skills.py reads YAML)
+pyyaml==6.0.3
+
+# Tests for the generator and the pipeline
+pytest==9.2.0

@@ -125,7 +125,7 @@ Two kinds of skills live here on purpose: `.claude/skills/` teach the **coding a
 ```bash
 git clone https://github.com/leoippolitos-svg/revops-agent.git
 cd revops-agent
-pip install pyyaml
+pip install -r requirements.txt
 
 python tools/check_skills.py   # validates every skill against the standard
 python tools/check_leaks.py    # blocks real company terms (needs .leak-terms)
