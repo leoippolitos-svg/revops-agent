@@ -27,6 +27,7 @@ STEPS = [
                                "--project-dir", "pipeline/dbt", "--profiles-dir", "pipeline/dbt"]),
     ("Daily data check", [sys.executable, "pipeline/checks/daily_check.py"]),
     ("Context and catalog check", [sys.executable, "tools/check_context.py"]),
+    ("Catalog page check", [sys.executable, "tools/build_catalog.py", "--check"]),
     ("Skills check", [sys.executable, "tools/check_skills.py"]),
 ]
 
