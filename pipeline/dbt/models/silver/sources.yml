@@ -1,0 +1,20 @@
+version: 2
+
+# Bronze tables are written by ingestion (pipeline/ingest.py), never by dbt.
+sources:
+  - name: bronze
+    description: Raw mirror of each source system, one row per entity per daily export, all columns as text.
+    tables:
+      - name: crm_owners
+      - name: crm_companies
+      - name: crm_contacts
+      - name: crm_deals
+      - name: crm_deal_stage_history
+      - name: marketing_campaigns
+      - name: marketing_form_submissions
+      - name: billing_subscriptions
+      - name: billing_invoices
+      - name: billing_payments
+      - name: cs_onboarding_milestones
+      - name: cs_health_scores
+      - name: cs_tickets

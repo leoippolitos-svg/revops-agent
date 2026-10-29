@@ -13,3 +13,15 @@ python pipeline/ingest.py                         # loads them into data/lakehou
 - Bronze mirrors the source: every column stays text and nothing is cleaned. Because each batch is a full export, bronze holds every version of a row; silver keeps the latest.
 - Running it twice loads nothing new. Each batch loads in one transaction together with its row in `bronze._ingestion_log`, so a failed batch leaves nothing behind and can be retried.
 - Only this script writes to bronze.
+
+## Silver (`dbt/`)
+
+```bash
+cd pipeline/dbt
+dbt build --profiles-dir .     # builds silver and runs its tests on data/lakehouse.duckdb
+```
+
+- One model per entity in `dbt/models/silver/`, in the `silver` schema (`silver.company`, `silver.deal`, ...). Each one keeps only the latest version of every row (the `latest_version` macro) and gives columns their real types.
+- Data-quality problems are flagged, not deleted: `company.is_possible_duplicate`, `deal.has_company`, `subscription.has_matching_deal`. Deciding what to do with them is a business rule.
+- `dbt/models/silver/schema.yml` describes every model and column; those descriptions are the catalog the agent reads. Every table has a tested primary key.
+- Set `LAKEHOUSE_PATH` to point dbt at another DuckDB file.

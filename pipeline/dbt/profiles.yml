@@ -1,0 +1,10 @@
+# Where dbt reads bronze and writes silver and gold: the same DuckDB file that
+# ingestion writes to. The path is relative to the folder dbt runs from
+# (pipeline/dbt); set LAKEHOUSE_PATH to use another file, for example in tests.
+revops:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: "{{ env_var('LAKEHOUSE_PATH', '../../data/lakehouse.duckdb') }}"
+      threads: 1

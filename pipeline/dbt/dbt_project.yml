@@ -1,0 +1,19 @@
+name: revops
+version: "1.0.0"
+config-version: 2
+profile: revops
+
+model-paths: ["models"]
+macro-paths: ["macros"]
+
+# Build output stays out of git (see .gitignore).
+target-path: "target"
+log-path: "logs"
+clean-targets: ["target", "dbt_packages"]
+
+models:
+  revops:
+    silver:
+      # The layer is the schema (silver.company), never a name prefix.
+      +schema: silver
+      +materialized: table
