@@ -3,10 +3,12 @@
 Run from the repository root:
     python tools/check_context.py
 
-It checks three things and exits with code 1 if any fails:
+It checks four things and exits with code 1 if any fails:
 
   1. Context documents: every document in context/index.yaml exists, its front
      matter id matches the index and the file name, and its status is valid.
+     Each one follows the template: the required front matter, the five
+     sections, a definition of at most three sentences, and no SQL.
   2. Annotations: every [[silver.model.column]], [[gold.model]] or
      [[concept:id]] in a document points at something that exists. Renaming a
      column without updating the documents fails here (docs/standards/
@@ -23,6 +25,9 @@ from pathlib import Path
 import yaml
 
 VALID_STATUS = {"draft", "canonical", "deprecated"}
+REQUIRED_FRONT_MATTER = ("id", "title", "owner_team", "status", "last_reviewed", "related")
+REQUIRED_SECTIONS = ("Definition", "Rules", "Gotchas", "Team differences", "Examples")
+MAX_DEFINITION_SENTENCES = 3
 # "planned" is only for index entries that have no document yet.
 INDEX_STATUS = VALID_STATUS | {"planned"}
 LAYERS = ("silver", "gold")
@@ -67,6 +72,42 @@ def split_front_matter(text: str) -> tuple[dict, str]:
     return yaml.safe_load(front) or {}, body
 
 
+def sections(body: str) -> dict[str, str]:
+    """Split a document body into {"Definition": text, ...} by its "## " headings."""
+    found, current = {}, None
+    for line in body.splitlines():
+        if line.startswith("## "):
+            current = line[3:].strip()
+            found[current] = ""
+        elif current is not None:
+            found[current] += line + "\n"
+    return found
+
+
+def structure_errors(where: str, front: dict, body: str) -> list[str]:
+    """Check one document against the template (docs/standards/context-documents.md)."""
+    errors = []
+    for key in REQUIRED_FRONT_MATTER:
+        if key not in front:
+            errors.append(f"{where}: front matter is missing {key}")
+    found = sections(body)
+    for name in REQUIRED_SECTIONS:
+        if name not in found:
+            errors.append(f"{where}: missing the section '{name}'")
+        elif not found[name].strip():
+            errors.append(f"{where}: the section '{name}' is empty")
+    # A sentence ends at . ! or ? followed by a space. Dots inside an annotation
+    # such as [[silver.deal.stage]] are followed by a letter, so they do not count.
+    definition = " ".join(found.get("Definition", "").split())
+    sentences = [s for s in re.split(r"(?<=[.!?])\s+", definition) if s]
+    if len(sentences) > MAX_DEFINITION_SENTENCES:
+        errors.append(f"{where}: the definition has {len(sentences)} sentences, the maximum is "
+                      f"{MAX_DEFINITION_SENTENCES}; if it needs more it is two concepts")
+    if "```" in body:
+        errors.append(f"{where}: context documents describe meaning, not implementation; remove the code block")
+    return errors
+
+
 def check(root: Path) -> list[str]:
     errors: list[str] = []
     catalog = load_catalog(root, errors)
@@ -88,6 +129,7 @@ def check(root: Path) -> list[str]:
         front, body = split_front_matter(path.read_text(encoding="utf-8"))
         if front.get("id") != concept_id or path.stem != concept_id:
             errors.append(f"{where}: front matter id, file name and index id must all be {concept_id}")
+        errors.extend(structure_errors(where, front, body))
         if front.get("status") not in VALID_STATUS:
             errors.append(f"{where}: status must be one of {sorted(VALID_STATUS)}")
         if front.get("status") != entries[concept_id].get("status"):

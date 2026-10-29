@@ -2,9 +2,9 @@
 id: mrr
 title: Monthly recurring revenue
 owner_team: RevOps
-status: draft
+status: canonical
 last_reviewed: 2026-10-29
-related: [active-customer]
+related: [active-customer, funnel-stages, cross-cutting-rules]
 ---
 
 # Monthly recurring revenue
@@ -20,6 +20,7 @@ Monthly recurring revenue (MRR) is the monthly value of every subscription in fo
 - Churned MRR is the value of subscriptions that ended in the month: [[gold.mrr_monthly.churned_mrr_usd]].
 - The months connect: starting MRR ([[gold.mrr_monthly.starting_mrr_usd]]) plus new MRR minus churned MRR equals ending MRR.
 - A payment is not required. A subscription counts from its start day, paid or not.
+- Amounts are in US dollars and dates are calendar dates, see [[concept:cross-cutting-rules]]. Internal and test accounts are excluded.
 - There is no expansion or contraction yet: a subscription keeps the same MRR for its whole life, because Fernway's data has no plan changes.
 
 ## Gotchas
@@ -31,7 +32,7 @@ Monthly recurring revenue (MRR) is the monthly value of every subscription in fo
 
 ## Team differences
 
-Sales reports bookings: the yearly value of deals closed won. RevOps and Finance report MRR from subscriptions. **MRR as defined here is canonical** for recurring revenue; bookings are a different number and should be named as such.
+Sales reports bookings: the yearly value of deals closed won, see [[concept:funnel-stages]]. RevOps and Finance report MRR from subscriptions. **MRR as defined here is canonical** for recurring revenue; bookings are a different number and should be named as such.
 
 ## Examples
 

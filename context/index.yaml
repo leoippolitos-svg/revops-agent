@@ -5,20 +5,20 @@ concepts:
   - id: active-customer
     path: concepts/active-customer.md
     summary: Who counts as a paying customer at a point in time
-    status: draft
+    status: canonical
   - id: mrr
     path: concepts/mrr.md
     summary: Monthly recurring revenue and its movements (new and churned)
-    status: draft
+    status: canonical
   - id: funnel-stages
     path: concepts/funnel-stages.md
     summary: The stages a deal moves through, from qualification to closed won or lost
-    status: draft
+    status: canonical
   - id: mql
     path: concepts/mql.md
     summary: Marketing qualified lead, and how Marketing and Sales count it differently
-    status: draft
+    status: canonical
   - id: cross-cutting-rules
     path: concepts/cross-cutting-rules.md
-    summary: Test accounts, currency, time zone and other rules that apply to every analysis
-    status: planned
+    summary: Currency, dates, internal accounts, data-quality flags and sources of truth that apply to every analysis
+    status: canonical
