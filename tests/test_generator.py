@@ -77,6 +77,12 @@ def test_primary_keys_are_unique(tmp_path):
         "crm/deals.csv": "deal_id",
         "crm/deal_stage_history.csv": "history_id",
         "marketing/form_submissions.csv": "submission_id",
+        "billing/subscriptions.csv": "subscription_id",
+        "billing/invoices.csv": "invoice_id",
+        "billing/payments.csv": "payment_id",
+        "cs/onboarding_milestones.csv": "milestone_id",
+        "cs/health_scores.csv": "score_id",
+        "cs/tickets.csv": "ticket_id",
     }
     for file_name, key in keys.items():
         values = [r[key] for r in read_rows(tmp_path / file_name)]
@@ -186,3 +192,115 @@ def test_companies_minus_injected_duplicates_is_the_clean_count(tmp_path):
     companies = read_rows(tmp_path / "crm" / "companies.csv")
     clean = [c for c in companies if str(c["company_id"]) not in issue_ids(tmp_path, "duplicate_company")]
     assert len(clean) == generate.COMPANY_COUNT
+
+
+# --- Billing and Customer Success ---------------------------------------------
+
+def test_one_subscription_per_won_deal(tmp_path):
+    generate.generate(seed=42, out_dir=tmp_path)
+    won = [d for d in read_rows(tmp_path / "crm" / "deals.csv") if d["stage"] == generate.WON]
+    subscriptions = read_rows(tmp_path / "billing" / "subscriptions.csv")
+    assert len(subscriptions) == len(won)
+
+
+def test_subscriptions_without_a_deal_are_exactly_the_planned_ones(tmp_path):
+    generate.generate(seed=42, out_dir=tmp_path)
+    deal_ids = {d["deal_id"] for d in read_rows(tmp_path / "crm" / "deals.csv")}
+    orphans = {s["subscription_id"] for s in read_rows(tmp_path / "billing" / "subscriptions.csv")
+               if s["deal_id"] not in deal_ids}
+    assert orphans == issue_ids(tmp_path, "subscription_without_deal")
+
+
+def test_subscriptions_always_have_a_company(tmp_path):
+    # The deal may lose its company (an issue); the subscription never does.
+    generate.generate(seed=42, out_dir=tmp_path)
+    company_ids = {c["company_id"] for c in read_rows(tmp_path / "crm" / "companies.csv")}
+    for sub in read_rows(tmp_path / "billing" / "subscriptions.csv"):
+        assert sub["company_id"] in company_ids
+
+
+def test_churned_subscriptions_have_an_end_date_and_active_ones_do_not(tmp_path):
+    generate.generate(seed=42, out_dir=tmp_path)
+    subscriptions = read_rows(tmp_path / "billing" / "subscriptions.csv")
+    assert {s["status"] for s in subscriptions} == {"active", "churned"}
+    for sub in subscriptions:
+        if sub["status"] == "churned":
+            assert sub["ended_at"] > sub["started_at"]
+        else:
+            assert sub["ended_at"] == ""
+
+
+def test_invoices_reference_subscriptions_and_stop_when_the_subscription_ends(tmp_path):
+    generate.generate(seed=42, out_dir=tmp_path)
+    subs = {s["subscription_id"]: s for s in read_rows(tmp_path / "billing" / "subscriptions.csv")}
+    for invoice in read_rows(tmp_path / "billing" / "invoices.csv"):
+        sub = subs[invoice["subscription_id"]]
+        assert invoice["issued_at"] >= sub["started_at"]
+        assert sub["ended_at"] == "" or invoice["issued_at"] <= sub["ended_at"]
+        assert invoice["amount_usd"] == sub["mrr_usd"]
+
+
+def test_only_paid_invoices_have_exactly_one_payment_of_the_same_amount(tmp_path):
+    generate.generate(seed=42, out_dir=tmp_path)
+    invoices = {i["invoice_id"]: i for i in read_rows(tmp_path / "billing" / "invoices.csv")}
+    payments = read_rows(tmp_path / "billing" / "payments.csv")
+    paid_ids = [p["invoice_id"] for p in payments]
+    assert len(paid_ids) == len(set(paid_ids))
+    assert set(paid_ids) == {i for i, inv in invoices.items() if inv["status"] == "paid"}
+    for payment in payments:
+        assert payment["amount_usd"] == invoices[payment["invoice_id"]]["amount_usd"]
+        assert payment["paid_at"] >= invoices[payment["invoice_id"]]["issued_at"]
+
+
+def test_invoice_statuses_are_consistent_with_the_end_of_the_world(tmp_path):
+    generate.generate(seed=42, out_dir=tmp_path)
+    end = generate.billing_cs.WORLD_END.isoformat()
+    statuses = set()
+    for invoice in read_rows(tmp_path / "billing" / "invoices.csv"):
+        statuses.add(invoice["status"])
+        assert invoice["issued_at"] <= end
+        # Open means not due yet; everything due by the end is paid or overdue.
+        assert (invoice["status"] == "open") == (invoice["due_at"] > end)
+    assert statuses == {"paid", "overdue", "open"}
+
+
+def test_nothing_happens_after_the_end_of_the_world(tmp_path):
+    generate.generate(seed=42, out_dir=tmp_path)
+    end = generate.billing_cs.WORLD_END.isoformat()
+    date_columns = {
+        "billing/payments.csv": "paid_at",
+        "cs/health_scores.csv": "scored_at",
+        "cs/tickets.csv": "opened_at",
+        "cs/onboarding_milestones.csv": "reached_at",
+    }
+    for file_name, column in date_columns.items():
+        for row in read_rows(tmp_path / file_name):
+            assert row[column] <= end, file_name
+
+
+def test_health_score_band_matches_the_score(tmp_path):
+    generate.generate(seed=42, out_dir=tmp_path)
+    for row in read_rows(tmp_path / "cs" / "health_scores.csv"):
+        score = int(row["score"])
+        assert 0 <= score <= 100
+        assert row["band"] == ("red" if score < 40 else "yellow" if score < 70 else "green")
+
+
+def test_onboarding_milestones_follow_their_order(tmp_path):
+    generate.generate(seed=42, out_dir=tmp_path)
+    by_sub = {}
+    for row in read_rows(tmp_path / "cs" / "onboarding_milestones.csv"):
+        by_sub.setdefault(row["subscription_id"], []).append(row)
+    for rows in by_sub.values():
+        names = [r["milestone"] for r in rows]
+        assert names == generate.billing_cs.MILESTONES[: len(names)]
+        dates = [r["reached_at"] for r in rows]
+        assert dates == sorted(dates)
+
+
+def test_tickets_close_after_they_open(tmp_path):
+    generate.generate(seed=42, out_dir=tmp_path)
+    tickets = read_rows(tmp_path / "cs" / "tickets.csv")
+    assert tickets
+    for ticket in tickets:
+        assert ticket["closed_at"] == "" or ticket["closed_at"] >= ticket["opened_at"]

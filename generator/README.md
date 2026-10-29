@@ -39,9 +39,9 @@ python -m pytest                          # runs tests/test_generator.py
 
 Same seed, same files, byte for byte. Names come from short word lists in the script, e-mails use `example.com`, and there are no phone numbers or tax IDs.
 
-Built so far: `crm/owners`, `crm/companies`, `crm/contacts`, `crm/deals`, `crm/deal_stage_history`, `marketing/campaigns`, `marketing/form_submissions`. Billing and Customer Success come next.
+Built so far: `crm/owners`, `crm/companies`, `crm/contacts`, `crm/deals`, `crm/deal_stage_history`, `marketing/campaigns`, `marketing/form_submissions`, `billing/subscriptions`, `billing/invoices`, `billing/payments`, `cs/onboarding_milestones`, `cs/health_scores`, `cs/tickets`. Billing and Customer Success live in `billing_cs.py`: a won deal becomes a subscription, which produces monthly invoices, payments, onboarding milestones, health scores and tickets. Nothing happens after the last day of the simulated world (`WORLD_END`).
 
-The generator also writes `data/raw/_issues.json`, an answer key listing every data-quality issue it injected (type, table, row id). Tests and audits use it to tell a planned issue from a bug. Issues are injected after the clean data exists, using their own random generator, so a clean row never changes because of an issue. Injected so far: duplicate companies, deals without a company, stage dates out of order, and competing MQL flags (`marketing_mql_flag` in `form_submissions`, `sales_mql_flag` in `contacts`).
+The generator also writes `data/raw/_issues.json`, an answer key listing every data-quality issue it injected (type, table, row id). Tests and audits use it to tell a planned issue from a bug. Issues are injected after the clean data exists, using their own random generator, so a clean row never changes because of an issue. Injected: duplicate companies, deals without a company, stage dates out of order, competing MQL flags (`marketing_mql_flag` in `form_submissions`, `sales_mql_flag` in `contacts`) and subscriptions whose deal does not exist.
 
 ## Simulated time
 
