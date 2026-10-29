@@ -39,7 +39,9 @@ python -m pytest                          # runs tests/test_generator.py
 
 Same seed, same files, byte for byte. Names come from short word lists in the script, e-mails use `example.com`, and there are no phone numbers or tax IDs.
 
-Built so far (part 1): `crm/owners`, `crm/companies`, `crm/contacts`, `marketing/campaigns`. Deals, billing, Customer Success and the data-quality issues above arrive in part 2.
+Built so far: `crm/owners`, `crm/companies`, `crm/contacts`, `crm/deals`, `crm/deal_stage_history`, `marketing/campaigns`, `marketing/form_submissions`. Billing and Customer Success come next.
+
+The generator also writes `data/raw/_issues.json`, an answer key listing every data-quality issue it injected (type, table, row id). Tests and audits use it to tell a planned issue from a bug. Issues are injected after the clean data exists, using their own random generator, so a clean row never changes because of an issue. Injected so far: duplicate companies, deals without a company, stage dates out of order, and competing MQL flags (`marketing_mql_flag` in `form_submissions`, `sales_mql_flag` in `contacts`).
 
 ## Simulated time
 
