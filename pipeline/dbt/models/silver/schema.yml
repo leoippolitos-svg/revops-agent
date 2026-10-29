@@ -1,0 +1,340 @@
+version: 2
+
+# These descriptions are the catalog the agent reads (ADR-0002, ADR-0003).
+# They say what each table and column IS. What a concept MEANS for the business
+# lives in context/ documents, not here.
+
+models:
+  - name: owner
+    description: One row per person who owns accounts or work in a Fernway team. Latest version from bronze.
+    columns:
+      - name: owner_id
+        description: Primary key. Identifier of the owner in the CRM.
+        data_tests: [unique, not_null]
+      - name: full_name
+        description: Owner's full name (fictional).
+      - name: email
+        description: Owner's e-mail, always on the reserved example.com domain.
+      - name: team
+        description: Team the owner belongs to (sdr, sales, enterprise, onboarding or customer_success).
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [sdr, sales, enterprise, onboarding, customer_success]
+      - name: last_seen_batch_id
+        description: Bronze batch (as_of=date) this version of the row came from.
+
+  - name: company
+    description: One row per company record in the CRM, latest version from bronze. May contain the same real-world company twice; see is_possible_duplicate.
+    columns:
+      - name: company_id
+        description: Primary key. Identifier of the company record in the CRM.
+        data_tests: [unique, not_null]
+      - name: name
+        description: Company name as typed in the CRM.
+      - name: industry
+        description: Industry the company works in.
+      - name: segment
+        description: Size segment (smb, mid_market or enterprise), tied to employee_count.
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [smb, mid_market, enterprise]
+      - name: employee_count
+        description: Number of employees.
+      - name: country
+        description: Two-letter country code.
+      - name: owner_id
+        description: Owner of the account. Refers to owner.owner_id.
+      - name: created_at
+        description: Date the company record was created.
+      - name: is_possible_duplicate
+        description: True when another company record has the same name ignoring letter case. Flagged, never removed; which record is canonical is a business rule.
+        data_tests: [not_null]
+      - name: last_seen_batch_id
+        description: Bronze batch (as_of=date) this version of the row came from.
+
+  - name: contact
+    description: One row per person at a customer or prospect, latest version from bronze.
+    columns:
+      - name: contact_id
+        description: Primary key. Identifier of the contact in the CRM.
+        data_tests: [unique, not_null]
+      - name: company_id
+        description: Company the contact works at. Refers to company.company_id.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('company')
+                field: company_id
+      - name: first_name
+        description: First name (fictional).
+      - name: last_name
+        description: Last name (fictional).
+      - name: email
+        description: E-mail, always on the reserved example.com domain.
+      - name: job_title
+        description: Job title.
+      - name: created_at
+        description: Date the contact record was created.
+      - name: sales_mql_flag
+        description: Whether Sales considers this contact a marketing qualified lead. Marketing keeps its own flag in form_submission.marketing_mql_flag and the two can disagree.
+        data_tests: [not_null]
+      - name: last_seen_batch_id
+        description: Bronze batch (as_of=date) this version of the row came from.
+
+  - name: deal
+    description: One row per sales opportunity, latest version from bronze, so stage and closed_at show the most recent state.
+    columns:
+      - name: deal_id
+        description: Primary key. Identifier of the deal in the CRM.
+        data_tests: [unique, not_null]
+      - name: company_id
+        description: Company the deal is with. Empty when the CRM has no company on the deal; see has_company.
+      - name: has_company
+        description: False when the deal has no company association.
+        data_tests: [not_null]
+      - name: owner_id
+        description: Owner of the deal. Refers to owner.owner_id.
+      - name: name
+        description: Deal name.
+      - name: amount_usd
+        description: Yearly contract value in US dollars.
+      - name: stage
+        description: Current stage of the deal as stored by the CRM. Meaning of each stage is defined in the funnel-stages context document.
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [qualification, discovery, proposal, negotiation, closed_won, closed_lost]
+      - name: created_at
+        description: Date the deal was created.
+      - name: closed_at
+        description: Date the deal was won or lost. Empty while the deal is open.
+      - name: last_seen_batch_id
+        description: Bronze batch (as_of=date) this version of the row came from.
+
+  - name: deal_stage_history
+    description: One row each time a deal entered a stage, latest version from bronze. Dates can be out of order for some deals (data-quality issue).
+    columns:
+      - name: history_id
+        description: Primary key. Identifier of the history entry.
+        data_tests: [unique, not_null]
+      - name: deal_id
+        description: Deal the entry belongs to. Refers to deal.deal_id.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('deal')
+                field: deal_id
+      - name: stage
+        description: Stage the deal entered.
+      - name: entered_at
+        description: Date the deal entered the stage, as recorded by the CRM.
+      - name: last_seen_batch_id
+        description: Bronze batch (as_of=date) this version of the row came from.
+
+  - name: campaign
+    description: One row per marketing campaign, latest version from bronze.
+    columns:
+      - name: campaign_id
+        description: Primary key. Identifier of the campaign.
+        data_tests: [unique, not_null]
+      - name: name
+        description: Campaign name.
+      - name: channel
+        description: Marketing channel (paid_search, paid_social, webinar, email, event or organic).
+      - name: started_at
+        description: Date the campaign started.
+      - name: budget_usd
+        description: Budget in US dollars.
+      - name: last_seen_batch_id
+        description: Bronze batch (as_of=date) this version of the row came from.
+
+  - name: form_submission
+    description: One row per marketing form filled in by a contact, latest version from bronze.
+    columns:
+      - name: submission_id
+        description: Primary key. Identifier of the form submission.
+        data_tests: [unique, not_null]
+      - name: contact_id
+        description: Contact who filled in the form. Refers to contact.contact_id.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('contact')
+                field: contact_id
+      - name: campaign_id
+        description: Campaign that brought the contact to the form. Refers to campaign.campaign_id.
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('campaign')
+                field: campaign_id
+      - name: submitted_at
+        description: Date the form was submitted.
+      - name: marketing_mql_flag
+        description: Whether Marketing considers the submission a marketing qualified lead. Sales keeps its own flag in contact.sales_mql_flag.
+        data_tests: [not_null]
+      - name: last_seen_batch_id
+        description: Bronze batch (as_of=date) this version of the row came from.
+
+  - name: subscription
+    description: One row per paid subscription in billing, latest version from bronze, so status and ended_at show the most recent state.
+    columns:
+      - name: subscription_id
+        description: Primary key. Identifier of the subscription.
+        data_tests: [unique, not_null]
+      - name: deal_id
+        description: Deal the subscription claims to come from. May point to a deal the CRM does not have; see has_matching_deal.
+      - name: has_matching_deal
+        description: False when no deal with this deal_id exists in the CRM.
+        data_tests: [not_null]
+      - name: company_id
+        description: Company that pays. Refers to company.company_id.
+        data_tests: [not_null]
+      - name: plan
+        description: Plan sold (starter, growth or scale).
+      - name: mrr_usd
+        description: Monthly recurring revenue of the subscription in US dollars.
+      - name: status
+        description: Subscription status, active or churned.
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [active, churned]
+      - name: started_at
+        description: Date the subscription started.
+      - name: ended_at
+        description: Date the subscription ended. Empty while it is active.
+      - name: last_seen_batch_id
+        description: Bronze batch (as_of=date) this version of the row came from.
+
+  - name: invoice
+    description: One row per invoice, latest version from bronze, so status shows the most recent state.
+    columns:
+      - name: invoice_id
+        description: Primary key. Identifier of the invoice.
+        data_tests: [unique, not_null]
+      - name: subscription_id
+        description: Subscription billed. Refers to subscription.subscription_id.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('subscription')
+                field: subscription_id
+      - name: issued_at
+        description: Date the invoice was issued.
+      - name: due_at
+        description: Date the invoice is due.
+      - name: amount_usd
+        description: Invoice amount in US dollars.
+      - name: status
+        description: Invoice status. paid has a payment, open is not yet due, overdue is past due without a payment.
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [paid, open, overdue]
+      - name: last_seen_batch_id
+        description: Bronze batch (as_of=date) this version of the row came from.
+
+  - name: payment
+    description: One row per payment received against an invoice, latest version from bronze.
+    columns:
+      - name: payment_id
+        description: Primary key. Identifier of the payment.
+        data_tests: [unique, not_null]
+      - name: invoice_id
+        description: Invoice paid. Refers to invoice.invoice_id.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('invoice')
+                field: invoice_id
+      - name: paid_at
+        description: Date the payment was received.
+      - name: amount_usd
+        description: Amount received in US dollars.
+      - name: last_seen_batch_id
+        description: Bronze batch (as_of=date) this version of the row came from.
+
+  - name: onboarding_milestone
+    description: One row per onboarding milestone a subscription has reached, latest version from bronze.
+    columns:
+      - name: milestone_id
+        description: Primary key. Identifier of the milestone entry.
+        data_tests: [unique, not_null]
+      - name: subscription_id
+        description: Subscription being onboarded. Refers to subscription.subscription_id.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('subscription')
+                field: subscription_id
+      - name: milestone
+        description: Milestone reached, in order kickoff, configured, go_live.
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [kickoff, configured, go_live]
+      - name: reached_at
+        description: Date the milestone was reached.
+      - name: last_seen_batch_id
+        description: Bronze batch (as_of=date) this version of the row came from.
+
+  - name: health_score
+    description: One row per monthly customer health score from Customer Success, latest version from bronze.
+    columns:
+      - name: score_id
+        description: Primary key. Identifier of the score entry.
+        data_tests: [unique, not_null]
+      - name: company_id
+        description: Company scored. Refers to company.company_id.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('company')
+                field: company_id
+      - name: scored_at
+        description: Date of the score.
+      - name: score
+        description: Health score from 0 (at risk) to 100 (healthy).
+      - name: band
+        description: Band of the score, red below 40, yellow below 70, green otherwise.
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [red, yellow, green]
+      - name: last_seen_batch_id
+        description: Bronze batch (as_of=date) this version of the row came from.
+
+  - name: ticket
+    description: One row per support ticket, latest version from bronze, so closed_at shows the most recent state.
+    columns:
+      - name: ticket_id
+        description: Primary key. Identifier of the ticket.
+        data_tests: [unique, not_null]
+      - name: company_id
+        description: Company that opened the ticket. Refers to company.company_id.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('company')
+                field: company_id
+      - name: opened_at
+        description: Date the ticket was opened.
+      - name: closed_at
+        description: Date the ticket was closed. Empty while it is open.
+      - name: priority
+        description: Ticket priority (low, medium or high).
+      - name: category
+        description: Ticket category (bug, how_to, billing, integration or feature_request).
+      - name: last_seen_batch_id
+        description: Bronze batch (as_of=date) this version of the row came from.
