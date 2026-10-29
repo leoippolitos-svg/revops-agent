@@ -3,3 +3,4 @@
 #   git config core.hooksPath tools/hooks
 python tools/check_leaks.py || exit 1
 python tools/check_skills.py || exit 1
+python tools/check_context.py || exit 1

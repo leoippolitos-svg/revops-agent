@@ -39,6 +39,8 @@ jobs:
       - run: pip install -r requirements.txt
       - name: Check skills follow the standard
         run: python tools/check_skills.py
+      - name: Check context documents and the catalog agree
+        run: python tools/check_context.py
 
   # The README and this job use Python 3.12; local development may use a newer one.
   tests:
