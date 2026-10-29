@@ -29,6 +29,18 @@ Fernway sells field-service management software (scheduling, work orders, mobile
 
 So that audits and the agent have something real to catch: duplicate companies, deals without a company association, stage dates out of order, a subscription with no matching deal, and two competing MQL flags (one set by Marketing, one by Sales).
 
+## Usage
+
+```bash
+pip install -r requirements.txt
+python generator/generate.py --seed 42   # writes CSV files to data/raw/ (gitignored)
+python -m pytest                          # runs tests/test_generator.py
+```
+
+Same seed, same files, byte for byte. Names come from short word lists in the script, e-mails use `example.com`, and there are no phone numbers or tax IDs.
+
+Built so far (part 1): `crm/owners`, `crm/companies`, `crm/contacts`, `marketing/campaigns`. Deals, billing, Customer Success and the data-quality issues above arrive in part 2.
+
 ## Simulated time
 
 `generate.py --days 1` adds one more day of business, so the pipeline can run on a schedule like a real lakehouse.
