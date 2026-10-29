@@ -11,7 +11,7 @@ Medallion lakehouse · context documents · intent routing · RAG with evals · 
 ![Python](https://img.shields.io/badge/python-3.12-3776AB?logo=python&logoColor=white)
 ![DuckDB](https://img.shields.io/badge/DuckDB-lakehouse-FFF000?logo=duckdb&logoColor=black)
 ![dbt](https://img.shields.io/badge/dbt-transformations-FF694B?logo=dbt&logoColor=white)
-![Status](https://img.shields.io/badge/status-phase%200%20complete-brightgreen)
+![Status](https://img.shields.io/badge/status-phase%201%20complete-brightgreen)
 
 [Why](#why) · [How it works](#how-it-works) · [Architecture](#architecture) · [Project structure](#project-structure) · [Quick start](#quick-start) · [Roadmap](#roadmap) · [Decisions](#design-decisions)
 
@@ -118,7 +118,7 @@ Two kinds of skills live here on purpose: `.claude/skills/` teach the **coding a
 ## Quick start
 
 > [!IMPORTANT]
-> The data pipeline and agent arrive in Phases 1–3. Today you can run the repository checks.
+> The data pipeline works end to end (Phase 1). The agent arrives in Phases 3–4.
 
 **Requirements:** Python 3.12, Git.
 
@@ -129,16 +129,23 @@ pip install -r requirements.txt
 
 python tools/check_skills.py   # validates every skill against the standard
 python tools/check_leaks.py    # blocks real company terms (needs .leak-terms)
+python tools/check_context.py  # context documents and the dbt catalog must agree
 
 git config core.hooksPath tools/hooks   # run both checks before every commit
 ```
 
-The target for Phase 1: one `make setup`, no cloud accounts, everything local.
+Build the whole local lakehouse with one command, no cloud accounts:
+
+```bash
+python tools/setup.py   # or: make setup
+```
+
+It generates fictional data, loads it into bronze, builds silver and gold with dbt, and runs the checks. The result is `data/lakehouse.duckdb`.
 
 ## Roadmap
 
 - [x] **Phase 0** · Skeleton, standards, guardrails, CI
-- [ ] **Phase 1** · Data generator and bronze → silver → gold
+- [x] **Phase 1** · Data generator and bronze → silver → gold
 - [ ] **Phase 2** · First five context documents and catalog checks
 - [ ] **Phase 3** · Directives, intent router, RAG and a ~40-case eval
 - [ ] **Phase 4** · Business skills, MCP server, connector registry
