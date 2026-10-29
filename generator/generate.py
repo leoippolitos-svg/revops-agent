@@ -1,20 +1,22 @@
 """Generate fictional raw data for Fernway.
 
-Writes CSV files into data/raw/<source>/ (the data/ folder is gitignored):
+Simulates a business that keeps moving. The whole world (up to its last day) is
+built from the seed, and each run writes a snapshot of it as of one day, like a
+nightly export of the source systems. Snapshots go into data/raw/as_of=<date>/
+(the data/ folder is gitignored), each with the same layout:
 
-    data/raw/crm/owners.csv
-    data/raw/crm/companies.csv
-    data/raw/crm/contacts.csv
-    data/raw/crm/deals.csv
-    data/raw/crm/deal_stage_history.csv
-    data/raw/marketing/campaigns.csv
-    data/raw/marketing/form_submissions.csv
-    data/raw/billing/subscriptions.csv, invoices.csv, payments.csv
-    data/raw/cs/onboarding_milestones.csv, health_scores.csv, tickets.csv
+    crm/owners.csv, companies.csv, contacts.csv, deals.csv, deal_stage_history.csv
+    marketing/campaigns.csv, form_submissions.csv
+    billing/subscriptions.csv, invoices.csv, payments.csv
+    cs/onboarding_milestones.csv, health_scores.csv, tickets.csv
+
+and, once, next to the snapshot folders:
+
     data/raw/_issues.json         (answer key for the injected data-quality issues)
 
 Run from the repository root:
-    python generator/generate.py --seed 42
+    python generator/generate.py --seed 42            # the initial load
+    python generator/generate.py --seed 42 --days 1   # one more day of business
 
 Why CSV files and not the database: the bronze layer may only be written by
 the ingestion step (see CLAUDE.md). The generator plays the role of the
@@ -352,18 +354,47 @@ def inject_issues(rng, companies, contacts, deals, history, submissions, subscri
     return issues
 
 
-def write_csv(path: Path, rows: list[dict]) -> None:
+def write_csv(path: Path, rows: list[dict], columns: list[str]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     # newline="" plus an explicit "\n" keeps the bytes identical on Windows and
-    # Linux, so the same seed gives the same file hash everywhere.
+    # Linux, so the same seed gives the same file hash everywhere. The columns are
+    # passed in, not read from the first row, so an empty table still gets a header.
     with path.open("w", newline="", encoding="utf-8") as handle:
-        writer = csv.DictWriter(handle, fieldnames=list(rows[0]), lineterminator="\n")
+        writer = csv.DictWriter(handle, fieldnames=columns, lineterminator="\n")
         writer.writeheader()
         writer.writerows(rows)
 
 
-def generate(seed: int, out_dir: Path) -> dict[str, int]:
-    """Write all files and return how many rows each one has."""
+# Which column says "this row exists from this day on", for every table.
+# A snapshot as of day D keeps the rows whose date is on or before D.
+EXISTS_FROM = {
+    "crm/companies": "created_at",
+    "crm/contacts": "created_at",
+    "crm/deals": "created_at",
+    "crm/deal_stage_history": "entered_at",
+    "marketing/campaigns": "started_at",
+    "marketing/form_submissions": "submitted_at",
+    "billing/subscriptions": "started_at",
+    "billing/invoices": "issued_at",
+    "billing/payments": "paid_at",
+    "cs/onboarding_milestones": "reached_at",
+    "cs/health_scores": "scored_at",
+    "cs/tickets": "opened_at",
+}
+# Static tables: they exist from day one.
+STATIC_TABLES = ["crm/owners"]
+
+# The first snapshot (the "initial load") is the end of the first simulated year.
+# `--days N` then adds days after the latest snapshot, one folder per day.
+INITIAL_AS_OF = date(2025, 12, 31)
+
+
+def build_world(seed: int) -> tuple[dict[str, list[dict]], list[dict]]:
+    """Build the whole simulated world, up to its last day, from the seed.
+
+    Returns (tables, issues). A table is keyed by "<source>/<name>". Nothing is
+    written here: snapshot() later decides how much of it is visible on a day.
+    """
     # Separate Random instances, not the global one, so nothing else in the
     # program can change the sequence of numbers we draw. The base entities keep
     # their own generator: adding new data never changes them.
@@ -391,54 +422,150 @@ def generate(seed: int, out_dir: Path) -> dict[str, int]:
 
     issues = inject_issues(issue_rng, companies, contacts, deals, history, submissions, subscriptions)
 
-    write_csv(out_dir / "crm" / "owners.csv", owners)
-    write_csv(out_dir / "crm" / "companies.csv", companies)
-    write_csv(out_dir / "crm" / "contacts.csv", contacts)
-    write_csv(out_dir / "crm" / "deals.csv", deals)
-    write_csv(out_dir / "crm" / "deal_stage_history.csv", history)
-    write_csv(out_dir / "marketing" / "campaigns.csv", campaigns)
-    write_csv(out_dir / "marketing" / "form_submissions.csv", submissions)
-    write_csv(out_dir / "billing" / "subscriptions.csv", subscriptions)
-    write_csv(out_dir / "billing" / "invoices.csv", invoices)
-    write_csv(out_dir / "billing" / "payments.csv", payments)
-    write_csv(out_dir / "cs" / "onboarding_milestones.csv", milestones)
-    write_csv(out_dir / "cs" / "health_scores.csv", health_scores)
-    write_csv(out_dir / "cs" / "tickets.csv", tickets)
+    tables = {
+        "crm/owners": owners,
+        "crm/companies": companies,
+        "crm/contacts": contacts,
+        "crm/deals": deals,
+        "crm/deal_stage_history": history,
+        "marketing/campaigns": campaigns,
+        "marketing/form_submissions": submissions,
+        "billing/subscriptions": subscriptions,
+        "billing/invoices": invoices,
+        "billing/payments": payments,
+        "cs/onboarding_milestones": milestones,
+        "cs/health_scores": health_scores,
+        "cs/tickets": tickets,
+    }
+    return tables, issues
 
-    # The answer key is not a source system file; the leading underscore keeps it
-    # apart from the source folders.
+
+def snapshot(tables: dict[str, list[dict]], as_of: date) -> dict[str, list[dict]]:
+    """What the source systems would export on day `as_of`.
+
+    Rows dated after that day do not exist yet. Fields that change over time
+    (a deal's stage, a subscription's status, an invoice's status, a ticket's
+    close date) show their value as of that day. It is a full export, like a
+    nightly dump: bronze keeps every day's export and silver picks the latest.
+    """
+    day = as_of.isoformat()  # ISO dates compare correctly as plain strings
+    visible = {
+        name: rows if name in STATIC_TABLES else [r for r in rows if r[EXISTS_FROM[name]] <= day]
+        for name, rows in tables.items()
+    }
+
+    # Deal: stage and closed_at come from the last history row seen so far.
+    last_stage = {}
+    for row in visible["crm/deal_stage_history"]:  # rows are in history_id order
+        last_stage[row["deal_id"]] = row
+    deals = []
+    for deal in visible["crm/deals"]:
+        last = last_stage[deal["deal_id"]]
+        closed = last["stage"] in (WON, LOST)
+        deals.append(dict(deal, stage=last["stage"], closed_at=last["entered_at"] if closed else ""))
+    visible["crm/deals"] = deals
+
+    # Subscription: churn only shows once its end date has been reached.
+    visible["billing/subscriptions"] = [
+        s if s["ended_at"] and s["ended_at"] <= day
+        else dict(s, status="active", ended_at="")
+        for s in visible["billing/subscriptions"]
+    ]
+
+    # Invoice: paid once a payment exists, otherwise open until due, then overdue.
+    paid = {p["invoice_id"] for p in visible["billing/payments"]}
+    visible["billing/invoices"] = [
+        dict(i, status="paid" if i["invoice_id"] in paid else "open" if i["due_at"] > day else "overdue")
+        for i in visible["billing/invoices"]
+    ]
+
+    # Ticket: still open until its close date is reached.
+    visible["cs/tickets"] = [
+        t if not t["closed_at"] or t["closed_at"] <= day else dict(t, closed_at="")
+        for t in visible["cs/tickets"]
+    ]
+    return visible
+
+
+def write_snapshot(visible: dict[str, list[dict]], out_dir: Path, tables: dict[str, list[dict]]) -> None:
+    for name, rows in visible.items():
+        # The full world always has rows, so its first row tells us the columns.
+        write_csv(out_dir / f"{name}.csv", rows, list(tables[name][0]))
+
+
+def write_issues(issues: list[dict], out_dir: Path) -> None:
+    """Write the answer key. It is not a source system file, so its name starts
+    with an underscore. It covers the whole world, not just one day, so some of
+    its issues may not be visible in an early snapshot yet."""
+    out_dir.mkdir(parents=True, exist_ok=True)
     (out_dir / "_issues.json").write_text(
         json.dumps(issues, indent=2, sort_keys=True) + "\n", encoding="utf-8", newline="\n"
     )
 
-    return {
-        "owners": len(owners),
-        "companies": len(companies),
-        "contacts": len(contacts),
-        "campaigns": len(campaigns),
-        "deals": len(deals),
-        "deal_stage_history": len(history),
-        "form_submissions": len(submissions),
-        "subscriptions": len(subscriptions),
-        "invoices": len(invoices),
-        "payments": len(payments),
-        "onboarding_milestones": len(milestones),
-        "health_scores": len(health_scores),
-        "tickets": len(tickets),
-        "issues": len(issues),
-    }
+
+def generate(seed: int, out_dir: Path, as_of: date = billing_cs.WORLD_END) -> dict[str, int]:
+    """Write one snapshot into out_dir and return how many rows each table has."""
+    tables, issues = build_world(seed)
+    visible = snapshot(tables, as_of)
+    write_snapshot(visible, out_dir, tables)
+    write_issues(issues, out_dir)
+
+    counts = {name.split("/")[1]: len(rows) for name, rows in visible.items()}
+    counts["issues"] = len(issues)
+    return counts
+
+
+def snapshot_folder(out_dir: Path, as_of: date) -> Path:
+    return out_dir / f"as_of={as_of.isoformat()}"
+
+
+def existing_snapshot_days(out_dir: Path) -> list[date]:
+    if not out_dir.is_dir():
+        return []
+    return sorted(date.fromisoformat(p.name.removeprefix("as_of="))
+                  for p in out_dir.glob("as_of=*") if p.is_dir())
+
+
+def generate_days(seed: int, out_dir: Path, days: int) -> list[date]:
+    """Add `days` daily snapshots after the latest one (the initial load first, if none).
+
+    Returns the days written. Folders are named as_of=YYYY-MM-DD, which doubles
+    as the batch id for ingestion.
+    """
+    tables, issues = build_world(seed)
+    written = []
+    existing = existing_snapshot_days(out_dir)
+    if not existing:
+        # First run: the initial load, so there is already a business to look at.
+        write_snapshot(snapshot(tables, INITIAL_AS_OF), snapshot_folder(out_dir, INITIAL_AS_OF), tables)
+        written.append(INITIAL_AS_OF)
+        existing = [INITIAL_AS_OF]
+    next_day = existing[-1]
+    for _ in range(days):
+        next_day += timedelta(days=1)
+        if next_day > billing_cs.WORLD_END:
+            raise SystemExit(f"the simulated world ends on {billing_cs.WORLD_END}; no more days to add")
+        write_snapshot(snapshot(tables, next_day), snapshot_folder(out_dir, next_day), tables)
+        written.append(next_day)
+
+    write_issues(issues, out_dir)
+    return written
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Generate fictional Fernway raw data.")
     parser.add_argument("--seed", type=int, default=42, help="same seed, same data")
     parser.add_argument("--out", type=Path, default=Path("data/raw"), help="output folder")
+    parser.add_argument("--days", type=int, default=0,
+                        help="add this many daily snapshots after the latest one "
+                             "(the first run also writes the initial load)")
     args = parser.parse_args()
 
-    counts = generate(args.seed, args.out)
-    for name, count in counts.items():
-        print(f"{name}: {count} rows")
-    print(f"written to {args.out}")
+    if args.days == 0 and existing_snapshot_days(args.out):
+        print("snapshots already exist; use --days N to add more days")
+        return
+    for day in generate_days(args.seed, args.out, args.days):
+        print(f"written {snapshot_folder(args.out, day)}")
 
 
 if __name__ == "__main__":
