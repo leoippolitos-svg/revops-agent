@@ -17,3 +17,6 @@ models:
       # The layer is the schema (silver.company), never a name prefix.
       +schema: silver
       +materialized: table
+    gold:
+      +schema: gold
+      +materialized: table

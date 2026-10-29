@@ -1,0 +1,82 @@
+version: 2
+
+# Gold is the business grain the agent reads. These descriptions are the catalog:
+# they say what each table and column IS. What a metric MEANS for the business
+# (who counts, what is excluded) lives in the context documents under context/.
+# All figures are as of the newest daily export loaded into bronze.
+
+models:
+  - name: mrr_monthly
+    description: Monthly recurring revenue and its movements, one row per calendar month from the first subscription to the month of the newest data. The last row is a month still in progress.
+    columns:
+      - name: month
+        description: Primary key. First day of the calendar month.
+        data_tests: [unique, not_null]
+      - name: starting_mrr_usd
+        description: Recurring revenue in US dollars at the end of the previous month. Zero for the first month.
+        data_tests: [not_null]
+      - name: new_mrr_usd
+        description: Monthly recurring revenue in US dollars of subscriptions that started during the month.
+        data_tests: [not_null]
+      - name: churned_mrr_usd
+        description: Monthly recurring revenue in US dollars of subscriptions that ended during the month.
+        data_tests: [not_null]
+      - name: ending_mrr_usd
+        description: Recurring revenue in US dollars of subscriptions in force on the last day of the month, or on the newest data day for the month in progress.
+        data_tests: [not_null]
+
+  - name: active_customer_monthly
+    description: Number of active customers at the end of each calendar month, one row per month from the first subscription to the month of the newest data.
+    columns:
+      - name: month
+        description: Primary key. First day of the calendar month.
+        data_tests: [unique, not_null]
+      - name: active_customers
+        description: Number of distinct companies with at least one subscription in force and already paid at least once on the last day of the month, or on the newest data day for the month in progress.
+        data_tests: [not_null]
+      - name: active_subscriptions
+        description: Number of subscriptions in force and already paid at least once on the same day. Always at least active_customers.
+        data_tests: [not_null]
+
+  - name: funnel_stage_monthly
+    description: Number and value of deals that entered each stage of the sales funnel in each calendar month. A stage with no entries in a month has no row.
+    columns:
+      - name: month_stage_key
+        description: Primary key. The month and the stage joined with a bar, for example 2026-01-01|discovery.
+        data_tests: [unique, not_null]
+      - name: month
+        description: First day of the calendar month in which the deals entered the stage.
+        data_tests: [not_null]
+      - name: stage
+        description: Funnel stage as stored by the CRM.
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [qualification, discovery, proposal, negotiation, closed_won, closed_lost]
+      - name: stage_order
+        description: Position of the stage in the funnel, 1 for qualification to 6 for closed_lost, for sorting.
+        data_tests: [not_null]
+      - name: deals_entered
+        description: Number of distinct deals that entered the stage during the month, according to the stage dates recorded by the CRM.
+        data_tests: [not_null]
+      - name: amount_usd_entered
+        description: Sum in US dollars of the yearly contract value of those deals.
+
+  - name: mql_monthly
+    description: Marketing qualified leads counted the way Marketing counts them and the way Sales counts them, one row per calendar month in which a form was submitted.
+    columns:
+      - name: month
+        description: Primary key. First day of the calendar month in which the forms were submitted.
+        data_tests: [unique, not_null]
+      - name: form_submissions
+        description: Number of marketing forms submitted during the month.
+        data_tests: [not_null]
+      - name: marketing_mqls
+        description: Number of those submissions that Marketing flagged as a marketing qualified lead.
+        data_tests: [not_null]
+      - name: sales_mqls
+        description: Number of those submissions whose contact Sales flagged as a marketing qualified lead.
+        data_tests: [not_null]
+      - name: conflicting_flags
+        description: Number of those submissions where the Marketing flag and the Sales flag disagree.
+        data_tests: [not_null]

@@ -1,5 +1,5 @@
 # Index of context documents. The agent reads this first and loads documents on demand.
-# status: draft | canonical | deprecated
+# status: draft | canonical | deprecated | planned (no document yet)
 
 concepts:
   - id: active-customer
@@ -8,16 +8,16 @@ concepts:
     status: draft
   - id: mrr
     path: concepts/mrr.md
-    summary: Monthly recurring revenue and its movements (new, expansion, contraction, churn)
-    status: planned
+    summary: Monthly recurring revenue and its movements (new and churned)
+    status: draft
   - id: funnel-stages
     path: concepts/funnel-stages.md
-    summary: Entry and exit criteria for each stage from lead to closed won
-    status: planned
+    summary: The stages a deal moves through, from qualification to closed won or lost
+    status: draft
   - id: mql
     path: concepts/mql.md
     summary: Marketing qualified lead, and how Marketing and Sales count it differently
-    status: planned
+    status: draft
   - id: cross-cutting-rules
     path: concepts/cross-cutting-rules.md
     summary: Test accounts, currency, time zone and other rules that apply to every analysis

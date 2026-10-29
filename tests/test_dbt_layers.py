@@ -1,4 +1,4 @@
-"""Builds bronze from generated data, runs dbt on it and checks the silver layer."""
+"""Builds bronze from generated data, runs dbt on it and checks the silver and gold layers."""
 
 import sys
 from pathlib import Path
@@ -110,3 +110,83 @@ def test_there_is_a_silver_schema_not_a_prefix(lakehouse):
     db, _ = lakehouse
     schemas = {r[0] for r in query(db, "SELECT schema_name FROM information_schema.schemata")}
     assert "silver" in schemas and "main_silver" not in schemas
+
+
+# --- Gold ---------------------------------------------------------------------
+
+def test_there_is_a_gold_schema_not_a_prefix(lakehouse):
+    db, _ = lakehouse
+    schemas = {r[0] for r in query(db, "SELECT schema_name FROM information_schema.schemata")}
+    assert "gold" in schemas and "main_gold" not in schemas
+
+
+def test_mrr_months_connect_and_add_up(lakehouse):
+    db, _ = lakehouse
+    rows = query(db, "SELECT month, starting_mrr_usd, new_mrr_usd, churned_mrr_usd, ending_mrr_usd "
+                     "FROM gold.mrr_monthly ORDER BY month")
+    assert len(rows) > 1
+    previous_ending = 0
+    for month, starting, new, churned, ending in rows:
+        assert starting == previous_ending, month
+        assert starting + new - churned == ending, month
+        previous_ending = ending
+
+
+def test_ending_mrr_of_the_last_month_matches_the_subscriptions_in_force(lakehouse):
+    db, _ = lakehouse
+    last_month_ending = query(db, "SELECT ending_mrr_usd FROM gold.mrr_monthly ORDER BY month DESC LIMIT 1")[0][0]
+    # Independent check straight from silver: subscriptions that have not ended.
+    in_force = query(db, "SELECT sum(mrr_usd) FROM silver.subscription WHERE ended_at IS NULL")[0][0]
+    assert last_month_ending == in_force
+
+
+def test_new_mrr_over_all_months_is_the_mrr_of_every_subscription(lakehouse):
+    db, _ = lakehouse
+    total_new = query(db, "SELECT sum(new_mrr_usd) FROM gold.mrr_monthly")[0][0]
+    assert total_new == query(db, "SELECT sum(mrr_usd) FROM silver.subscription")[0][0]
+
+
+def test_active_customers_are_counted_per_company(lakehouse):
+    db, _ = lakehouse
+    for month, customers, subscriptions in query(
+            db, "SELECT month, active_customers, active_subscriptions "
+                "FROM gold.active_customer_monthly ORDER BY month"):
+        assert 0 <= customers <= subscriptions, month
+    # The last month, straight from silver: a company counts once, and only if paid.
+    last = query(db, "SELECT active_customers FROM gold.active_customer_monthly ORDER BY month DESC LIMIT 1")[0][0]
+    expected = query(db, """
+        SELECT count(DISTINCT s.company_id) FROM silver.subscription s
+        WHERE s.ended_at IS NULL
+          AND EXISTS (SELECT 1 FROM silver.invoice i JOIN silver.payment p ON p.invoice_id = i.invoice_id
+                      WHERE i.subscription_id = s.subscription_id)""")[0][0]
+    assert last == expected
+
+
+def test_a_month_never_has_active_customers_without_any_mrr(lakehouse):
+    # MRR counts a subscription from its start day; an active customer also needs a
+    # first payment, so a month can have MRR and no active customer yet, never the reverse.
+    db, _ = lakehouse
+    bad = query(db, """
+        SELECT count(*) FROM gold.active_customer_monthly a JOIN gold.mrr_monthly m USING (month)
+        WHERE a.active_customers > 0 AND m.ending_mrr_usd = 0""")[0][0]
+    assert bad == 0
+
+
+def test_funnel_entries_add_up_to_the_stage_history(lakehouse):
+    db, _ = lakehouse
+    in_gold = query(db, "SELECT sum(deals_entered) FROM gold.funnel_stage_monthly")[0][0]
+    in_silver = query(db, "SELECT count(*) FROM silver.deal_stage_history")[0][0]
+    assert in_gold == in_silver
+    # Stages are numbered 1 to 6 in funnel order.
+    order = dict(query(db, "SELECT DISTINCT stage, stage_order FROM gold.funnel_stage_monthly"))
+    assert order["qualification"] == 1 and order["closed_won"] == 5 and order["closed_lost"] == 6
+
+
+def test_mql_counts_add_up_and_disagreements_are_visible(lakehouse):
+    db, _ = lakehouse
+    submissions, marketing, sales, conflicts = query(db, """
+        SELECT sum(form_submissions), sum(marketing_mqls), sum(sales_mqls), sum(conflicting_flags)
+        FROM gold.mql_monthly""")[0]
+    assert submissions == query(db, "SELECT count(*) FROM silver.form_submission")[0][0]
+    assert marketing == query(db, "SELECT count(*) FROM silver.form_submission WHERE marketing_mql_flag")[0][0]
+    assert 0 < conflicts < submissions and marketing != sales
