@@ -25,3 +25,16 @@ dbt build --profiles-dir .     # builds silver and runs its tests on data/lakeho
 - Data-quality problems are flagged, not deleted: `company.is_possible_duplicate`, `deal.has_company`, `subscription.has_matching_deal`. Deciding what to do with them is a business rule.
 - `dbt/models/silver/schema.yml` describes every model and column; those descriptions are the catalog the agent reads. Every table has a tested primary key.
 - Set `LAKEHOUSE_PATH` to point dbt at another DuckDB file.
+
+## Gold (`dbt/models/gold/`)
+
+`dbt build` also builds the gold layer, in the `gold` schema. These are the tables the agent reads.
+
+| Model | Grain | What it answers |
+|---|---|---|
+| `gold.mrr_monthly` | month | Recurring revenue: starting, new, churned, ending |
+| `gold.active_customer_monthly` | month | Companies with a paid subscription in force |
+| `gold.funnel_stage_monthly` | month and stage | Deals that entered each funnel stage |
+| `gold.mql_monthly` | month | Marketing and Sales MQL counts, side by side, and where they disagree |
+
+Figures are as of the newest daily export loaded into bronze. What each metric means for the business is in `context/concepts/` (`mrr`, `active-customer`, `funnel-stages`, `mql`); the model and column descriptions are in `dbt/models/gold/schema.yml`.
