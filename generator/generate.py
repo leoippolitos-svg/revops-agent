@@ -9,7 +9,9 @@ Writes CSV files into data/raw/<source>/ (the data/ folder is gitignored):
     data/raw/crm/deal_stage_history.csv
     data/raw/marketing/campaigns.csv
     data/raw/marketing/form_submissions.csv
-    data/raw/_issues.json          (answer key for the injected data-quality issues)
+    data/raw/billing/subscriptions.csv, invoices.csv, payments.csv
+    data/raw/cs/onboarding_milestones.csv, health_scores.csv, tickets.csv
+    data/raw/_issues.json         (answer key for the injected data-quality issues)
 
 Run from the repository root:
     python generator/generate.py --seed 42
@@ -29,6 +31,8 @@ import json
 import random
 from datetime import date, timedelta
 from pathlib import Path
+
+import billing_cs  # sits next to this file; Python finds it because we run the script from here
 
 # Simulated "today" is fixed on purpose. If we used the real date, the same seed
 # would produce different files on different days, and tests would break.
@@ -115,7 +119,12 @@ ISSUE_RATES = {
     "deal_without_company": 0.02,
     "stage_dates_out_of_order": 0.03,
     "mql_flag_conflict": 0.08,
+    "subscription_without_deal": 0.05,
 }
+
+
+# Real deal ids are small numbers; an id above this base can never be a real deal.
+ORPHAN_DEAL_ID_BASE = 900_000
 
 
 def random_day(rng: random.Random) -> date:
@@ -282,7 +291,7 @@ def pick(rng: random.Random, ids: list, kind: str) -> list:
     return sorted(rng.sample(ids, count))
 
 
-def inject_issues(rng, companies, contacts, deals, history, submissions) -> list[dict]:
+def inject_issues(rng, companies, contacts, deals, history, submissions, subscriptions) -> list[dict]:
     """Break the clean data on purpose and return the answer key.
 
     This runs after all clean data exists and uses its own random generator, so
@@ -332,6 +341,14 @@ def inject_issues(rng, companies, contacts, deals, history, submissions) -> list
         issues.append({"type": "mql_flag_conflict", "table": "crm/contacts",
                        "row_id": contact_id, "detail": "sales_mql_flag differs from marketing_mql_flag"})
 
+    # 5. Subscriptions whose deal does not exist: point them at a deal id that is
+    #    not in the CRM (a deal deleted, or a subscription created by hand).
+    sub_by_id = {s["subscription_id"]: s for s in subscriptions}
+    for subscription_id in pick(rng, list(sub_by_id), "subscription_without_deal"):
+        sub_by_id[subscription_id]["deal_id"] = ORPHAN_DEAL_ID_BASE + subscription_id
+        issues.append({"type": "subscription_without_deal", "table": "billing/subscriptions",
+                       "row_id": subscription_id, "detail": "deal_id does not exist in crm/deals"})
+
     return issues
 
 
@@ -352,6 +369,7 @@ def generate(seed: int, out_dir: Path) -> dict[str, int]:
     # their own generator: adding new data never changes them.
     rng = random.Random(seed)
     crm_rng = random.Random(f"{seed}:crm-marketing")
+    billing_rng = random.Random(f"{seed}:billing-cs")
     issue_rng = random.Random(f"{seed}:issues")
 
     owners = make_owners(rng)
@@ -363,7 +381,15 @@ def generate(seed: int, out_dir: Path) -> dict[str, int]:
     submissions = make_form_submissions(crm_rng, contacts, campaigns)
     add_sales_mql_flag(contacts, submissions)
 
-    issues = inject_issues(issue_rng, companies, contacts, deals, history, submissions)
+    # Billing and Customer Success come from the clean deals, so they are built
+    # before any issue is injected into those deals.
+    subscriptions = billing_cs.make_subscriptions(billing_rng, deals, companies)
+    invoices, payments = billing_cs.make_invoices_and_payments(billing_rng, subscriptions)
+    milestones = billing_cs.make_onboarding_milestones(billing_rng, subscriptions)
+    health_scores = billing_cs.make_health_scores(billing_rng, subscriptions)
+    tickets = billing_cs.make_tickets(billing_rng, subscriptions)
+
+    issues = inject_issues(issue_rng, companies, contacts, deals, history, submissions, subscriptions)
 
     write_csv(out_dir / "crm" / "owners.csv", owners)
     write_csv(out_dir / "crm" / "companies.csv", companies)
@@ -372,6 +398,12 @@ def generate(seed: int, out_dir: Path) -> dict[str, int]:
     write_csv(out_dir / "crm" / "deal_stage_history.csv", history)
     write_csv(out_dir / "marketing" / "campaigns.csv", campaigns)
     write_csv(out_dir / "marketing" / "form_submissions.csv", submissions)
+    write_csv(out_dir / "billing" / "subscriptions.csv", subscriptions)
+    write_csv(out_dir / "billing" / "invoices.csv", invoices)
+    write_csv(out_dir / "billing" / "payments.csv", payments)
+    write_csv(out_dir / "cs" / "onboarding_milestones.csv", milestones)
+    write_csv(out_dir / "cs" / "health_scores.csv", health_scores)
+    write_csv(out_dir / "cs" / "tickets.csv", tickets)
 
     # The answer key is not a source system file; the leading underscore keeps it
     # apart from the source folders.
@@ -387,6 +419,12 @@ def generate(seed: int, out_dir: Path) -> dict[str, int]:
         "deals": len(deals),
         "deal_stage_history": len(history),
         "form_submissions": len(submissions),
+        "subscriptions": len(subscriptions),
+        "invoices": len(invoices),
+        "payments": len(payments),
+        "onboarding_milestones": len(milestones),
+        "health_scores": len(health_scores),
+        "tickets": len(tickets),
         "issues": len(issues),
     }
 
