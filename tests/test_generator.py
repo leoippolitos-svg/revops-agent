@@ -1,9 +1,10 @@
-"""Tests for generator/generate.py (part 1: base entities)."""
+"""Tests for generator/generate.py and generator/billing_cs.py."""
 
 import csv
 import hashlib
 import json
 import sys
+from datetime import date, timedelta
 from pathlib import Path
 
 # The generator is a script, not an installed package, so we add its folder to
@@ -25,7 +26,8 @@ def read_issues(folder: Path) -> list[dict]:
 def folder_hash(folder: Path) -> str:
     """One hash for every file in a folder, so we can compare two runs."""
     digest = hashlib.sha256()
-    for path in sorted(folder.rglob("*.csv")) + [folder / "_issues.json"]:
+    extra = [folder / "_issues.json"] if (folder / "_issues.json").is_file() else []
+    for path in sorted(folder.rglob("*.csv")) + extra:
         digest.update(path.relative_to(folder).as_posix().encode())
         digest.update(path.read_bytes())
     return digest.hexdigest()
@@ -304,3 +306,116 @@ def test_tickets_close_after_they_open(tmp_path):
     assert tickets
     for ticket in tickets:
         assert ticket["closed_at"] == "" or ticket["closed_at"] >= ticket["opened_at"]
+
+
+# --- Simulated time: snapshots as of a day, and --days ---------------------------
+
+# One id column per table, used to follow rows from one day to the next.
+KEYS = {
+    "crm/companies": "company_id", "crm/contacts": "contact_id", "crm/deals": "deal_id",
+    "crm/deal_stage_history": "history_id", "marketing/form_submissions": "submission_id",
+    "billing/subscriptions": "subscription_id", "billing/invoices": "invoice_id",
+    "billing/payments": "payment_id", "cs/onboarding_milestones": "milestone_id",
+    "cs/health_scores": "score_id", "cs/tickets": "ticket_id",
+}
+DAY = date(2025, 9, 30)
+
+
+def ids(folder: Path, name: str) -> set[str]:
+    return {r[KEYS[name]] for r in read_rows(folder / f"{name}.csv")}
+
+
+def test_a_snapshot_has_no_row_dated_after_its_day(tmp_path):
+    generate.generate(seed=42, out_dir=tmp_path, as_of=DAY)
+    for name, column in generate.EXISTS_FROM.items():
+        for row in read_rows(tmp_path / f"{name}.csv"):
+            assert row[column] <= DAY.isoformat(), name
+
+
+def test_an_early_snapshot_still_writes_every_file_with_its_header(tmp_path):
+    # Before the first subscription exists some tables are empty, not missing.
+    generate.generate(seed=42, out_dir=tmp_path, as_of=date(2025, 1, 2))
+    assert (tmp_path / "billing" / "subscriptions.csv").read_text().startswith("subscription_id,")
+    assert read_rows(tmp_path / "billing" / "subscriptions.csv") == []
+
+
+def test_later_snapshots_only_add_rows(tmp_path):
+    generate.generate(seed=42, out_dir=tmp_path / "a", as_of=DAY)
+    generate.generate(seed=42, out_dir=tmp_path / "b", as_of=DAY + timedelta(days=45))
+    for name in KEYS:
+        assert ids(tmp_path / "a", name) <= ids(tmp_path / "b", name), name
+
+
+def test_references_hold_in_a_snapshot_taken_mid_way(tmp_path):
+    generate.generate(seed=42, out_dir=tmp_path, as_of=DAY)
+    companies = ids(tmp_path, "crm/companies")
+    deals = ids(tmp_path, "crm/deals")
+    subs = ids(tmp_path, "billing/subscriptions")
+    invoices = ids(tmp_path, "billing/invoices")
+    assert all(r["company_id"] in companies for r in read_rows(tmp_path / "crm" / "contacts.csv"))
+    assert all(r["company_id"] == "" or r["company_id"] in companies
+               for r in read_rows(tmp_path / "crm" / "deals.csv"))
+    assert all(r["deal_id"] in deals for r in read_rows(tmp_path / "crm" / "deal_stage_history.csv"))
+    assert all(r["subscription_id"] in subs for r in read_rows(tmp_path / "billing" / "invoices.csv"))
+    assert all(r["invoice_id"] in invoices for r in read_rows(tmp_path / "billing" / "payments.csv"))
+    assert all(r["company_id"] in companies for r in read_rows(tmp_path / "billing" / "subscriptions.csv"))
+
+
+def test_deal_stage_is_the_last_stage_seen_so_far(tmp_path):
+    generate.generate(seed=42, out_dir=tmp_path, as_of=DAY)
+    last = {}
+    for row in read_rows(tmp_path / "crm" / "deal_stage_history.csv"):
+        last[row["deal_id"]] = row
+    deals = read_rows(tmp_path / "crm" / "deals.csv")
+    assert any(d["closed_at"] == "" for d in deals) and any(d["closed_at"] != "" for d in deals)
+    for deal in deals:
+        assert deal["stage"] == last[deal["deal_id"]]["stage"]
+        closed = deal["stage"] in (generate.WON, generate.LOST)
+        assert (deal["closed_at"] != "") == closed
+
+
+def test_invoice_status_follows_payments_and_due_dates(tmp_path):
+    generate.generate(seed=42, out_dir=tmp_path, as_of=DAY)
+    paid = {p["invoice_id"] for p in read_rows(tmp_path / "billing" / "payments.csv")}
+    for invoice in read_rows(tmp_path / "billing" / "invoices.csv"):
+        if invoice["invoice_id"] in paid:
+            assert invoice["status"] == "paid"
+        elif invoice["due_at"] > DAY.isoformat():
+            assert invoice["status"] == "open"
+        else:
+            assert invoice["status"] == "overdue"
+
+
+def test_churn_only_shows_once_its_date_is_reached(tmp_path):
+    generate.generate(seed=42, out_dir=tmp_path, as_of=DAY)
+    for sub in read_rows(tmp_path / "billing" / "subscriptions.csv"):
+        if sub["status"] == "churned":
+            assert sub["ended_at"] <= DAY.isoformat()
+        else:
+            assert sub["ended_at"] == ""
+
+
+def test_days_writes_the_initial_load_then_one_folder_per_day(tmp_path):
+    first = generate.generate_days(seed=42, out_dir=tmp_path, days=2)
+    assert first == [generate.INITIAL_AS_OF,
+                     generate.INITIAL_AS_OF + timedelta(days=1),
+                     generate.INITIAL_AS_OF + timedelta(days=2)]
+    # A second run continues after the latest day instead of starting again.
+    second = generate.generate_days(seed=42, out_dir=tmp_path, days=1)
+    assert second == [generate.INITIAL_AS_OF + timedelta(days=3)]
+    folders = sorted(p.name for p in tmp_path.glob("as_of=*"))
+    assert folders == [f"as_of={d.isoformat()}" for d in first + second]
+    assert (tmp_path / "_issues.json").is_file()
+
+
+def test_the_same_days_give_identical_files(tmp_path):
+    generate.generate_days(seed=42, out_dir=tmp_path / "a", days=2)
+    generate.generate_days(seed=42, out_dir=tmp_path / "b", days=2)
+    assert folder_hash(tmp_path / "a") == folder_hash(tmp_path / "b")
+
+
+def test_adding_days_never_changes_a_day_already_written(tmp_path):
+    generate.generate_days(seed=42, out_dir=tmp_path / "a", days=1)
+    generate.generate_days(seed=42, out_dir=tmp_path / "b", days=3)
+    day = f"as_of={(generate.INITIAL_AS_OF + timedelta(days=1)).isoformat()}"
+    assert folder_hash(tmp_path / "a" / day) == folder_hash(tmp_path / "b" / day)
