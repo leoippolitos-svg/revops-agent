@@ -11,7 +11,7 @@ Medallion lakehouse · context documents · intent routing · RAG with evals · 
 ![Python](https://img.shields.io/badge/python-3.12-3776AB?logo=python&logoColor=white)
 ![DuckDB](https://img.shields.io/badge/DuckDB-lakehouse-FFF000?logo=duckdb&logoColor=black)
 ![dbt](https://img.shields.io/badge/dbt-transformations-FF694B?logo=dbt&logoColor=white)
-![Status](https://img.shields.io/badge/status-phase%200%20of%206-orange)
+![Status](https://img.shields.io/badge/status-phase%200%20complete-brightgreen)
 
 [Why](#why) · [How it works](#how-it-works) · [Architecture](#architecture) · [Project structure](#project-structure) · [Quick start](#quick-start) · [Roadmap](#roadmap) · [Decisions](#design-decisions)
 
