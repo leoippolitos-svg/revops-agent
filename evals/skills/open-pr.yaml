@@ -1,0 +1,8 @@
+should_trigger:
+  - "open a PR for this analysis"
+  - "ship this change"
+  - "save this work"
+should_not_trigger:
+  - "review this pull request"
+  - "define active customer"
+  - "create a new skill"

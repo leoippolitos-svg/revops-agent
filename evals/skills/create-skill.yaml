@@ -1,0 +1,8 @@
+should_trigger:
+  - "create a skill for weekly audits"
+  - "turn this workflow into a skill"
+  - "this skill never triggers, improve it"
+should_not_trigger:
+  - "write a context doc for MRR"
+  - "review my PR"
+  - "add a gold model"

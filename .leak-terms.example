@@ -1,0 +1,3 @@
+# Copy to .leak-terms (gitignored) and list one real term per line:
+# company names, client names, internal table or field names.
+# This example file is committed; the real one never is.

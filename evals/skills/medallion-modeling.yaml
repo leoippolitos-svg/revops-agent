@@ -1,0 +1,8 @@
+should_trigger:
+  - "add a gold table for monthly conversion"
+  - "clean the CRM deals source"
+  - "create a new metric table"
+should_not_trigger:
+  - "define MQL"
+  - "build a pipeline report"
+  - "open a PR"

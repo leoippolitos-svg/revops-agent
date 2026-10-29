@@ -1,0 +1,8 @@
+should_trigger:
+  - "define what counts as an MQL"
+  - "the agent counted trials as customers, fix it"
+  - "add a business rule for test accounts"
+should_not_trigger:
+  - "fix the CI workflow"
+  - "rename this Python function"
+  - "open a PR for this"

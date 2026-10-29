@@ -1,0 +1,8 @@
+should_trigger:
+  - "why did conversion drop last month?"
+  - "where is the funnel leaking for enterprise?"
+  - "which stage should we fix first?"
+should_not_trigger:
+  - "how many SQLs did we get in September?"
+  - "what counts as an active customer?"
+  - "build me a pipeline review deck"

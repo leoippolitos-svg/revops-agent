@@ -1,0 +1,8 @@
+should_trigger:
+  - "build a small app for SDR routing"
+  - "create an internal tool to check deal health"
+  - "make a form app for event leads"
+should_not_trigger:
+  - "add a gold table"
+  - "write a context doc"
+  - "review this PR"

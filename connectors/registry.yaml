@@ -1,0 +1,59 @@
+# Every external connection, live or simulated. See docs/standards/connectors.md.
+# status: live | simulated | documented
+
+connectors:
+  - id: lakehouse
+    system: DuckDB (local file)
+    status: live
+    access: read
+    scopes: [gold schema only]
+    auth: local file, opened read-only
+    consumers: [agent, mcp_server, apps]
+    owner: RevOps
+
+  - id: anthropic
+    system: Claude API
+    status: live
+    access: read
+    scopes: [messages]
+    auth: ANTHROPIC_API_KEY in .env
+    consumers: [agent]
+    owner: RevOps
+
+  - id: crm
+    system: CRM (HubSpot-like)
+    status: simulated
+    access: read
+    scopes: [companies, contacts, deals, deal stage history]
+    auth: private app token (documented only)
+    consumers: [pipeline]
+    owner: RevOps
+
+  - id: billing
+    system: Billing platform
+    status: simulated
+    access: read
+    scopes: [subscriptions, invoices, payments]
+    auth: API key (documented only)
+    consumers: [pipeline]
+    owner: Finance
+
+  - id: google-workspace
+    system: Google Sheets and Drive
+    status: documented
+    access: read-write
+    scopes: [one shared folder for exported reports]
+    auth: OAuth service account (documented only)
+    consumers: [destinations]
+    owner: RevOps
+    note: write access limited to one folder; needs an ADR before going live
+
+  - id: slack
+    system: Slack
+    status: documented
+    access: read-write
+    scopes: ["post to #revops-alerts"]
+    auth: bot token (documented only)
+    consumers: [pipeline checks, automations/audits]
+    owner: RevOps
+    note: simulated by writing alerts to observability/logs

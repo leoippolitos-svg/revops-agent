@@ -1,0 +1,8 @@
+should_trigger:
+  - "build me a pipeline review for Monday"
+  - "make a one-page report on churn I can share"
+  - "turn this analysis into a slide"
+should_not_trigger:
+  - "why did conversion drop?"
+  - "what is our MRR today?"
+  - "did we analyze churn before?"

@@ -1,0 +1,8 @@
+should_trigger:
+  - "review this PR"
+  - "check my changes before merge"
+  - "is PR 12 ready to merge?"
+should_not_trigger:
+  - "open a PR"
+  - "write the record"
+  - "build a report"
