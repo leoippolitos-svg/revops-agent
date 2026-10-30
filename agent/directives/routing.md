@@ -20,4 +20,4 @@ The router classifies each question into one intent. Each intent sets the tools,
 
 ## Ambiguity
 
-If two intents fit, pick the one that needs fewer tools and say which assumption you made. If none fits, use `out_of_scope`.
+If two intents fit, pick the one that needs fewer tools and say which assumption you made. If none fits and the question is about revenue, use `metric_lookup` and say that you read it as a lookup. If it is not about revenue, or asks you to change or send something, use `out_of_scope`. The rules are in `agent/router.py`.

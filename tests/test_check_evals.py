@@ -60,3 +60,23 @@ def test_routing_skill_without_a_folder_is_reported(tmp_path):
     routing.write_text(routing.read_text(encoding="utf-8").replace("trend-analysis", "ghost-skill"), encoding="utf-8")
     errors = check_evals.check(root)
     assert any("skill 'ghost-skill' has no folder" in e for e in errors)
+
+
+def test_a_held_out_question_that_is_also_a_tuning_question_is_reported(tmp_path):
+    root = copy_repo(tmp_path)
+    tuning = yaml.safe_load((root / "evals" / "router_cases.yaml").read_text(encoding="utf-8"))["cases"][0]
+    path = root / "evals" / "router_heldout.yaml"
+    data = yaml.safe_load(path.read_text(encoding="utf-8"))
+    data["cases"][0]["question"] = tuning["question"]
+    path.write_text(yaml.safe_dump(data), encoding="utf-8")
+    assert any("is also in router_cases.yaml" in e for e in check_evals.check(root))
+
+
+def test_a_missing_or_short_held_out_file_is_reported(tmp_path):
+    root = copy_repo(tmp_path)
+    path = root / "evals" / "router_heldout.yaml"
+    data = yaml.safe_load(path.read_text(encoding="utf-8"))
+    path.write_text(yaml.safe_dump({"cases": data["cases"][:5]}), encoding="utf-8")
+    assert any("the minimum is 20" in e for e in check_evals.check(root))
+    path.unlink()
+    assert any("router_heldout.yaml: file is missing" in e for e in check_evals.check(root))
