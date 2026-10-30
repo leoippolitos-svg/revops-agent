@@ -8,7 +8,7 @@ connectors:
     access: read
     scopes: [gold schema only]
     auth: local file, opened read-only
-    consumers: [agent, mcp_server, apps]
+    consumers: [agent, mcp_server, apps, automations]
     owner: RevOps
 
   - id: anthropic
