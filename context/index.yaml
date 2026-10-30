@@ -22,6 +22,10 @@ concepts:
     path: concepts/lead-routing.md
     summary: Which owner receives a new marketing qualified lead, by segment and capacity
     status: canonical
+  - id: closed-won-provisioning
+    path: concepts/closed-won-provisioning.md
+    summary: When a signed deal gets a workspace and onboarding kickoff, and what provisioning does not do
+    status: canonical
   - id: cross-cutting-rules
     path: concepts/cross-cutting-rules.md
     summary: Currency, dates, internal accounts, data-quality flags and sources of truth that apply to every analysis

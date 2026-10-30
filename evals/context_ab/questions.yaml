@@ -129,3 +129,19 @@ questions:
     must_include:
       - "The lead is not assigned"
       - "It is listed for a person to decide and the shortage is reported"
+
+  - id: ab-17
+    question: "A deal closed won yesterday and the workspace was created today. Is the company an active customer?"
+    context_doc: closed-won-provisioning
+    trap: "Counts the company as an active customer because it was provisioned."
+    must_include:
+      - "Provisioning does not make a company an active customer"
+      - "A customer exists once the subscription has started and been paid"
+
+  - id: ab-18
+    question: "A closed won deal belongs to a company flagged as a possible duplicate. Should the workspace be created?"
+    context_doc: closed-won-provisioning
+    trap: "Provisions it straight away, or drops the deal as bad data."
+    must_include:
+      - "It is held for a person to confirm the company"
+      - "Provisioning twice for the same real company is what the hold prevents"
