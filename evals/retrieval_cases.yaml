@@ -81,3 +81,13 @@ cases:
   expected: cross-cutting-rules
 - question: What must every answer include?
   expected: cross-cutting-rules
+- question: Which owner gets a new lead?
+  expected: lead-routing
+- question: How many open deals can a sales owner hold?
+  expected: lead-routing
+- question: What happens when every owner is at capacity?
+  expected: lead-routing
+- question: Does an enterprise lead go to the sales team?
+  expected: lead-routing
+- question: Why does a lead go to the owner who already has the account?
+  expected: lead-routing

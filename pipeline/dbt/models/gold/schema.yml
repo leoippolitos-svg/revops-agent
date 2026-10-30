@@ -168,3 +168,19 @@ models:
         description: Median number of days between entering and leaving the stage, for deals with consistent dates. Empty when every exit in the month is out of order.
       - name: avg_days_in_stage
         description: Average number of days between entering and leaving the stage, same deals as the median.
+
+  - name: owner_workload
+    description: Open deals per owner as of the newest daily export, one row per owner, including owners with no open deal. It holds no names or contact details.
+    columns:
+      - name: owner_id
+        description: Primary key. Identifier of the owner in the CRM.
+        data_tests: [unique, not_null]
+      - name: team
+        description: Team the owner belongs to, as stored by the CRM, for example sdr, sales or enterprise.
+        data_tests: [not_null]
+      - name: open_deals
+        description: Number of deals owned by this owner that are neither closed_won nor closed_lost.
+        data_tests: [not_null]
+      - name: open_amount_usd
+        description: Sum in US dollars of the yearly contract value of those open deals. Zero when there are none.
+        data_tests: [not_null]
