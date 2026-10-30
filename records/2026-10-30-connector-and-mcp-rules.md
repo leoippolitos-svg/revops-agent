@@ -16,6 +16,7 @@ The registry rules were prose. A read-write connector marked live, a secret past
 ## Result or decision
 - The check enforces: required fields and unique ids, valid status and access, non-empty scopes, no secret-shaped `auth`, no live read-write connector, a note pointing to the ADR for every read-write connector, and no read-write connector consumed by `agent` or `mcp_server`.
 - It found one real gap on its first run: the Slack entry was read-write with no ADR pointer. Its note now says an ADR is needed before going live.
+- CI's gitleaks flagged the fake key in this PR's own secret test. It was not a real secret. The test now builds the string at run time, and `.gitleaksignore` holds the one fingerprint of the first commit, because that commit stays in the PR history.
 - The MCP server is specified, not built. Its security tests are listed so the code is judged against them.
 
 ## Rules and context changed
