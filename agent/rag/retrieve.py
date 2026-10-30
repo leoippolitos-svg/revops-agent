@@ -75,6 +75,10 @@ def load_chunks(context_dir: Path) -> list[Chunk]:
         path = context_dir / entry["path"]
         if entry["status"] == "planned" or not path.is_file():
             continue
+        # The tool promises to read context/ only, so an index entry that points outside it
+        # (a "..", an absolute path) is an error, not a file to open.
+        if not path.resolve().is_relative_to(context_dir.resolve()):
+            raise ValueError(f"index entry '{entry['id']}' points outside the context folder")
         front, sections = split_document(path.read_text(encoding="utf-8"))
         for heading, body in sections:
             chunks.append(Chunk(entry["id"], entry["status"], front.get("title", entry["id"]), heading, body))

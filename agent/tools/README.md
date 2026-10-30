@@ -14,7 +14,7 @@ Four tools, all read-only (ADR-0006). A tool that can write does not belong here
 | Tool | Input | Returns | Hard rules |
 |---|---|---|---|
 | `query_gold` | one SELECT statement | rows, at most 200 | Opens the lakehouse read-only. Only the `gold` schema may be read. One statement per call. Anything that is not a SELECT is rejected before it reaches the database. |
-| `search_context` | question, k (default 3) | the k best context sections with document id and status | Searches `context/` only. Draft and deprecated documents are returned with their status so the answer can say so. |
+| `search_context` | question (at most 500 characters), k (default 3, from 1 to 5) | the k best context sections with document id, status and, for draft or deprecated documents, a warning | Searches `context/` only. Draft and deprecated documents are returned with their status so the answer can say so. |
 | `get_catalog` | model name | the model and column descriptions | Reads the dbt `schema.yml` files, never the database. |
 | `search_records` | question, k (default 3) | the k best past records from `records/` | Returns the record title, date and conclusion. |
 
@@ -28,4 +28,4 @@ Every question logs: intent, tier, tools called, token counts and latency, with 
 
 ## Status
 
-These are the rules, and one tool has code. The retrieval behind `search_context` is built (`agent/rag/retrieve.py`) and scored by `python evals/run_retrieval.py`. `query_gold` is built (`agent/tools/query_gold.py`, ADR-0013, proved by `tests/test_query_gold.py`). The `search_context` wrapper and the other two tools are not built. Code must pass `evals/` before it is trusted.
+These are the rules, and two tools have code. The retrieval behind `search_context` is built (`agent/rag/retrieve.py`) and scored by `python evals/run_retrieval.py`. `query_gold` is built (`agent/tools/query_gold.py`, ADR-0013, proved by `tests/test_query_gold.py`). `search_context` is built (`agent/tools/search_context.py`, `tests/test_search_context.py`). `get_catalog` and `search_records` are not built. Code must pass `evals/` before it is trusted.
