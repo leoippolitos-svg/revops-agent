@@ -2,6 +2,7 @@
 
 | Path | Contents |
 |---|---|
+| [`agent.py`](agent.py) | The loop: route, call the allowed tools within the budget, answer, log. Built and tested with a scripted model (ADR-0015); no real model adapter exists. `python agent/agent.py --plan "question"` shows the route without calling a model |
 | `directives/` | `AGENT.md` (identity and protocol), `routing.md` (intents), `fallback.md` (edge cases) |
 | `skills/` | Business skills the agent loads on demand |
 | [`router.py`](router.py) | Intent classifier. Built: rules in plain Python, tools, tier and skill read from `directives/routing.md` (ADR-0014). Scored by `python evals/run_router.py` |
