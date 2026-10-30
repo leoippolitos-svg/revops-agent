@@ -1,0 +1,8 @@
+should_trigger:
+  - "run the evals"
+  - "measure retrieval quality after the context change"
+  - "check router accuracy"
+should_not_trigger:
+  - "review this pull request"
+  - "create a new skill for audits"
+  - "what is our MRR today?"

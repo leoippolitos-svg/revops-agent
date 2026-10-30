@@ -1,0 +1,8 @@
+should_trigger:
+  - "build an automation that routes new leads by segment"
+  - "I want a weekly scheduled check for duplicate companies"
+  - "create an alert when a deal has no company"
+should_not_trigger:
+  - "analyze the funnel drop in September"
+  - "register a new Slack integration"
+  - "build a small dashboard app for the sales team"

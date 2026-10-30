@@ -1,0 +1,8 @@
+should_trigger:
+  - "connect the pipeline to a new billing API"
+  - "we need a service account for Google Sheets"
+  - "add a Slack integration for alerts"
+should_not_trigger:
+  - "fix the dbt test that is failing"
+  - "write the context document for MRR"
+  - "run the evals"

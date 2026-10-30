@@ -1,0 +1,8 @@
+should_trigger:
+  - "the daily check failed, can you look?"
+  - "the pipeline broke after the last load"
+  - "numbers look wrong after the load, rows disappeared"
+should_not_trigger:
+  - "add a new silver model for tickets"
+  - "why did conversion drop last month?"
+  - "open a pull request for this"
