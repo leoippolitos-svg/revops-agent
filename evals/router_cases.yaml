@@ -1,0 +1,83 @@
+# Router cases: each question must be classified into its intent (agent/directives/routing.md).
+# Target accuracy 0.90 (docs/standards/rag.md). Validated by tools/check_evals.py.
+cases:
+- question: How many MQLs did we get in September?
+  intent: metric_lookup
+- question: What was ending MRR last month?
+  intent: metric_lookup
+- question: How many active customers do we have today?
+  intent: metric_lookup
+- question: How many deals entered proposal in August?
+  intent: metric_lookup
+- question: What was new MRR in July?
+  intent: metric_lookup
+- question: How has MRR moved this year?
+  intent: trend_analysis
+- question: Are MQLs going up or down since January?
+  intent: trend_analysis
+- question: Show the customer count trend by month
+  intent: trend_analysis
+- question: Is churned MRR getting worse over the last quarters?
+  intent: trend_analysis
+- question: How has funnel volume changed in the last six months?
+  intent: trend_analysis
+- question: Why did conversion drop last month?
+  intent: funnel_diagnosis
+- question: Where is the funnel leaking?
+  intent: funnel_diagnosis
+- question: Which stage should we fix first?
+  intent: funnel_diagnosis
+- question: Why did fewer deals reach negotiation in September?
+  intent: funnel_diagnosis
+- question: What explains the drop in closed won deals?
+  intent: funnel_diagnosis
+- question: What counts as an active customer?
+  intent: definition_question
+- question: How do we define an MQL?
+  intent: definition_question
+- question: What is the difference between new and expansion MRR?
+  intent: definition_question
+- question: When does a deal enter discovery?
+  intent: definition_question
+- question: Which flag is canonical for MQLs?
+  intent: definition_question
+- question: Why don't these two customer counts match?
+  intent: data_quality
+- question: Why does MRR differ from the invoices total?
+  intent: data_quality
+- question: Are there duplicate companies in the data?
+  intent: data_quality
+- question: Why are some deals missing a company?
+  intent: data_quality
+- question: Why did a number change without any business change?
+  intent: data_quality
+- question: Did we analyze churn in enterprise before?
+  intent: past_work_lookup
+- question: Has anyone looked at the MQL flag conflicts?
+  intent: past_work_lookup
+- question: What did we decide about the active customer definition?
+  intent: past_work_lookup
+- question: Is there a previous analysis of the funnel drop?
+  intent: past_work_lookup
+- question: What work was done on the catalog?
+  intent: past_work_lookup
+- question: Build me a pipeline review for Monday
+  intent: report_request
+- question: Make an HTML report of MRR by month
+  intent: report_request
+- question: Prepare a funnel summary for the leadership meeting
+  intent: report_request
+- question: Create a one-page customer health report
+  intent: report_request
+- question: Write a monthly revenue report
+  intent: report_request
+- question: Update this deal to closed won
+  intent: out_of_scope
+- question: Delete the duplicate companies
+  intent: out_of_scope
+- question: Send the report to the sales team
+  intent: out_of_scope
+- question: What is the weather in Lisbon?
+  intent: out_of_scope
+- question: Write me a poem about revenue
+  intent: out_of_scope
