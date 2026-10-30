@@ -1,0 +1,8 @@
+should_trigger:
+  - "analyze why proposals dropped in September"
+  - "can you investigate the MQL flag conflicts?"
+  - "find out why MRR growth slowed"
+should_not_trigger:
+  - "add a new gold table for churn"
+  - "what counts as an active customer?"
+  - "build a lead routing automation"
