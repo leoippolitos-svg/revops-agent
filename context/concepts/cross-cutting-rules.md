@@ -3,7 +3,7 @@ id: cross-cutting-rules
 title: Cross-cutting rules
 owner_team: RevOps
 status: canonical
-last_reviewed: 2026-10-29
+last_reviewed: 2026-10-30
 related: [active-customer, mrr, funnel-stages, mql]
 ---
 
@@ -23,6 +23,7 @@ These are the rules that apply to every analysis, whatever the metric: currency,
 - Duplicate companies: a company record with the same name as another, ignoring letter case, is flagged by [[silver.company.is_possible_duplicate]]. Flagged records are never deleted. When counting companies, count flagged records separately and say so.
 - Deals without a company: flagged by [[silver.deal.has_company]]. They stay in the funnel and are listed for the owner to fix. They cannot be attributed to a segment or a country.
 - Subscriptions without a deal: flagged by [[silver.subscription.has_matching_deal]]. They still count for revenue and customers, because billing is the source of truth.
+- How many records carry each flag above, as of the newest export, is in [[gold.data_quality_snapshot]]. Read the counts from there: the flagged records themselves stay in silver. Closed won deals with no subscription ([[gold.data_quality_snapshot.closed_won_without_subscription]]) include deals won in the last two weeks, because a subscription starts within two weeks of the win, so a small number is normal.
 - Every answer states the definition it used, links the context document, names the source tables and lists the caveats that apply.
 
 ## Gotchas

@@ -80,3 +80,34 @@ models:
       - name: conflicting_flags
         description: Number of those submissions where the Marketing flag and the Sales flag disagree.
         data_tests: [not_null]
+
+  - name: data_quality_snapshot
+    description: One row with the number of records that carry each data-quality flag, as of the newest daily export. It exposes counts only; the flagged records themselves stay in silver.
+    columns:
+      - name: as_of
+        description: Primary key. Date of the newest daily export loaded.
+        data_tests: [unique, not_null]
+      - name: companies
+        description: Number of company records, duplicates included.
+        data_tests: [not_null]
+      - name: possible_duplicate_companies
+        description: Number of company records whose name matches another record's name, ignoring letter case. Both records of a pair are counted.
+        data_tests: [not_null]
+      - name: deals
+        description: Number of deals, whatever their stage.
+        data_tests: [not_null]
+      - name: deals_without_company
+        description: Number of deals the CRM holds with no company attached.
+        data_tests: [not_null]
+      - name: subscriptions
+        description: Number of subscriptions, whatever their status.
+        data_tests: [not_null]
+      - name: subscriptions_without_deal
+        description: Number of subscriptions whose deal is not in the CRM.
+        data_tests: [not_null]
+      - name: closed_won_deals
+        description: Number of deals in the closed_won stage.
+        data_tests: [not_null]
+      - name: closed_won_without_subscription
+        description: Number of closed_won deals that no subscription points to. It includes deals won in the last two weeks, because a subscription starts within two weeks of the win.
+        data_tests: [not_null]
