@@ -96,7 +96,7 @@ revops-agent/
 ├── context/          # Context documents, one business concept each, and their index
 ├── agent/
 │   ├── directives/   # AGENT.md, routing.md, fallback.md
-│   └── skills/       # Business skills: funnel-diagnosis, html-report
+│   └── skills/       # Business skills: funnel-diagnosis, trend-analysis, data-discrepancy, html-report
 ├── mcp_server/       # Read-only MCP server over gold
 ├── evals/            # Retrieval, routing and skill-trigger test sets
 ├── records/          # One record per merged pull request (operational memory)

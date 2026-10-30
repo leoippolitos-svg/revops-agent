@@ -52,3 +52,11 @@ def test_duplicated_question_is_reported(tmp_path):
     data["cases"][1]["question"] = data["cases"][0]["question"]
     path.write_text(yaml.safe_dump(data), encoding="utf-8")
     assert any("duplicated question" in e for e in check_evals.check(root))
+
+
+def test_routing_skill_without_a_folder_is_reported(tmp_path):
+    root = copy_repo(tmp_path)
+    routing = root / "agent" / "directives" / "routing.md"
+    routing.write_text(routing.read_text(encoding="utf-8").replace("trend-analysis", "ghost-skill"), encoding="utf-8")
+    errors = check_evals.check(root)
+    assert any("skill 'ghost-skill' has no folder" in e for e in errors)

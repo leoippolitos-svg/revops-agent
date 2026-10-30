@@ -11,6 +11,7 @@ an intent or a document id fails in CI instead of silently scoring zero later:
   2. router_cases.yaml: at least 40 cases, every intent is one listed in
      agent/directives/routing.md, and every intent has at least one case.
   3. No question appears twice in the same file.
+  4. Every skill named in routing.md exists in agent/skills/.
 """
 
 import re
@@ -55,11 +56,26 @@ def check_file(root: Path, name: str, key: str, allowed: set[str], noun: str) ->
     return errors
 
 
+def routing_skills(root: Path) -> set[str]:
+    """Skills are the last column of the routing table; a dash means none."""
+    text = (root / "agent" / "directives" / "routing.md").read_text(encoding="utf-8")
+    rows = re.findall(r"^\| `[a-z_]+` \|.*\| ([^|]+) \|\s*$", text, flags=re.MULTILINE)
+    return {r.strip() for r in rows} - {"—"}
+
+
+def skill_errors(root: Path) -> list[str]:
+    """A routing rule that names a skill with no folder would send the agent nowhere."""
+    return [f"agent/directives/routing.md: skill {name!r} has no folder in agent/skills/"
+            for name in sorted(routing_skills(root))
+            if not (root / "agent" / "skills" / name / "SKILL.md").is_file()]
+
+
 def check(root: Path) -> list[str]:
     index = yaml.safe_load((root / "context" / "index.yaml").read_text(encoding="utf-8")) or {}
     documents = {c["id"] for c in index.get("concepts", []) if c.get("status") != "planned"}
     return (check_file(root, "retrieval_cases.yaml", "expected", documents, "document")
-            + check_file(root, "router_cases.yaml", "intent", routing_intents(root), "intent"))
+            + check_file(root, "router_cases.yaml", "intent", routing_intents(root), "intent")
+            + skill_errors(root))
 
 
 def main() -> int:
