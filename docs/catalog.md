@@ -12,6 +12,7 @@ Business grain, ready to use. The agent and the MCP server read only this layer.
 - [`gold.active_customer_monthly`](#goldactivecustomermonthly)
 - [`gold.funnel_stage_monthly`](#goldfunnelstagemonthly)
 - [`gold.mql_monthly`](#goldmqlmonthly)
+- [`gold.data_quality_snapshot`](#golddataqualitysnapshot)
 
 <a id="goldmrrmonthly"></a>
 
@@ -75,6 +76,26 @@ Marketing qualified leads counted the way Marketing counts them and the way Sale
 | `marketing_mqls` | Number of those submissions that Marketing flagged as a marketing qualified lead. |
 | `sales_mqls` | Number of those submissions whose contact Sales flagged as a marketing qualified lead. |
 | `conflicting_flags` | Number of those submissions where the Marketing flag and the Sales flag disagree. |
+
+<a id="golddataqualitysnapshot"></a>
+
+### `gold.data_quality_snapshot`
+
+One row with the number of records that carry each data-quality flag, as of the newest daily export. It exposes counts only; the flagged records themselves stay in silver.
+
+**Context:** [Cross-cutting rules](../context/concepts/cross-cutting-rules.md)
+
+| Column | Description |
+|---|---|
+| `as_of` | Primary key. Date of the newest daily export loaded. |
+| `companies` | Number of company records, duplicates included. |
+| `possible_duplicate_companies` | Number of company records whose name matches another record's name, ignoring letter case. Both records of a pair are counted. |
+| `deals` | Number of deals, whatever their stage. |
+| `deals_without_company` | Number of deals the CRM holds with no company attached. |
+| `subscriptions` | Number of subscriptions, whatever their status. |
+| `subscriptions_without_deal` | Number of subscriptions whose deal is not in the CRM. |
+| `closed_won_deals` | Number of deals in the closed_won stage. |
+| `closed_won_without_subscription` | Number of closed_won deals that no subscription points to. It includes deals won in the last two weeks, because a subscription starts within two weeks of the win. |
 
 ## Silver
 

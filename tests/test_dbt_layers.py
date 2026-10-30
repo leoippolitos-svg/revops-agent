@@ -190,3 +190,20 @@ def test_mql_counts_add_up_and_disagreements_are_visible(lakehouse):
     assert submissions == query(db, "SELECT count(*) FROM silver.form_submission")[0][0]
     assert marketing == query(db, "SELECT count(*) FROM silver.form_submission WHERE marketing_mql_flag")[0][0]
     assert 0 < conflicts < submissions and marketing != sales
+
+
+def test_data_quality_snapshot_matches_the_silver_flags_and_the_answer_key(lakehouse):
+    db, _ = lakehouse
+    row = query(db, "SELECT * FROM gold.data_quality_snapshot")
+    assert len(row) == 1
+    (as_of, companies, dup, deals, no_company, subs, no_deal, won, won_no_sub) = row[0]
+    # Same counts as the flags in silver.
+    assert dup == query(db, "SELECT count(*) FROM silver.company WHERE is_possible_duplicate")[0][0] > 0
+    assert no_company == query(db, "SELECT count(*) FROM silver.deal WHERE NOT has_company")[0][0] > 0
+    assert no_deal == query(db, "SELECT count(*) FROM silver.subscription WHERE NOT has_matching_deal")[0][0] > 0
+    assert companies == query(db, "SELECT count(*) FROM silver.company")[0][0]
+    assert deals == query(db, "SELECT count(*) FROM silver.deal")[0][0]
+    assert subs == query(db, "SELECT count(*) FROM silver.subscription")[0][0]
+    # A flagged count never exceeds its total, and the as-of date is the newest export.
+    assert dup <= companies and no_company <= deals and no_deal <= subs and won_no_sub <= won
+    assert str(as_of) == query(db, "SELECT max(replace(last_seen_batch_id, 'as_of=', '')) FROM silver.company")[0][0]
