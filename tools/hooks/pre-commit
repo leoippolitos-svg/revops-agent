@@ -6,3 +6,4 @@ python tools/check_skills.py || exit 1
 python tools/check_context.py || exit 1
 python tools/build_catalog.py --check || exit 1
 python tools/check_evals.py || exit 1
+python tools/check_connectors.py || exit 1

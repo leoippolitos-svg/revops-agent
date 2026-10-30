@@ -45,6 +45,8 @@ jobs:
         run: python tools/build_catalog.py --check
       - name: Check the eval case files are well formed
         run: python tools/check_evals.py
+      - name: Check the connector registry
+        run: python tools/check_connectors.py
 
   # The README and this job use Python 3.12; local development may use a newer one.
   tests:

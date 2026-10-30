@@ -56,4 +56,4 @@ connectors:
     auth: bot token (documented only)
     consumers: [pipeline checks, automations/audits]
     owner: RevOps
-    note: simulated by writing alerts to observability/logs
+    note: needs an ADR before going live; simulated by writing alerts to observability/logs
