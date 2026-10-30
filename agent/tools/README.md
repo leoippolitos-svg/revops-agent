@@ -28,4 +28,4 @@ Every question logs: intent, tier, tools called, token counts and latency, with 
 
 ## Status
 
-These are the rules. The retrieval behind `search_context` is built (`agent/rag/retrieve.py`) and scored by `python evals/run_retrieval.py`. The tool wrapper itself and the other three tools are not built. Code must pass `evals/` before it is trusted.
+These are the rules, and one tool has code. The retrieval behind `search_context` is built (`agent/rag/retrieve.py`) and scored by `python evals/run_retrieval.py`. `query_gold` is built (`agent/tools/query_gold.py`, ADR-0013, proved by `tests/test_query_gold.py`). The `search_context` wrapper and the other two tools are not built. Code must pass `evals/` before it is trusted.

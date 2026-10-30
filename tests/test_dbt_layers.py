@@ -12,9 +12,11 @@ ROOT = Path(__file__).resolve().parents[1]
 # Both are scripts, not installed packages, so we add their folders to the import path.
 sys.path.insert(0, str(ROOT / "generator"))
 sys.path.insert(0, str(ROOT / "pipeline"))
+sys.path.insert(0, str(ROOT / "agent" / "tools"))
 
 import generate  # noqa: E402
 import ingest  # noqa: E402
+import query_gold  # noqa: E402
 
 DBT_DIR = ROOT / "pipeline" / "dbt"
 
@@ -246,3 +248,29 @@ def test_owner_workload_lists_every_owner_and_counts_only_open_deals(lakehouse):
     assert query(db, "SELECT sum(open_deals) FROM gold.owner_workload")[0][0] == open_deals
     # An owner with no open deal still has a row, with zeros and not nulls.
     assert query(db, "SELECT count(*) FROM gold.owner_workload WHERE open_deals = 0 AND open_amount_usd <> 0") == [(0,)]
+
+
+def test_query_gold_reads_every_gold_model_and_nothing_else(lakehouse):
+    db, _ = lakehouse
+    gold = [r[0] for r in query(db, "SELECT table_name FROM information_schema.tables WHERE table_schema = 'gold'")]
+    assert len(gold) >= 8
+    expected = {table: query(db, f"SELECT count(*) FROM gold.{table}")[0][0] for table in gold}
+    # DuckDB allows one configuration per file in a process, and dbt's is read-write, so the
+    # read-only tool opens a copy of the database.
+    copy = db.parent / "read_only_copy.duckdb"
+    con = duckdb.connect(str(db))
+    try:
+        con.execute(f"ATTACH '{copy.as_posix()}' AS copy_db")
+        con.execute("COPY FROM DATABASE lakehouse TO copy_db")
+        con.execute("DETACH copy_db")
+    finally:
+        con.close()
+    for table in gold:
+        assert query_gold.query_gold(f"SELECT count(*) AS n FROM {table}", copy)["rows"][0][0] == expected[table]
+    # The same call refuses the layers below gold, on the real lakehouse and not only on the toy one.
+    for table in ("silver.deal", "bronze.crm_deal"):
+        try:
+            query_gold.query_gold(f"SELECT * FROM {table}", copy)
+        except query_gold.QueryRejected:
+            continue
+        raise AssertionError(f"{table} was readable")
