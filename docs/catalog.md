@@ -322,7 +322,7 @@ One row per paid subscription in billing, latest version from bronze, so status 
 
 One row per invoice, latest version from bronze, so status shows the most recent state.
 
-**Context:** [Cross-cutting rules](../context/concepts/cross-cutting-rules.md)
+**Context:** [Cross-cutting rules](../context/concepts/cross-cutting-rules.md), [Monthly recurring revenue](../context/concepts/mrr.md)
 
 | Column | Description |
 |---|---|

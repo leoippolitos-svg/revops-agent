@@ -3,7 +3,7 @@ id: mrr
 title: Monthly recurring revenue
 owner_team: RevOps
 status: canonical
-last_reviewed: 2026-10-29
+last_reviewed: 2026-10-30
 related: [active-customer, funnel-stages, cross-cutting-rules]
 ---
 
@@ -28,6 +28,7 @@ Monthly recurring revenue (MRR) is the monthly value of every subscription in fo
 - The last month is still in progress and stops at the newest day of data. Do not compare it with a full month.
 - A subscription that starts and ends in the same month appears in both new and churned MRR, and not in ending MRR.
 - A subscription whose deal is missing from the CRM still counts ([[silver.subscription.has_matching_deal]]): billing is the source of truth.
+- MRR comes from subscriptions only. Invoices ([[silver.invoice.amount_usd]]) and payments are billing records, not MRR, and a one-time charge is never MRR. Fernway's data has no one-time charges today. If they appear, they stay out of MRR.
 - Deal value is not MRR. The yearly value of a won deal ([[silver.deal.amount_usd]]) only becomes MRR when its subscription starts.
 
 ## Team differences
