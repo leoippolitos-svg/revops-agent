@@ -49,6 +49,8 @@ jobs:
         run: python tools/check_connectors.py
       - name: Check the context A/B design
         run: python tools/check_context_ab.py
+      - name: Check the micro-app specs
+        run: python tools/check_apps.py
 
   # The README and this job use Python 3.12; local development may use a newer one.
   tests:

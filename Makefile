@@ -17,3 +17,4 @@ check:  ## Run the repository checks
 	$(PYTHON) tools/check_evals.py
 	$(PYTHON) tools/check_connectors.py
 	$(PYTHON) tools/check_context_ab.py
+	$(PYTHON) tools/check_apps.py
