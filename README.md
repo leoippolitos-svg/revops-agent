@@ -150,7 +150,7 @@ It generates fictional data, loads it into bronze, builds silver and gold with d
 - [x] **Phase 2** · First five context documents and catalog checks
 - [x] **Phase 3** · Agent rules: tool contracts, model tiers, retrieval approach and 80 eval cases (rules and cases only; the agent code is not built)
 - [x] **Phase 4** · Skills (7 new), connector registry check and MCP server contract (rules only; the MCP server code is not built)
-- [ ] **Phase 5** · With-context vs without-context comparison
+- [x] **Phase 5** · With-context vs without-context comparison (design, 14 questions and a results file; no run made)
 - [ ] **Phase 6** · Example micro-app under the security standard
 
 ## Design decisions
