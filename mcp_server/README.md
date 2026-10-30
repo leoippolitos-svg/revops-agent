@@ -27,4 +27,4 @@ Registered as the consumer `mcp_server` of the `lakehouse` connector in [connect
 
 ## Status
 
-Rules only. No server code exists yet.
+Rules only. No server code exists yet. The `query_gold` guard it needs is already built in [agent/tools/query_gold.py](../agent/tools/query_gold.py) and the server will import it, not write a second one (ADR-0013).
