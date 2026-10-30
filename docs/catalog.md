@@ -15,6 +15,7 @@ Business grain, ready to use. The agent and the MCP server read only this layer.
 - [`gold.mql_monthly`](#goldmqlmonthly)
 - [`gold.data_quality_snapshot`](#golddataqualitysnapshot)
 - [`gold.funnel_time_in_stage_monthly`](#goldfunneltimeinstagemonthly)
+- [`gold.owner_workload`](#goldownerworkload)
 
 <a id="goldmrrmonthly"></a>
 
@@ -137,6 +138,21 @@ How many days deals stayed in each open stage (qualification to negotiation), gr
 | `median_days_in_stage` | Median number of days between entering and leaving the stage, for deals with consistent dates. Empty when every exit in the month is out of order. |
 | `avg_days_in_stage` | Average number of days between entering and leaving the stage, same deals as the median. |
 
+<a id="goldownerworkload"></a>
+
+### `gold.owner_workload`
+
+Open deals per owner as of the newest daily export, one row per owner, including owners with no open deal. It holds no names or contact details.
+
+**Context:** [Lead routing](../context/concepts/lead-routing.md)
+
+| Column | Description |
+|---|---|
+| `owner_id` | Primary key. Identifier of the owner in the CRM. |
+| `team` | Team the owner belongs to, as stored by the CRM, for example sdr, sales or enterprise. |
+| `open_deals` | Number of deals owned by this owner that are neither closed_won nor closed_lost. |
+| `open_amount_usd` | Sum in US dollars of the yearly contract value of those open deals. Zero when there are none. |
+
 ## Silver
 
 Cleaned, typed, one row per entity. The step between raw data and gold.
@@ -175,7 +191,7 @@ One row per person who owns accounts or work in a Fernway team. Latest version f
 
 One row per company record in the CRM, latest version from bronze. May contain the same real-world company twice; see is_possible_duplicate.
 
-**Context:** [Active customer](../context/concepts/active-customer.md), [Cross-cutting rules](../context/concepts/cross-cutting-rules.md)
+**Context:** [Active customer](../context/concepts/active-customer.md), [Cross-cutting rules](../context/concepts/cross-cutting-rules.md), [Lead routing](../context/concepts/lead-routing.md)
 
 | Column | Description |
 |---|---|
@@ -268,7 +284,7 @@ One row per marketing campaign, latest version from bronze.
 
 One row per marketing form filled in by a contact, latest version from bronze.
 
-**Context:** [Cross-cutting rules](../context/concepts/cross-cutting-rules.md), [Marketing qualified lead](../context/concepts/mql.md)
+**Context:** [Cross-cutting rules](../context/concepts/cross-cutting-rules.md), [Lead routing](../context/concepts/lead-routing.md), [Marketing qualified lead](../context/concepts/mql.md)
 
 | Column | Description |
 |---|---|

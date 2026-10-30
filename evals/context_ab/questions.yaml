@@ -113,3 +113,19 @@ questions:
     must_include:
       - "It stays in the funnel like any other deal"
       - "It is listed for cleanup and cannot be attributed to a segment or country"
+
+  - id: ab-15
+    question: "A mid market company that already has an owner submits a flagged form. Who gets the lead?"
+    context_doc: lead-routing
+    trap: "Gives it to whichever sales owner has the fewest open deals."
+    must_include:
+      - "The company's existing owner gets it if that owner is in the right team"
+      - "Account continuity comes before capacity"
+
+  - id: ab-16
+    question: "Every enterprise owner is at the open-deal limit and a new flagged lead arrives. What happens?"
+    context_doc: lead-routing
+    trap: "Gives it to the owner with the fewest open deals anyway, or to the sales team."
+    must_include:
+      - "The lead is not assigned"
+      - "It is listed for a person to decide and the shortage is reported"

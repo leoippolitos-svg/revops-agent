@@ -57,3 +57,13 @@ connectors:
     consumers: [pipeline checks, automations/audits]
     owner: RevOps
     note: needs an ADR before going live; simulated by writing alerts to observability/logs
+
+  - id: crm-owner-assignment
+    system: CRM (HubSpot-like)
+    status: documented
+    access: read-write
+    scopes: ["set the owner of a lead"]
+    auth: private app token limited to that scope (documented only)
+    consumers: [automations/lead-routing]
+    owner: RevOps
+    note: needs ADR-0010 and a new decision before going live; simulated by writing assignments to observability/logs

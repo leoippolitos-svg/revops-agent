@@ -237,3 +237,12 @@ def test_time_in_stage_counts_every_exit_and_keeps_bad_dates_out_of_the_averages
     # No negative day figure ever reaches the averages, and out-of-order exits never exceed exits.
     assert query(db, "SELECT count(*) FROM gold.funnel_time_in_stage_monthly WHERE median_days_in_stage < 0 OR avg_days_in_stage < 0") == [(0,)]
     assert query(db, "SELECT count(*) FROM gold.funnel_time_in_stage_monthly WHERE out_of_order_exits > deals_left") == [(0,)]
+
+
+def test_owner_workload_lists_every_owner_and_counts_only_open_deals(lakehouse):
+    db, _ = lakehouse
+    assert query(db, "SELECT count(*) FROM gold.owner_workload")[0][0] == query(db, "SELECT count(*) FROM silver.owner")[0][0]
+    open_deals = query(db, "SELECT count(*) FROM silver.deal WHERE stage NOT IN ('closed_won', 'closed_lost')")[0][0]
+    assert query(db, "SELECT sum(open_deals) FROM gold.owner_workload")[0][0] == open_deals
+    # An owner with no open deal still has a row, with zeros and not nulls.
+    assert query(db, "SELECT count(*) FROM gold.owner_workload WHERE open_deals = 0 AND open_amount_usd <> 0") == [(0,)]
