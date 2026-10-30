@@ -29,6 +29,7 @@ STEPS = [
     ("Context and catalog check", [sys.executable, "tools/check_context.py"]),
     ("Catalog page check", [sys.executable, "tools/build_catalog.py", "--check"]),
     ("Eval cases check", [sys.executable, "tools/check_evals.py"]),
+    ("Connector registry check", [sys.executable, "tools/check_connectors.py"]),
     ("Skills check", [sys.executable, "tools/check_skills.py"]),
 ]
 
