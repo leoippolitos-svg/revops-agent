@@ -1,3 +1,3 @@
 # Observability
 
-Logs per agent question: intent, tools called, tokens, cost, latency. A weekly summary shows cost per intent and the slowest questions. Alerts from pipeline checks are also written here in place of Slack.
+The agent loop writes one JSON line per question to `observability/logs/agent.jsonl` (gitignored), with the intent, tier, tools called, model calls, tokens and latency, and never the question, an answer or a row. Cost is not logged yet. Logs per agent question: intent, tools called, tokens, cost, latency. A weekly summary shows cost per intent and the slowest questions. Alerts from pipeline checks are also written here in place of Slack.
