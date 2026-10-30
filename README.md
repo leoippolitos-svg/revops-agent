@@ -118,7 +118,7 @@ Two kinds of skills live here on purpose: `.claude/skills/` teach the **coding a
 ## Quick start
 
 > [!IMPORTANT]
-> The data pipeline works end to end (Phase 1). The agent arrives in Phases 3–4.
+> The data pipeline works end to end (Phase 1). Phases 3 to 6 are written as rules, specs and eval cases; the agent, the retrieval index, the MCP server and the micro-app are not built yet.
 
 **Requirements:** Python 3.12, Git.
 
