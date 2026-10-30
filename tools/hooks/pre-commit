@@ -9,3 +9,4 @@ python tools/check_evals.py || exit 1
 python tools/check_connectors.py || exit 1
 python tools/check_context_ab.py || exit 1
 python tools/check_apps.py || exit 1
+python tools/check_automations.py || exit 1
