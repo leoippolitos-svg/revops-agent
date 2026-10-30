@@ -14,6 +14,7 @@ Business grain, ready to use. The agent and the MCP server read only this layer.
 - [`gold.funnel_conversion_monthly`](#goldfunnelconversionmonthly)
 - [`gold.mql_monthly`](#goldmqlmonthly)
 - [`gold.data_quality_snapshot`](#golddataqualitysnapshot)
+- [`gold.funnel_time_in_stage_monthly`](#goldfunneltimeinstagemonthly)
 
 <a id="goldmrrmonthly"></a>
 
@@ -116,6 +117,25 @@ One row with the number of records that carry each data-quality flag, as of the 
 | `subscriptions_without_deal` | Number of subscriptions whose deal is not in the CRM. |
 | `closed_won_deals` | Number of deals in the closed_won stage. |
 | `closed_won_without_subscription` | Number of closed_won deals that no subscription points to. It includes deals won in the last two weeks, because a subscription starts within two weeks of the win. |
+
+<a id="goldfunneltimeinstagemonthly"></a>
+
+### `gold.funnel_time_in_stage_monthly`
+
+How many days deals stayed in each open stage (qualification to negotiation), grouped by the calendar month they left it. A deal leaves a stage when it enters the next one, including closed_won and closed_lost. Deals still in a stage are not counted. A stage with no exits in a month has no row.
+
+**Context:** [Funnel stages](../context/concepts/funnel-stages.md)
+
+| Column | Description |
+|---|---|
+| `month_stage_key` | Primary key. The month the deals left the stage and the stage joined with a bar, for example 2026-01-01\|discovery. |
+| `month` | First day of the calendar month in which the deals left the stage. |
+| `stage` | Open funnel stage the deals left. |
+| `stage_order` | Position of the stage in the funnel, 1 for qualification to 4 for negotiation, for sorting. |
+| `deals_left` | Number of deals that left the stage during the month, including those with out-of-order dates. |
+| `out_of_order_exits` | Number of those deals whose recorded exit date is earlier than their entry date. They are left out of the day figures. |
+| `median_days_in_stage` | Median number of days between entering and leaving the stage, for deals with consistent dates. Empty when every exit in the month is out of order. |
+| `avg_days_in_stage` | Average number of days between entering and leaving the stage, same deals as the median. |
 
 ## Silver
 

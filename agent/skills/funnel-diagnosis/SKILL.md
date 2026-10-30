@@ -13,7 +13,8 @@ Based on the Theory of Constraints: there is always one stage that limits the wh
 2. Compare cohorts old enough to have closed; the newest cohorts are still maturing and look worse than they are. For each stage, for the period asked and the previous comparable period, get from gold:
    - volume entering the stage, from `funnel_stage_monthly`,
    - conversion to the next stage, from the cohort table `funnel_conversion_monthly`,
-   - median time in stage and top loss reason: not in gold yet, so say they are unavailable instead of guessing.
+   - median time in stage, from `funnel_time_in_stage_monthly`, read together with the open deals of the cohort,
+   - top loss reason: the CRM has none, so say it is unavailable instead of guessing.
 3. Find the constraint: the stage with the largest drop in conversion or the largest growth in time in stage, weighted by volume.
 4. Before blaming the business, rule out data causes: definition changes (records), freshness failures, known data-quality issues.
 5. Check `search_records` for earlier diagnoses of the same stage.

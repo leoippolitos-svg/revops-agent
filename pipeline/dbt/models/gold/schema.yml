@@ -139,3 +139,32 @@ models:
       - name: closed_won_without_subscription
         description: Number of closed_won deals that no subscription points to. It includes deals won in the last two weeks, because a subscription starts within two weeks of the win.
         data_tests: [not_null]
+
+  - name: funnel_time_in_stage_monthly
+    description: How many days deals stayed in each open stage (qualification to negotiation), grouped by the calendar month they left it. A deal leaves a stage when it enters the next one, including closed_won and closed_lost. Deals still in a stage are not counted. A stage with no exits in a month has no row.
+    columns:
+      - name: month_stage_key
+        description: Primary key. The month the deals left the stage and the stage joined with a bar, for example 2026-01-01|discovery.
+        data_tests: [unique, not_null]
+      - name: month
+        description: First day of the calendar month in which the deals left the stage.
+        data_tests: [not_null]
+      - name: stage
+        description: Open funnel stage the deals left.
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [qualification, discovery, proposal, negotiation]
+      - name: stage_order
+        description: Position of the stage in the funnel, 1 for qualification to 4 for negotiation, for sorting.
+        data_tests: [not_null]
+      - name: deals_left
+        description: Number of deals that left the stage during the month, including those with out-of-order dates.
+        data_tests: [not_null]
+      - name: out_of_order_exits
+        description: Number of those deals whose recorded exit date is earlier than their entry date. They are left out of the day figures.
+        data_tests: [not_null]
+      - name: median_days_in_stage
+        description: Median number of days between entering and leaving the stage, for deals with consistent dates. Empty when every exit in the month is out of order.
+      - name: avg_days_in_stage
+        description: Average number of days between entering and leaving the stage, same deals as the median.

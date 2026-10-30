@@ -224,3 +224,16 @@ def test_funnel_conversion_cohorts_add_up_and_never_grow_down_the_funnel(lakehou
         WHERE reached_discovery > deals_qualified OR reached_proposal > reached_discovery
            OR reached_negotiation > reached_proposal""")[0][0]
     assert bad == 0
+
+
+def test_time_in_stage_counts_every_exit_and_keeps_bad_dates_out_of_the_averages(lakehouse):
+    db, _ = lakehouse
+    # A deal exits every open stage it entered, except the stage it is in now.
+    # Each deal has one row per stage, so exits = open-stage rows minus deals still in an open stage.
+    exits = query(db, """
+        SELECT count(*) FROM silver.deal_stage_history h JOIN silver.deal d USING (deal_id)
+        WHERE h.stage IN ('qualification','discovery','proposal','negotiation') AND h.stage <> d.stage""")[0][0]
+    assert query(db, "SELECT sum(deals_left) FROM gold.funnel_time_in_stage_monthly")[0][0] == exits
+    # No negative day figure ever reaches the averages, and out-of-order exits never exceed exits.
+    assert query(db, "SELECT count(*) FROM gold.funnel_time_in_stage_monthly WHERE median_days_in_stage < 0 OR avg_days_in_stage < 0") == [(0,)]
+    assert query(db, "SELECT count(*) FROM gold.funnel_time_in_stage_monthly WHERE out_of_order_exits > deals_left") == [(0,)]
