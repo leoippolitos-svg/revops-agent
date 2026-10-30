@@ -47,6 +47,8 @@ jobs:
         run: python tools/check_evals.py
       - name: Check the connector registry
         run: python tools/check_connectors.py
+      - name: Check the context A/B design
+        run: python tools/check_context_ab.py
 
   # The README and this job use Python 3.12; local development may use a newer one.
   tests:

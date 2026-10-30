@@ -16,3 +16,4 @@ check:  ## Run the repository checks
 	$(PYTHON) tools/build_catalog.py --check
 	$(PYTHON) tools/check_evals.py
 	$(PYTHON) tools/check_connectors.py
+	$(PYTHON) tools/check_context_ab.py

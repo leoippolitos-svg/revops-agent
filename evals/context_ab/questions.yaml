@@ -1,0 +1,115 @@
+# Each question depends on one context document. trap is the plausible wrong answer a reader
+# gives without the document. must_include are facts the document states; see README.md.
+questions:
+  - id: ab-01
+    question: "How many customers do we have? Sales and Customer Success gave different numbers."
+    context_doc: active-customer
+    trap: "Counts deals in closed_won as customers."
+    must_include:
+      - "A customer is a company with a started, not ended, subscription that has been paid at least once"
+      - "A won deal with no subscription yet is not a customer"
+      - "Billing is the source of truth, so Customer Success's number is the canonical one"
+
+  - id: ab-02
+    question: "A company has two active subscriptions. How many customers is that?"
+    context_doc: active-customer
+    trap: "Counts one customer per subscription."
+    must_include:
+      - "It is one customer"
+      - "It is two active subscriptions"
+
+  - id: ab-03
+    question: "A company started a subscription in March and paid its first invoice in April. Is it a customer at the end of March?"
+    context_doc: active-customer
+    trap: "Says yes because the subscription is in force."
+    must_include:
+      - "Not at the end of March, because it has not paid yet"
+      - "Yes at the end of April"
+
+  - id: ab-04
+    question: "What is our MRR, and does it count subscriptions that have not paid yet?"
+    context_doc: mrr
+    trap: "Requires a payment before counting a subscription."
+    must_include:
+      - "MRR counts every subscription in force, from its start day, paid or not"
+      - "Amounts are in US dollars"
+
+  - id: ab-05
+    question: "Sales booked 1.2M of won deals this quarter. Is that our new MRR?"
+    context_doc: mrr
+    trap: "Treats the yearly value of won deals as MRR."
+    must_include:
+      - "Bookings and MRR are different numbers"
+      - "A won deal becomes MRR only when its subscription starts, at a twelfth of the yearly value"
+
+  - id: ab-06
+    question: "Does starting MRR plus new MRR equal ending MRR?"
+    context_doc: mrr
+    trap: "Forgets churn, or says expansion is included."
+    must_include:
+      - "Starting plus new minus churned equals ending"
+      - "There is no expansion or contraction in the data yet"
+
+  - id: ab-07
+    question: "How many MQLs did we get last month? Marketing and Sales report different counts."
+    context_doc: mql
+    trap: "Averages or adds the two counts, or picks Sales' count."
+    must_include:
+      - "Marketing's flag on the form submission is the MQL count"
+      - "Sales' flag is a second opinion and is never added or averaged"
+
+  - id: ab-08
+    question: "Is every form submission an MQL?"
+    context_doc: mql
+    trap: "Says yes."
+    must_include:
+      - "Most submissions are never flagged"
+      - "Only submissions flagged by Marketing count"
+
+  - id: ab-09
+    question: "When is a deal 'qualified'?"
+    context_doc: funnel-stages
+    trap: "Uses the SDR meaning, a flagged and accepted lead."
+    must_include:
+      - "For the funnel, a deal is qualified when it leaves qualification and reaches discovery"
+      - "SDRs use the word earlier, which is a different meaning"
+
+  - id: ab-10
+    question: "Can I count how many deals are in proposal by summing deals that entered proposal each month?"
+    context_doc: funnel-stages
+    trap: "Treats entries to a stage as the current number in the stage."
+    must_include:
+      - "Entries to a stage are not deals currently in it"
+      - "Funnel volume is the number of deals that entered a stage in a month"
+
+  - id: ab-11
+    question: "Which currency are amounts in, and can I compare this month so far with last month?"
+    context_doc: cross-cutting-rules
+    trap: "Compares a partial month with a full one, and assumes a currency."
+    must_include:
+      - "Every amount is in US dollars"
+      - "The month in progress is partial and must not be compared with a full month"
+
+  - id: ab-12
+    question: "Two systems disagree on whether a company is a customer. Which one do I trust?"
+    context_doc: cross-cutting-rules
+    trap: "Picks one at random or averages."
+    must_include:
+      - "The source of truth for that topic wins"
+      - "For customers and subscriptions the source of truth is billing"
+
+  - id: ab-13
+    question: "Some companies appear twice in the data. Should I delete the duplicates before counting?"
+    context_doc: cross-cutting-rules
+    trap: "Deletes them silently."
+    must_include:
+      - "Flagged duplicates are never deleted"
+      - "Count them separately and say so in the answer"
+
+  - id: ab-14
+    question: "A deal has no company attached. Is it in the funnel numbers?"
+    context_doc: funnel-stages
+    trap: "Excludes it as bad data."
+    must_include:
+      - "It stays in the funnel like any other deal"
+      - "It is listed for cleanup and cannot be attributed to a segment or country"
