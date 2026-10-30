@@ -105,7 +105,7 @@ Marketing qualified leads counted the way Marketing counts them and the way Sale
 
 One row with the number of records that carry each data-quality flag, as of the newest daily export. It exposes counts only; the flagged records themselves stay in silver.
 
-**Context:** [Cross-cutting rules](../context/concepts/cross-cutting-rules.md)
+**Context:** [Closed won provisioning](../context/concepts/closed-won-provisioning.md), [Cross-cutting rules](../context/concepts/cross-cutting-rules.md)
 
 | Column | Description |
 |---|---|
@@ -191,7 +191,7 @@ One row per person who owns accounts or work in a Fernway team. Latest version f
 
 One row per company record in the CRM, latest version from bronze. May contain the same real-world company twice; see is_possible_duplicate.
 
-**Context:** [Active customer](../context/concepts/active-customer.md), [Cross-cutting rules](../context/concepts/cross-cutting-rules.md), [Lead routing](../context/concepts/lead-routing.md)
+**Context:** [Active customer](../context/concepts/active-customer.md), [Closed won provisioning](../context/concepts/closed-won-provisioning.md), [Cross-cutting rules](../context/concepts/cross-cutting-rules.md), [Lead routing](../context/concepts/lead-routing.md)
 
 | Column | Description |
 |---|---|
@@ -232,7 +232,7 @@ One row per person at a customer or prospect, latest version from bronze.
 
 One row per sales opportunity, latest version from bronze, so stage and closed_at show the most recent state.
 
-**Context:** [Active customer](../context/concepts/active-customer.md), [Cross-cutting rules](../context/concepts/cross-cutting-rules.md), [Funnel stages](../context/concepts/funnel-stages.md), [Monthly recurring revenue](../context/concepts/mrr.md)
+**Context:** [Active customer](../context/concepts/active-customer.md), [Closed won provisioning](../context/concepts/closed-won-provisioning.md), [Cross-cutting rules](../context/concepts/cross-cutting-rules.md), [Funnel stages](../context/concepts/funnel-stages.md), [Monthly recurring revenue](../context/concepts/mrr.md)
 
 | Column | Description |
 |---|---|
@@ -253,7 +253,7 @@ One row per sales opportunity, latest version from bronze, so stage and closed_a
 
 One row each time a deal entered a stage, latest version from bronze. Dates can be out of order for some deals (data-quality issue).
 
-**Context:** [Cross-cutting rules](../context/concepts/cross-cutting-rules.md), [Funnel stages](../context/concepts/funnel-stages.md)
+**Context:** [Closed won provisioning](../context/concepts/closed-won-provisioning.md), [Cross-cutting rules](../context/concepts/cross-cutting-rules.md), [Funnel stages](../context/concepts/funnel-stages.md)
 
 | Column | Description |
 |---|---|
@@ -301,7 +301,7 @@ One row per marketing form filled in by a contact, latest version from bronze.
 
 One row per paid subscription in billing, latest version from bronze, so status and ended_at show the most recent state.
 
-**Context:** [Active customer](../context/concepts/active-customer.md), [Cross-cutting rules](../context/concepts/cross-cutting-rules.md), [Monthly recurring revenue](../context/concepts/mrr.md)
+**Context:** [Active customer](../context/concepts/active-customer.md), [Closed won provisioning](../context/concepts/closed-won-provisioning.md), [Cross-cutting rules](../context/concepts/cross-cutting-rules.md), [Monthly recurring revenue](../context/concepts/mrr.md)
 
 | Column | Description |
 |---|---|
@@ -355,6 +355,8 @@ One row per payment received against an invoice, latest version from bronze.
 ### `silver.onboarding_milestone`
 
 One row per onboarding milestone a subscription has reached, latest version from bronze.
+
+**Context:** [Closed won provisioning](../context/concepts/closed-won-provisioning.md)
 
 | Column | Description |
 |---|---|

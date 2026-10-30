@@ -67,3 +67,13 @@ connectors:
     consumers: [automations/lead-routing]
     owner: RevOps
     note: needs ADR-0010 and a new decision before going live; simulated by writing assignments to observability/logs
+
+  - id: product-provisioning
+    system: Product admin API
+    status: documented
+    access: read-write
+    scopes: ["create one customer workspace and request the onboarding kickoff"]
+    auth: service token limited to that scope (documented only)
+    consumers: [automations/closed-won-provisioning]
+    owner: Customer Success
+    note: needs ADR-0011 and a new decision before going live; simulated by writing requests to observability/logs

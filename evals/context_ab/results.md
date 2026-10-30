@@ -6,6 +6,6 @@ Method and scoring: [README.md](README.md).
 
 | Date | Model | Commit | Questions | Without context | With context | Status |
 |---|---|---|---|---|---|---|
-| none yet | n/a | n/a | 16 | n/a | n/a | not run |
+| none yet | n/a | n/a | 18 | n/a | n/a | not run |
 
 A row is added only when a run is made. Scores are the share of checklist items stated, between 0 and 1.

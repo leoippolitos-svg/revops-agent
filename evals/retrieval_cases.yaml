@@ -91,3 +91,13 @@ cases:
   expected: lead-routing
 - question: Why does a lead go to the owner who already has the account?
   expected: lead-routing
+- question: When is a customer workspace created?
+  expected: closed-won-provisioning
+- question: Is a company provisioned twice if the deal is closed won again?
+  expected: closed-won-provisioning
+- question: Does provisioning set the plan?
+  expected: closed-won-provisioning
+- question: Why is a deal held before provisioning?
+  expected: closed-won-provisioning
+- question: What happens to a closed won deal without a subscription after two weeks?
+  expected: closed-won-provisioning
