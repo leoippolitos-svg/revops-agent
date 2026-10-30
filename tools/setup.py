@@ -31,6 +31,7 @@ STEPS = [
     ("Eval cases check", [sys.executable, "tools/check_evals.py"]),
     ("Connector registry check", [sys.executable, "tools/check_connectors.py"]),
     ("Context A/B design check", [sys.executable, "tools/check_context_ab.py"]),
+    ("Micro-app specs check", [sys.executable, "tools/check_apps.py"]),
     ("Skills check", [sys.executable, "tools/check_skills.py"]),
 ]
 
