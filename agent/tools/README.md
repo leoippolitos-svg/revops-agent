@@ -28,4 +28,4 @@ Every question logs: intent, tier, tools called, token counts and latency, with 
 
 ## Status
 
-These are the rules. Code that implements them is a later change and must pass `evals/` before it is trusted.
+These are the rules. The retrieval behind `search_context` is built (`agent/rag/retrieve.py`) and scored by `python evals/run_retrieval.py`. The tool wrapper itself and the other three tools are not built. Code must pass `evals/` before it is trusted.
