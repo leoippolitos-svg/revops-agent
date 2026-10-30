@@ -29,8 +29,8 @@ class InvalidInput(ValueError):
     """The question or k was refused before any search."""
 
 
-def search_context(question: str, k: int = 3, context_dir: Path | None = None) -> dict:
-    """The k best context sections for a question, each with its document id and status."""
+def check_search_input(question, k) -> None:
+    """The input rules shared by the two search tools. Raises InvalidInput."""
     if not isinstance(question, str) or not question.strip():
         raise InvalidInput("The question must be a non-empty string.")
     if len(question) > MAX_QUESTION_CHARS:
@@ -39,6 +39,10 @@ def search_context(question: str, k: int = 3, context_dir: Path | None = None) -
     if isinstance(k, bool) or not isinstance(k, int) or not 1 <= k <= MAX_K:
         raise InvalidInput(f"k must be a whole number from 1 to {MAX_K}.")
 
+
+def search_context(question: str, k: int = 3, context_dir: Path | None = None) -> dict:
+    """The k best context sections for a question, each with its document id and status."""
+    check_search_input(question, k)
     results = retrieve(question, k, context_dir)
     for result in results:
         if result["status"] in WARNINGS:
