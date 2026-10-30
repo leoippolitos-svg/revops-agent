@@ -10,8 +10,10 @@ an intent or a document id fails in CI instead of silently scoring zero later:
      context/index.yaml, and every document has at least one case.
   2. router_cases.yaml: at least 40 cases, every intent is one listed in
      agent/directives/routing.md, and every intent has at least one case.
-  3. No question appears twice in the same file.
-  4. Every skill named in routing.md exists in agent/skills/.
+  3. router_heldout.yaml: at least 20 cases with the same rules, and none of its
+     questions is also in router_cases.yaml, or it would not be held out.
+  4. No question appears twice in the same file.
+  5. Every skill named in routing.md exists in agent/skills/.
 """
 
 import re
@@ -21,6 +23,7 @@ from pathlib import Path
 import yaml
 
 MIN_CASES = 40
+MIN_HELDOUT_CASES = 20
 
 
 def load_cases(path: Path) -> list[dict]:
@@ -33,14 +36,14 @@ def routing_intents(root: Path) -> set[str]:
     return set(re.findall(r"^\| `([a-z_]+)` \|", text, flags=re.MULTILINE))
 
 
-def check_file(root: Path, name: str, key: str, allowed: set[str], noun: str) -> list[str]:
+def check_file(root: Path, name: str, key: str, allowed: set[str], noun: str, minimum: int = MIN_CASES) -> list[str]:
     path = root / "evals" / name
     if not path.is_file():
         return [f"evals/{name}: file is missing"]
     cases = load_cases(path)
     errors = []
-    if len(cases) < MIN_CASES:
-        errors.append(f"evals/{name}: {len(cases)} cases, the minimum is {MIN_CASES}")
+    if len(cases) < minimum:
+        errors.append(f"evals/{name}: {len(cases)} cases, the minimum is {minimum}")
     seen = set()
     for number, case in enumerate(cases, start=1):
         question = (case.get("question") or "").strip()
@@ -54,6 +57,16 @@ def check_file(root: Path, name: str, key: str, allowed: set[str], noun: str) ->
     for missing in sorted(allowed - {c.get(key) for c in cases}):
         errors.append(f"evals/{name}: no case covers the {noun} {missing!r}")
     return errors
+
+
+def heldout_overlap(root: Path) -> list[str]:
+    """A held-out question that is also a tuning question measures nothing."""
+    path = root / "evals" / "router_heldout.yaml"
+    if not path.is_file():
+        return []
+    tuning = {(c.get("question") or "").strip().lower() for c in load_cases(root / "evals" / "router_cases.yaml")}
+    return [f"evals/router_heldout.yaml: {c['question']!r} is also in router_cases.yaml"
+            for c in load_cases(path) if (c.get("question") or "").strip().lower() in tuning]
 
 
 def routing_skills(root: Path) -> set[str]:
@@ -75,6 +88,8 @@ def check(root: Path) -> list[str]:
     documents = {c["id"] for c in index.get("concepts", []) if c.get("status") != "planned"}
     return (check_file(root, "retrieval_cases.yaml", "expected", documents, "document")
             + check_file(root, "router_cases.yaml", "intent", routing_intents(root), "intent")
+            + check_file(root, "router_heldout.yaml", "intent", routing_intents(root), "intent", MIN_HELDOUT_CASES)
+            + heldout_overlap(root)
             + skill_errors(root))
 
 

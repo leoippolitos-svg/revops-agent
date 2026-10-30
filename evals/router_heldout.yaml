@@ -1,0 +1,59 @@
+# Held-out router cases. Written before the rule-based router (agent/router.py) existed and
+# never used to tune it, so the score on this file says more than the score on
+# router_cases.yaml. Same intents as agent/directives/routing.md. Validated by
+# tools/check_evals.py. The author is the same person, so the wording is not independent.
+cases:
+- question: What was the MQL count for October?
+  intent: metric_lookup
+- question: Tell me the number of proposals created in June
+  intent: metric_lookup
+- question: How much expansion MRR did we add last quarter?
+  intent: metric_lookup
+- question: How many customers did we have at the end of March?
+  intent: metric_lookup
+- question: Is MRR growing faster this half than the last one?
+  intent: trend_analysis
+- question: Plot the monthly new customers over the past year
+  intent: trend_analysis
+- question: Has churn been improving or getting worse?
+  intent: trend_analysis
+- question: What is behind the fall in negotiation entries?
+  intent: funnel_diagnosis
+- question: Why are we winning fewer deals lately?
+  intent: funnel_diagnosis
+- question: Which step of the funnel is slowing down?
+  intent: funnel_diagnosis
+- question: What does a churned customer mean here?
+  intent: definition_question
+- question: Which statuses make a subscription count as active?
+  intent: definition_question
+- question: How is win rate defined?
+  intent: definition_question
+- question: The customer count in the dashboard disagrees with billing, what happened?
+  intent: data_quality
+- question: Why is the number of companies different from last week's export?
+  intent: data_quality
+- question: Some subscriptions have no deal behind them, is that a bug?
+  intent: data_quality
+- question: Was the time in stage ever studied?
+  intent: past_work_lookup
+- question: Did anyone write up the lead routing rules before?
+  intent: past_work_lookup
+- question: Look for earlier work on the data quality flags
+  intent: past_work_lookup
+- question: Put together a board-ready revenue report for the quarter
+  intent: report_request
+- question: Generate an HTML summary of the weekly funnel
+  intent: report_request
+- question: Draft the monthly customer success review document
+  intent: report_request
+- question: Assign this lead to the enterprise team
+  intent: out_of_scope
+- question: Create a workspace for the deal we just closed
+  intent: out_of_scope
+- question: Change the owner of this account to Sam
+  intent: out_of_scope
+- question: Tell me a joke about spreadsheets
+  intent: out_of_scope
+- question: Which restaurant should the team visit on Friday?
+  intent: out_of_scope
