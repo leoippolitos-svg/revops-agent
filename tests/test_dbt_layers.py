@@ -207,3 +207,20 @@ def test_data_quality_snapshot_matches_the_silver_flags_and_the_answer_key(lakeh
     # A flagged count never exceeds its total, and the as-of date is the newest export.
     assert dup <= companies and no_company <= deals and no_deal <= subs and won_no_sub <= won
     assert str(as_of) == query(db, "SELECT max(replace(last_seen_batch_id, 'as_of=', '')) FROM silver.company")[0][0]
+
+
+def test_funnel_conversion_cohorts_add_up_and_never_grow_down_the_funnel(lakehouse):
+    db, _ = lakehouse
+    # Every deal with a qualification row is in exactly one cohort.
+    qualified = query(db, "SELECT count(DISTINCT deal_id) FROM silver.deal_stage_history WHERE stage = 'qualification'")[0][0]
+    assert query(db, "SELECT sum(deals_qualified) FROM gold.funnel_conversion_monthly")[0][0] == qualified
+    # Won and lost match the stage history, and the open deals are what is left.
+    won = query(db, "SELECT count(DISTINCT deal_id) FROM silver.deal_stage_history WHERE stage = 'closed_won'")[0][0]
+    assert query(db, "SELECT sum(closed_won) FROM gold.funnel_conversion_monthly")[0][0] == won
+    assert query(db, "SELECT count(*) FROM gold.funnel_conversion_monthly WHERE still_open < 0") == [(0,)]
+    # Each later stage is reached by no more deals than the one before it.
+    bad = query(db, """
+        SELECT count(*) FROM gold.funnel_conversion_monthly
+        WHERE reached_discovery > deals_qualified OR reached_proposal > reached_discovery
+           OR reached_negotiation > reached_proposal""")[0][0]
+    assert bad == 0

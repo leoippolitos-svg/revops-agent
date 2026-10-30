@@ -62,6 +62,34 @@ models:
       - name: amount_usd_entered
         description: Sum in US dollars of the yearly contract value of those deals.
 
+  - name: funnel_conversion_monthly
+    description: Funnel conversion by cohort, one row per calendar month in which deals entered qualification. Each row follows the deals of that cohort and counts how many ever reached each later stage, so recent cohorts are still maturing.
+    columns:
+      - name: cohort_month
+        description: Primary key. First day of the calendar month in which the deals entered qualification.
+        data_tests: [unique, not_null]
+      - name: deals_qualified
+        description: Number of deals that entered qualification during the month.
+        data_tests: [not_null]
+      - name: reached_discovery
+        description: Number of those deals that have entered discovery, whenever it happened.
+        data_tests: [not_null]
+      - name: reached_proposal
+        description: Number of those deals that have entered proposal.
+        data_tests: [not_null]
+      - name: reached_negotiation
+        description: Number of those deals that have entered negotiation.
+        data_tests: [not_null]
+      - name: closed_won
+        description: Number of those deals that have entered closed_won.
+        data_tests: [not_null]
+      - name: closed_lost
+        description: Number of those deals that have entered closed_lost.
+        data_tests: [not_null]
+      - name: still_open
+        description: Number of those deals that have neither closed_won nor closed_lost.
+        data_tests: [not_null]
+
   - name: mql_monthly
     description: Marketing qualified leads counted the way Marketing counts them and the way Sales counts them, one row per calendar month in which a form was submitted.
     columns:

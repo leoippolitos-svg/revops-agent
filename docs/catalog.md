@@ -11,6 +11,7 @@ Business grain, ready to use. The agent and the MCP server read only this layer.
 - [`gold.mrr_monthly`](#goldmrrmonthly)
 - [`gold.active_customer_monthly`](#goldactivecustomermonthly)
 - [`gold.funnel_stage_monthly`](#goldfunnelstagemonthly)
+- [`gold.funnel_conversion_monthly`](#goldfunnelconversionmonthly)
 - [`gold.mql_monthly`](#goldmqlmonthly)
 - [`gold.data_quality_snapshot`](#golddataqualitysnapshot)
 
@@ -60,6 +61,25 @@ Number and value of deals that entered each stage of the sales funnel in each ca
 | `stage_order` | Position of the stage in the funnel, 1 for qualification to 6 for closed_lost, for sorting. |
 | `deals_entered` | Number of distinct deals that entered the stage during the month, according to the stage dates recorded by the CRM. |
 | `amount_usd_entered` | Sum in US dollars of the yearly contract value of those deals. |
+
+<a id="goldfunnelconversionmonthly"></a>
+
+### `gold.funnel_conversion_monthly`
+
+Funnel conversion by cohort, one row per calendar month in which deals entered qualification. Each row follows the deals of that cohort and counts how many ever reached each later stage, so recent cohorts are still maturing.
+
+**Context:** [Funnel stages](../context/concepts/funnel-stages.md)
+
+| Column | Description |
+|---|---|
+| `cohort_month` | Primary key. First day of the calendar month in which the deals entered qualification. |
+| `deals_qualified` | Number of deals that entered qualification during the month. |
+| `reached_discovery` | Number of those deals that have entered discovery, whenever it happened. |
+| `reached_proposal` | Number of those deals that have entered proposal. |
+| `reached_negotiation` | Number of those deals that have entered negotiation. |
+| `closed_won` | Number of those deals that have entered closed_won. |
+| `closed_lost` | Number of those deals that have entered closed_lost. |
+| `still_open` | Number of those deals that have neither closed_won nor closed_lost. |
 
 <a id="goldmqlmonthly"></a>
 
