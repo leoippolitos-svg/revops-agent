@@ -1,0 +1,83 @@
+# Retrieval cases: each question must rank its expected context document in the top 3.
+# Measured as Hit@3 and MRR (docs/standards/rag.md). Validated by tools/check_evals.py.
+cases:
+- question: What counts as an active customer?
+  expected: active-customer
+- question: When does a customer stop being active?
+  expected: active-customer
+- question: Is a customer with a paused subscription active?
+  expected: active-customer
+- question: How is the customer count by month defined?
+  expected: active-customer
+- question: Does a closed won deal make someone a customer?
+  expected: active-customer
+- question: Why do Sales and Customer Success count customers differently?
+  expected: active-customer
+- question: Are trial accounts counted as customers?
+  expected: active-customer
+- question: Which table says if a subscription is active?
+  expected: active-customer
+- question: How is MRR calculated?
+  expected: mrr
+- question: What is ending MRR?
+  expected: mrr
+- question: How is new MRR different from expansion MRR?
+  expected: mrr
+- question: How do we treat churned MRR?
+  expected: mrr
+- question: Is MRR before or after discounts?
+  expected: mrr
+- question: When does revenue start after a deal is won?
+  expected: mrr
+- question: Does MRR include one-time invoices?
+  expected: mrr
+- question: What currency is MRR reported in?
+  expected: mrr
+- question: What are the funnel stages and their order?
+  expected: funnel-stages
+- question: When does a deal enter discovery?
+  expected: funnel-stages
+- question: What marks a deal as closed lost?
+  expected: funnel-stages
+- question: Can a deal skip a stage?
+  expected: funnel-stages
+- question: What does funnel volume mean?
+  expected: funnel-stages
+- question: Why are some stage dates out of order?
+  expected: funnel-stages
+- question: What does qualified mean for Sales?
+  expected: funnel-stages
+- question: How many days of inactivity make a deal closed lost?
+  expected: funnel-stages
+- question: What is an MQL?
+  expected: mql
+- question: Which flag counts MQLs, Marketing's or Sales'?
+  expected: mql
+- question: Is a form submission an MQL?
+  expected: mql
+- question: What do conflicting flags mean?
+  expected: mql
+- question: Can I add Marketing and Sales MQL counts?
+  expected: mql
+- question: Which month does an MQL belong to?
+  expected: mql
+- question: Is a contact without a form an MQL?
+  expected: mql
+- question: Why is Marketing's flag canonical?
+  expected: mql
+- question: What currency are amounts in?
+  expected: cross-cutting-rules
+- question: What does as of mean in a report?
+  expected: cross-cutting-rules
+- question: Are internal accounts excluded from metrics?
+  expected: cross-cutting-rules
+- question: Which system is the source of truth for subscriptions?
+  expected: cross-cutting-rules
+- question: How are duplicate companies handled?
+  expected: cross-cutting-rules
+- question: What happens to deals without a company?
+  expected: cross-cutting-rules
+- question: Does a subscription without a deal count for revenue?
+  expected: cross-cutting-rules
+- question: What must every answer include?
+  expected: cross-cutting-rules

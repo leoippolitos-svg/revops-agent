@@ -28,6 +28,7 @@ STEPS = [
     ("Daily data check", [sys.executable, "pipeline/checks/daily_check.py"]),
     ("Context and catalog check", [sys.executable, "tools/check_context.py"]),
     ("Catalog page check", [sys.executable, "tools/build_catalog.py", "--check"]),
+    ("Eval cases check", [sys.executable, "tools/check_evals.py"]),
     ("Skills check", [sys.executable, "tools/check_skills.py"]),
 ]
 
