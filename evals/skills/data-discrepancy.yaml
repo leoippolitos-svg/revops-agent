@@ -1,0 +1,8 @@
+should_trigger:
+  - "why don't these two customer counts match?"
+  - "Sales says one number and Customer Success says another, which is right?"
+  - "this figure changed since yesterday and nothing happened, can I trust it?"
+should_not_trigger:
+  - "why did conversion drop last month?"
+  - "what counts as an MQL?"
+  - "how has MRR moved this year?"

@@ -1,0 +1,8 @@
+should_trigger:
+  - "how has MRR moved this year?"
+  - "are MQLs going up or down since January?"
+  - "show me the customer count trend by month"
+should_not_trigger:
+  - "why did conversion drop last month?"
+  - "how many MQLs did we get in September?"
+  - "build me a pipeline review for Monday"
