@@ -1,0 +1,2 @@
+# A fake key in a test, since replaced by a runtime-built string. Reviewed: not a real secret.
+bf49ff6f48ef9fce19459046e6f70f5ed423e925:tests/test_check_connectors.py:generic-api-key:48

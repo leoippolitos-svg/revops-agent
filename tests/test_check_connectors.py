@@ -45,7 +45,9 @@ def test_duplicate_id_is_reported(tmp_path):
 
 
 def test_secret_in_auth_is_reported(tmp_path):
-    root = repo_with(tmp_path, [good(auth="sk-abcdef1234567890")])
+    # Built at run time so this file holds nothing shaped like a real key for scanners to flag.
+    fake_key = "sk" + "-" + "x" * 20
+    root = repo_with(tmp_path, [good(auth=fake_key)])
     assert any("looks like a secret" in e for e in check_connectors.check(root))
 
 
