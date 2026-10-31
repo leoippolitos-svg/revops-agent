@@ -1,0 +1,8 @@
+should_trigger:
+  - "we ask this every week, can it be automated?"
+  - "this task is repetitive, what could we automate?"
+  - "what should become a scheduled job?"
+should_not_trigger:
+  - "run the lead routing now"
+  - "what does the funnel review do?"
+  - "how many MQLs last month?"

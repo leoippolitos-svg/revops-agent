@@ -1,0 +1,8 @@
+should_trigger:
+  - "which customers are at risk of churning?"
+  - "which accounts need attention this month?"
+  - "who might churn this quarter?"
+should_not_trigger:
+  - "what was churned MRR last month?"
+  - "why did conversion drop?"
+  - "what counts as an active customer?"

@@ -1,0 +1,8 @@
+should_trigger:
+  - "is this drop significant or just noise?"
+  - "is the difference between the two teams real?"
+  - "could this change be random?"
+should_not_trigger:
+  - "how many deals did we win in December?"
+  - "what counts as a win?"
+  - "build a report for Monday"

@@ -1,0 +1,8 @@
+should_trigger:
+  - "let's wrap up this session"
+  - "we are done, close the session"
+  - "write the digest for today's work"
+should_not_trigger:
+  - "open a PR for this change"
+  - "run the evals"
+  - "define a new metric"

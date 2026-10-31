@@ -1,0 +1,8 @@
+should_trigger:
+  - "how did the September cohort perform?"
+  - "do recent cohorts convert worse than older ones?"
+  - "compare win rate by cohort month"
+should_not_trigger:
+  - "how many MQLs did we get in September?"
+  - "build me a pipeline review for Monday"
+  - "what counts as an active customer?"

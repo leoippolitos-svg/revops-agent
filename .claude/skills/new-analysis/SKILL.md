@@ -15,10 +15,11 @@ Standard: `docs/standards/pull-requests.md`. An analysis that is not in the repo
 4. Create `analyses/YYYY-MM-<short-description>/` and branch `analysis/<short-description>`.
 5. Write `query.sql`. Read from the `gold` schema only, with the lakehouse opened read-only. Use the absolute path in `LAKEHOUSE_PATH`, because a relative path resolves from the current folder.
 6. Run it and keep the output next to the query. Note the data date, which is the newest export loaded.
-7. Rule out data causes before business causes: freshness, the flags in `cross-cutting-rules`, a changed definition. Say what you checked.
-8. Write `result.md`: the conclusion in the first line, then the evidence, the definitions used (with their context documents), the tables read and the caveats.
-9. If the analysis shows a rule is wrong or missing, update `context/` in the same PR.
-10. Open the PR with `open-pr`, type `analysis`.
+7. Pick the business skill that fits the question from the map in `agent/skills/README.md` (cohorts, forecast, risk, statistical check) and follow it. For a number that does not match, follow `docs/standards/investigation.md`: hypotheses written before querying, a list of ids as proof.
+8. Rule out data causes before business causes: freshness, the flags in `cross-cutting-rules`, a changed definition. Say what you checked.
+9. Write `result.md`: the conclusion in the first line, then the evidence, the definitions used (with their context documents), the tables read and the caveats.
+10. If the analysis shows a rule is wrong or missing, update `context/` in the same PR.
+11. Open the PR with `open-pr`, type `analysis`.
 
 ## `result.md` shape
 

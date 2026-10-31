@@ -1,0 +1,8 @@
+should_trigger:
+  - "update the owner of this deal"
+  - "merge these two duplicate companies"
+  - "fix the amount on deal 36"
+should_not_trigger:
+  - "who owns deal 36?"
+  - "how many duplicate companies are there?"
+  - "what is the write-back rule for owners?"

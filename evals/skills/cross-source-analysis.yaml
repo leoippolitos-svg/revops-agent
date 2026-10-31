@@ -1,0 +1,8 @@
+should_trigger:
+  - "do won deals match what billing shows?"
+  - "compare deals in the CRM with subscriptions"
+  - "how much of the pipeline turned into revenue?"
+should_not_trigger:
+  - "what is the definition of MRR?"
+  - "how many MQLs last month?"
+  - "which stage should we fix first?"
