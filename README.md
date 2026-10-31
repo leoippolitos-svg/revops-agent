@@ -118,7 +118,7 @@ Two kinds of skills live here on purpose: `.claude/skills/` teach the **coding a
 ## Quick start
 
 > [!IMPORTANT]
-> The data pipeline works end to end (Phase 1). Phases 3 to 6 are written as rules, specs and eval cases. Retrieval over the context documents is built and scored (`python evals/run_retrieval.py`); the four agent tools, the rule-based router and the agent loop are built and tested, the loop against a scripted model and not a real one; the model adapter is built and tested against a fake API but has never been called with a key; the MCP server is built and tested but no real client has connected; the micro-app writes a static page and is tested, but has not been opened in a browser; the weekly audit, lead routing and closed-won provisioning are built; the funnel review automation is specified, not built.
+> The data pipeline works end to end (Phase 1). Phases 3 to 6 are written as rules, specs and eval cases. Retrieval over the context documents is built and scored (`python evals/run_retrieval.py`); the four agent tools, the rule-based router and the agent loop are built and tested, the loop against a scripted model and not a real one; the model adapter is built and tested against a fake API but has never been called with a key; the MCP server is built and tested but no real client has connected; the micro-app writes a static page and is tested, but has not been opened in a browser; the four automations are built and tested against hand-made tables, with the funnel review's agent step not run.
 
 **Requirements:** Python 3.12, Git.
 

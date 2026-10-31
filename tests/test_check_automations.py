@@ -47,7 +47,7 @@ def test_missing_section_is_reported(tmp_path):
 
 def test_ticked_item_on_an_unbuilt_automation_is_reported(tmp_path):
     root = copy_repo(tmp_path)
-    edit(root, "- [ ] Idempotent", "- [x] Idempotent")
+    edit(root, "Status: built", "Status: specified, not built")  # the real spec is built and fully ticked
     assert any("ticked but the automation is not built" in e for e in check_automations.check(root))
 
 
