@@ -56,7 +56,9 @@ def describe_table(table: str, root: Path = ROOT) -> dict:
 
 def get_context(concept: str, root: Path = ROOT) -> dict:
     """The id is looked up in the index and never turned into a path, so it cannot point elsewhere."""
-    index = yaml.safe_load((root / "context" / "index.yaml").read_text(encoding="utf-8"))["concepts"]
+    data = yaml.safe_load((root / "context" / "index.yaml").read_text(encoding="utf-8"))
+    # Concepts and the other documents (company, areas, metrics, maps, rules) share one id space.
+    index = data["concepts"] + data.get("documents", [])
     entry = next((c for c in index if c["id"] == concept), None) if isinstance(concept, str) else None
     if entry is None:
         raise ValueError(f"Unknown concept. Known: {', '.join(c['id'] for c in index)}.")

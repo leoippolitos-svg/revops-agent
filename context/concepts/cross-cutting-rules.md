@@ -24,7 +24,7 @@ These are the rules that apply to every analysis, whatever the metric: currency,
 - Deals without a company: flagged by [[silver.deal.has_company]]. They stay in the funnel and are listed for the owner to fix. They cannot be attributed to a segment or a country.
 - Subscriptions without a deal: flagged by [[silver.subscription.has_matching_deal]]. They still count for revenue and customers, because billing is the source of truth.
 - How many records carry each flag above, as of the newest export, is in [[gold.data_quality_snapshot]]. Read the counts from there: the flagged records themselves stay in silver. Closed won deals with no subscription ([[gold.data_quality_snapshot.closed_won_without_subscription]]) include deals won in the last two weeks, because a subscription starts within two weeks of the win, so a small number is normal.
-- Every answer states the definition it used, links the context document, names the source tables and lists the caveats that apply.
+- Every answer states the definition it used, links the context document, names the source in plain words (the system and object, such as billing subscriptions) and lists the caveats that apply. Table and column names appear only when someone asks for them.
 
 ## Gotchas
 

@@ -173,3 +173,18 @@ def test_ask_without_a_key_exits_with_a_message_and_calls_nothing(monkeypatch, c
     monkeypatch.delenv(model_client.KEY_VARIABLE, raising=False)
     assert agent.main(["agent.py", "--ask", "What counts as an active customer?"]) == 1
     assert "is not set" in capsys.readouterr().err
+
+
+def test_system_blocks_carry_a_cache_marker_only_when_cached():
+    client = model_client.AnthropicClient(api_key="test-key", transport=lambda *a: (200, "{}"))
+    body = client.build_request("m", [{"text": "rules", "cache": True}, {"text": "today", "cache": False}], [], [])
+    assert body["system"][0] == {"type": "text", "text": "rules", "cache_control": {"type": "ephemeral"}}
+    assert body["system"][1] == {"type": "text", "text": "today"}
+
+
+def test_a_failed_tool_result_is_sent_with_is_error():
+    messages = [{"role": "user", "content": "q"},
+                {"role": "assistant", "tool_call": {"name": "query_gold", "input": {}}},
+                {"role": "tool", "name": "query_gold", "content": "{\"error\": \"no\"}", "is_error": True}]
+    converted = model_client._to_api_messages(messages)
+    assert converted[-1]["content"][0]["is_error"] is True

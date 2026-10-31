@@ -72,8 +72,13 @@ def heldout_overlap(root: Path) -> list[str]:
 def routing_skills(root: Path) -> set[str]:
     """Skills are the last column of the routing table; a dash means none."""
     text = (root / "agent" / "directives" / "routing.md").read_text(encoding="utf-8")
-    rows = re.findall(r"^\| `[a-z_]+` \|.*\| ([^|]+) \|\s*$", text, flags=re.MULTILINE)
-    return {r.strip() for r in rows} - {"—"}
+    skills = set()
+    for line in text.splitlines():
+        cells = [c.strip() for c in line.strip().strip("|").split("|")]
+        # Only the intent table has five columns; the profile table below it has three.
+        if len(cells) == 5 and re.fullmatch(r"`[a-z_]+`", cells[0]):
+            skills.add(cells[4])
+    return skills - {"—"}
 
 
 def skill_errors(root: Path) -> list[str]:
