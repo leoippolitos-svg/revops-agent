@@ -4,6 +4,7 @@ Everything that runs, generated from `catalog/*.yml` by `python tools/catalog.py
 
 | Item | Kind | Situation | Owner | Trigger | Writes | AI | Status from |
 |---|---|---|---|---|---|---|---|
+| [Agent chat (local demo)](../catalog/agent-chat.yml) | app | manual | RevOps lead | by hand | nothing | none in demo mode; the agent's models with --model (never run) | none |
 | [Run catalog collector](../catalog/catalog-collect.yml) | job | active | RevOps lead | schedule, 08:00, 13:00 and 18:00 UTC | job health file and Slack alerts (simulated) | none | catalog-collect.yml |
 | [Closed-won provisioning](../catalog/closed-won-provisioning.yml) | automation | manual | Customer Success | a deal enters closed_won (run by hand here) | one workspace request (simulated) | none | provisioning-*.md |
 | [Duplicate companies review queue](../catalog/duplicate-companies.yml) | automation | active | RevOps lead | schedule, Mondays, in the weekly audit workflow | a review queue file | none | weekly-audit.yml |
