@@ -14,7 +14,7 @@ Medallion lakehouse · context by area · intent routing · RAG with evals · re
 ![Tests](https://img.shields.io/badge/tests-558-brightgreen)
 ![Status](https://img.shields.io/badge/status-built%2C%20not%20run%20on%20a%20real%20model-yellow)
 
-[What this is](#what-this-is) · [Why](#why-it-exists) · [What it controls](#what-it-controls-and-what-it-cannot-touch) · [Worth](#what-it-is-worth-and-where-it-can-go) · [Reading guide](#reading-guide) · [See it](#see-it) · [Status](#what-is-built-and-what-is-not) · [How it works](#how-it-works) · [Structure](#project-structure) · [Run it](#run-it) · [Decisions](#design-decisions)
+[Quick start](#quick-start) · [What this is](#what-this-is) · [Why](#why-it-exists) · [Status](#what-is-built-and-what-is-not) · [What it controls](#what-it-controls-and-what-it-cannot-touch) · [Proof](#proof-it-works) · [Reading guide](#reading-guide) · [How it works](#how-it-works) · [Run it](#run-it) · [Decisions](#design-decisions)
 
 </div>
 
@@ -22,6 +22,24 @@ Medallion lakehouse · context by area · intent routing · RAG with evals · re
 
 > [!NOTE]
 > **Everything here is fictional.** The company (Fernway), its data, people and rules are invented. The architecture recreates a RevOps agent I designed and ran in production as a RevOps Lead; no real data, prompts, field names or schemas are included.
+
+## Quick start
+
+<div align="center">
+
+<img src="docs/img/agent-chat.jpg" alt="The local agent chat: an answer and, under it, the intent, tier, tools, documents loaded, prompt blocks and tools called" width="680">
+
+</div>
+
+Three commands, no account and no API key. The chat answers with a scripted model, while the route, the documents loaded, the prompt blocks and the query on the lakehouse are the real agent:
+
+```bash
+git clone https://github.com/leoippolitos-svg/revops-agent.git && cd revops-agent
+pip install -r requirements.txt && python tools/setup.py    # builds the fictional lakehouse
+python apps/agent-chat/server.py                             # then open http://127.0.0.1:8765
+```
+
+Everything else you can run is in [Run it](#run-it).
 
 ## What this is
 
@@ -44,9 +62,36 @@ Revenue teams rarely lack data. They lack **shared meaning**.
 
 So this project treats the agent as the last mile of a data and context system, not as a chatbot over a database. Most of the work, and most of the code, is everything around the model.
 
+## What is built and what is not
+
+> [!IMPORTANT]
+> Everything in this repository is built and tested, and **nothing has run against a real model or client.** The model adapter was tested against a fake API and has never used a key. Answer quality, the with-context versus without-context comparison and the skill triggers are **not measured**, because they need a real model. Every write to an outside system is simulated or behind a switch that is off.
+
+| Piece | Built and tested | Run for real |
+|---|---|---|
+| Data pipeline: generator, bronze → silver → gold with dbt | Yes, 14 gold models with tests | Yes, end to end on fictional data |
+| Context layer: 7 concepts and 27 documents by kind, catalog, checks | Yes | Yes |
+| Retrieval by category, incremental reingest, 50 retrieval, 67 router and 12 profile cases | Yes | Yes, scored above |
+| Five agent tools, router cascade, category profiles, four-block prompt, cost per answer | Yes, with a scripted model | No model call; prices left empty, so cost is logged as null |
+| Model adapter (Claude Messages API, standard library, cache markers) | Yes, against a fake API | No, never used a key |
+| Read-only MCP server (JSON-RPC over stdio) | Yes, against hand-made messages | No real MCP client |
+| Revenue-snapshot micro-app, app template and playbook | Yes | Page rendered from the local lakehouse |
+| Agent chat: local server, page, scripted model, trace of each answer | Yes, 13 tests | Runs locally on real gold data with the scripted model; never with a real model or hosted |
+| Automations: lead routing, provisioning, onboarding auto-advance, churn deactivation, deal amount, weekly audit, reconciliation, duplicate queue, funnel review | Yes, each with a spec, gains, diagram and tests | The weekly reads and the daily deactivation are scheduled; writes are simulated and behind kill switches |
+| AI automations: site qualification, prospecting drafts | Yes, with a scripted model; validation, prompt hashes and cost logging tested | Never called a real model; prices not set, so cost is null |
+| Run catalog, job health, Slack alerts (simulated) | Yes | The collector is scheduled; Slack has never been posted to |
+| On-call agent and watchdog | Yes; the steps without AI are tested | Workflows exist; every switch is off and the agent step has never run |
+| Verification: reviewer agents, profile eval, personal-data guard, AI security review | Yes | The AI review is off until a key exists |
+| With vs without context comparison | Design and 18 questions | No, needs a model |
+
+Open owner questions, such as the funnel-review thresholds, are in [`memory/decisions/`](memory/decisions) and [`BACKLOG.md`](BACKLOG.md), not buried in code.
+
 ## What it controls, and what it cannot touch
 
 The design rule is that **the agent advises and people execute.** Each row is something the system can do, the limit that holds it, and where to read it. The limits are enforced in code, CI and read-only connections, not in a prompt ([ADR-0005](docs/adr/0005-enforce-rules-outside-the-model.md)).
+
+<details>
+<summary>Show the table: each capability, what it can touch, the limit that holds</summary>
 
 | What it does | What it can touch | The limit that holds | Read more |
 |---|---|---|---|
@@ -61,6 +106,7 @@ The design rule is that **the agent advises and people execute.** Each row is so
 | **Watches everything that runs** | Workflow runs, job health, Slack threads | One card per job; alerts built by code; the on-call agent may only open a PR or ask for a rerun of an idempotent job ([ADR-0021](docs/adr/0021-an-on-call-agent-between-two-steps-without-ai.md)) | [`catalog/`](catalog), [`oncall/`](oncall) |
 | **Shows the numbers to leaders** | A read-only page over four gold tables | No form, no input, no script; labels the partial month | [`apps/revenue-snapshot/`](apps/revenue-snapshot/SPEC.md) |
 | **Lets anyone watch it answer** | A local chat over the agent, with the trace of every answer | 127.0.0.1 only, Origin check, one validated field, strict CSP, a scripted model when there is no key ([ADR-0023](docs/adr/0023-a-local-chat-app-to-show-the-agent.md)) | [`apps/agent-chat/`](apps/agent-chat/README.md) |
+</details>
 
 **What it never does:** write to a data source from the agent, send a message written by a model, change a record outside the [write-back rules](context/rules/writeback-rules.md), read `silver` or `bronze` to answer a business question, or accept real company data into the repository. Every outside connection is in the [connector registry](connectors/registry.yaml) with its smallest scope; the CRM, billing, product, Slack and GitHub write paths are **simulated or switched off**.
 
@@ -87,6 +133,33 @@ The design rule is that **the agent advises and people execute.** Each row is so
 
 **Where it goes next**, needing credentials or a real environment: run `--ask` once and score the evals, switch on the Slack webhook, the on-call agent and the AI security review, connect a real MCP client, and host the chat for a team with sign-in (the local chat exists; hosting is [ADR-0022](docs/adr/0022-the-web-chat-app-waits-for-a-host-and-a-key.md)).
 
+## Proof it works
+
+Nothing below needs an API key.
+
+**Retrieval, routing and profiles are scored, not assumed:**
+
+```text
+$ python evals/run_retrieval.py
+50 cases: Hit@3 1.000 (target 0.9), MRR 0.893 (target 0.75)
+$ python evals/run_router.py
+router_cases.yaml: 40 cases, accuracy 1.000 (target 0.9)
+router_heldout.yaml: 27 cases, accuracy 1.000 (target 0.9)
+$ python evals/run_profiles.py
+profile_cases.yaml: 12 cases, pass rate 1.000 (target 1.0)
+```
+
+The sets are self-written and no model is called, so the scores show the deterministic parts work, not that answers are good. Each eval says so in its header.
+
+**An audit that finds a real case in the fictional data:**
+
+```text
+$ python automations/reconciliation/reconcile.py
+Divergence (1): deal 36, won without subscription, owner Finance, proposal: start the subscription or reopen the deal
+Pending (2), Known case (1)
+This is a proposal. Nothing was corrected.
+```
+
 ## Reading guide
 
 Short on time? Read in this order.
@@ -104,88 +177,6 @@ Short on time? Read in this order.
 | 5 min | [`analyses/2026-01-new-mrr-december/`](analyses/2026-01-new-mrr-december/result.md) | A finished analysis: question, query, data checks, definitions, limits |
 | 5 min | [`docs/adr/`](docs/adr) | 24 short decisions, each with the reason and the alternative rejected |
 | 10 min | [`docs/standards/`](docs/standards) and [`docs/lessons-learned.md`](docs/lessons-learned.md) | The rules the repo enforces on itself, and where they came from |
-
-## See it
-
-Nothing below needs an API key.
-
-**0. Watch it answer.** `python apps/agent-chat/server.py` opens a local chat. The answer in demo mode comes from a scripted model, but the route, the documents loaded, the prompt blocks and the tool call on the lakehouse are the real agent:
-
-<div align="center">
-
-<img src="docs/img/agent-chat.jpg" alt="The local agent chat: an answer and, under it, the intent, tier, tools, documents loaded, prompt blocks and tools called" width="640">
-
-</div>
-
-**1. The plan before any model is called.** The router picks an intent (and logs which step decided), the tools, the model tier, the fixed documents it will always read, and a call budget. The system prompt is four blocks, the two stable ones cached:
-
-```text
-$ python agent/agent.py --plan "How many MQLs did we get in September?"
-{
-  "intent": "metric_lookup", "via": "rules", "tier": "fast",
-  "tools": ["search_context", "query_gold", "get_map"],
-  "fixed_docs": ["company", "entities", "data-map"],
-  "model": "claude-haiku-5-5", "budget": 3,
-  "system_blocks": [{"chars": 10898, "cached": true}, {"chars": 10078, "cached": true},
-                    {"chars": 73, "cached": false}, {"chars": 1878, "cached": false}]
-}
-```
-
-**2. Retrieval, routing and profiles are scored, not assumed.**
-
-```text
-$ python evals/run_retrieval.py
-50 cases: Hit@3 1.000 (target 0.9), MRR 0.893 (target 0.75)
-$ python evals/run_router.py
-router_cases.yaml: 40 cases, accuracy 1.000 (target 0.9)
-router_heldout.yaml: 27 cases, accuracy 1.000 (target 0.9)
-$ python evals/run_profiles.py
-profile_cases.yaml: 12 cases, pass rate 1.000 (target 1.0)
-```
-
-The sets are self-written and no model is called, so the scores show the deterministic parts work, not that answers are good. Each eval says so in its header.
-
-**3. An audit that finds a real case in the fictional data.**
-
-```text
-$ python automations/reconciliation/reconcile.py
-## Divergence (1)
-| 36 | won without subscription | Finance, with Customer Success for the kickoff | start the subscription for deal 36, or reopen the deal |
-## Pending (2)   ...   ## Known case (1)   ...
-This is a proposal. Nothing was corrected.
-```
-
-**4. A read-only page over the gold layer**, each block with its definition:
-
-<div align="center">
-
-<img src="docs/img/revenue-snapshot.jpg" alt="The revenue snapshot page: MRR and active customers by month, each with its definition" width="480">
-
-</div>
-
-## What is built and what is not
-
-> [!IMPORTANT]
-> Everything in this repository is built and tested, and **nothing has run against a real model or client.** The model adapter was tested against a fake API and has never used a key. Answer quality, the with-context versus without-context comparison and the skill triggers are **not measured**, because they need a real model. Every write to an outside system is simulated or behind a switch that is off.
-
-| Piece | Built and tested | Run for real |
-|---|---|---|
-| Data pipeline: generator, bronze → silver → gold with dbt | Yes, 14 gold models with tests | Yes, end to end on fictional data |
-| Context layer: 7 concepts and 27 documents by kind, catalog, checks | Yes | Yes |
-| Retrieval by category, incremental reingest, 50 retrieval, 67 router and 12 profile cases | Yes | Yes, scored above |
-| Five agent tools, router cascade, category profiles, four-block prompt, cost per answer | Yes, with a scripted model | No model call; prices left empty, so cost is logged as null |
-| Model adapter (Claude Messages API, standard library, cache markers) | Yes, against a fake API | No, never used a key |
-| Read-only MCP server (JSON-RPC over stdio) | Yes, against hand-made messages | No real MCP client |
-| Revenue-snapshot micro-app, app template and playbook | Yes | Page rendered from the local lakehouse |
-| Agent chat: local server, page, scripted model, trace of each answer | Yes, 13 tests | Runs locally on real gold data with the scripted model; never with a real model or hosted |
-| Automations: lead routing, provisioning, onboarding auto-advance, churn deactivation, deal amount, weekly audit, reconciliation, duplicate queue, funnel review | Yes, each with a spec, gains, diagram and tests | The weekly reads and the daily deactivation are scheduled; writes are simulated and behind kill switches |
-| AI automations: site qualification, prospecting drafts | Yes, with a scripted model; validation, prompt hashes and cost logging tested | Never called a real model; prices not set, so cost is null |
-| Run catalog, job health, Slack alerts (simulated) | Yes | The collector is scheduled; Slack has never been posted to |
-| On-call agent and watchdog | Yes; the steps without AI are tested | Workflows exist; every switch is off and the agent step has never run |
-| Verification: reviewer agents, profile eval, personal-data guard, AI security review | Yes | The AI review is off until a key exists |
-| With vs without context comparison | Design and 18 questions | No, needs a model |
-
-Open owner questions, such as the funnel-review thresholds, are in [`memory/decisions/`](memory/decisions) and [`BACKLOG.md`](BACKLOG.md), not buried in code.
 
 ## How it works
 
@@ -260,6 +251,11 @@ The dotted line is the step most teams skip: corrections flow back into the cont
 
 ## Project structure
 
+
+
+<details>
+<summary>Show the folder tree</summary>
+
 ```
 revops-agent/
 ├── generator/        # Fictional company data, with deliberate data-quality issues
@@ -303,6 +299,8 @@ revops-agent/
 ```
 
 Two kinds of skills live here on purpose: `.claude/skills/` teach the **coding agent** how to build the repo, `agent/skills/` teach the **RevOps agent** how to do business work.
+
+</details>
 
 ## Run it
 
@@ -365,6 +363,9 @@ This path is built but has never been run; see the [status table](#what-is-built
 
 Each decision is a short record with the context, the choice and the alternative rejected.
 
+<details>
+<summary>Show the 24 decisions</summary>
+
 | ADR | Decision |
 |---|---|
 | [0001](docs/adr/0001-duckdb-as-lakehouse.md) | DuckDB as the lakehouse, vectors included |
@@ -394,6 +395,8 @@ Each decision is a short record with the context, the choice and the alternative
 
 Standards live in [docs/standards/](docs/standards/).
 
+</details>
+
 ## Tech stack
 
 | Area | Choice |
@@ -407,6 +410,10 @@ Standards live in [docs/standards/](docs/standards/).
 | Scheduling | GitHub Actions |
 | Tests | pytest |
 | CI | GitHub Actions, gitleaks, leak and personal-data guards |
+
+## Third-party material
+
+Everything is original work under the MIT license, except Anthropic's `skill-creator` skill, copied unmodified under Apache 2.0 as the method for building skills. Source, version and rules: [THIRD_PARTY.md](THIRD_PARTY.md).
 
 ## Contributing
 

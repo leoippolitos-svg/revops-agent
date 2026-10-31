@@ -1,11 +1,11 @@
 ---
 name: create-skill
-description: Creates or improves a skill for this repository following the repo's skills standard. Use when the user asks to "create a skill", "turn this into a skill", "improve this skill", or when a workflow has been repeated enough to deserve one.
+description: Applies this repository's rules when a skill is created or improved, on top of Anthropic's skill-creator method. Use when the user asks to "create a skill" or "improve this skill" in this repo, or to "turn this into a skill", to pick the folder, add the trigger test, run the skills check and open the PR.
 ---
 
 # Create a skill
 
-Standard: `docs/standards/skills.md`.
+Standard: `docs/standards/skills.md`. Method: Anthropic's `skill-creator` (`.claude/skills/skill-creator/`), which this skill follows and never replaces: intent, test prompts, runs with and without the skill, grading, iteration and description optimisation. The steps below add what this repository requires.
 
 ## Steps
 

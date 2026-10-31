@@ -60,4 +60,4 @@ Rules: [docs/standards/pull-requests.md](docs/standards/pull-requests.md)
 - Commit secrets or read `.env`.
 - Edit the bronze layer by hand. Bronze is written only by ingestion.
 - Give the RevOps agent write access to any data source.
-- Copy third-party skills or code into the repo. Reference and credit them instead.
+- Copy third-party skills or code into the repo, except unmodified, under a license that allows it, pinned to a version and listed in `THIRD_PARTY.md` (Anthropic's `skill-creator` is the first). Never edit such a copy in place.

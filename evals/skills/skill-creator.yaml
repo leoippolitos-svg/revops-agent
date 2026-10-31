@@ -1,0 +1,8 @@
+should_trigger:
+  - "help me create a new skill from scratch"
+  - "run evals to test whether this skill triggers correctly"
+  - "optimize the description of this skill for better triggering"
+should_not_trigger:
+  - "open a PR for this change"
+  - "why did conversion drop last month?"
+  - "add a gold model for churn"
