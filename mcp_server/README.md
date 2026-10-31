@@ -27,4 +27,4 @@ Registered as the consumer `mcp_server` of the `lakehouse` connector in [connect
 
 ## Status
 
-Rules only. No server code exists yet. The `query_gold` guard it needs is already built in [agent/tools/query_gold.py](../agent/tools/query_gold.py) and the server will import it, not write a second one (ADR-0013).
+Built: [server.py](server.py), run with `python mcp_server/server.py` (JSON-RPC on stdin and stdout, standard library only, ADR-0017). It imports the `query_gold` guard from [agent/tools/query_gold.py](../agent/tools/query_gold.py) instead of writing a second one (ADR-0013). The security tests above are in `tests/test_mcp_server.py`. No real MCP client has connected to it yet.
