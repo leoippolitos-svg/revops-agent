@@ -49,8 +49,8 @@ def entries(log):
 
 # --- the shape of the agent ----------------------------------------------------------------
 
-def test_the_agent_has_exactly_the_four_read_only_tools():
-    assert set(agent.TOOLS) == {"query_gold", "search_context", "get_catalog", "search_records"}
+def test_the_agent_has_exactly_the_five_read_only_tools():
+    assert set(agent.TOOLS) == {"query_gold", "search_context", "get_catalog", "search_records", "get_map"}
     assert set(agent.SPECS) == set(agent.TOOLS)
 
 
@@ -250,3 +250,35 @@ def test_every_question_adds_one_line_even_when_declined(log):
 def test_plan_shows_the_route_the_model_and_the_budget_without_a_model():
     out = agent.plan("Why did conversion drop last month?")
     assert (out["intent"], out["model"], out["budget"]) == ("funnel_diagnosis", "claude-sonnet-5-5", 8)
+
+
+# --- cost and the classifier ---------------------------------------------------------
+
+def test_cost_is_null_when_a_price_is_unknown_and_never_zero():
+    assert agent.estimate_cost({"m": {"input": 10, "output": 0, "cache_write": 0, "cache_read": 0}}, {}) is None
+
+
+def test_cost_sums_every_kind_of_token_at_its_price():
+    table = {"m": {"input": 3.0, "output": 15.0, "cache_write": 3.75, "cache_read": 0.3}}
+    usage = {"m": {"input": 1_000_000, "output": 100_000, "cache_write": 0, "cache_read": 1_000_000}}
+    assert agent.estimate_cost(usage, table) == 3.0 + 1.5 + 0.3
+
+
+def test_the_price_table_is_empty_on_purpose_so_cost_is_logged_as_null(log):
+    agent.run_agent("How many MQLs did we get in September?", ScriptedModel([{"text": "x"}]), fake_tools(), log)
+    (entry,) = entries(log)
+    assert entry["cost_usd"] is None and entry["classifier_used"] is False
+
+
+def test_the_classifier_routes_and_its_tokens_count_in_the_answer(log):
+    model = ScriptedModel([{"text": "trend_analysis"}, {"text": "the answer"}])
+    out = agent.run_agent("MQLs from webinars", model, fake_tools(), log, use_classifier=True)
+    assert out["intent"] == "trend_analysis" and model.calls[0]["model"] == "claude-haiku-5-5"
+    (entry,) = entries(log)
+    assert entry["via"] == "model" and entry["classifier_used"] is True
+
+
+def test_a_classifier_that_answers_nonsense_falls_back_to_the_rules(log):
+    model = ScriptedModel([{"text": "I think this is about revenue"}, {"text": "x"}])
+    out = agent.run_agent("Why did conversion drop last month?", model, fake_tools(), log, use_classifier=True)
+    assert out["intent"] == "funnel_diagnosis"

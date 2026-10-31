@@ -274,3 +274,11 @@ def test_query_gold_reads_every_gold_model_and_nothing_else(lakehouse):
         except query_gold.QueryRejected:
             continue
         raise AssertionError(f"{table} was readable")
+
+
+def test_owner_directory_names_every_owner_and_holds_no_contact_detail(lakehouse):
+    db, _ = lakehouse
+    assert query(db, "SELECT count(*) FROM gold.owner_directory")[0][0] == query(db, "SELECT count(*) FROM silver.owner")[0][0]
+    columns = {row[0] for row in query(db, "SELECT column_name FROM information_schema.columns "
+                                           "WHERE table_schema = 'gold' AND table_name = 'owner_directory'")}
+    assert columns == {"owner_id", "full_name", "team"}

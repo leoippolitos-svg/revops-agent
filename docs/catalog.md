@@ -15,6 +15,7 @@ Business grain, ready to use. The agent and the MCP server read only this layer.
 - [`gold.mql_monthly`](#goldmqlmonthly)
 - [`gold.data_quality_snapshot`](#golddataqualitysnapshot)
 - [`gold.funnel_time_in_stage_monthly`](#goldfunneltimeinstagemonthly)
+- [`gold.owner_directory`](#goldownerdirectory)
 - [`gold.owner_workload`](#goldownerworkload)
 
 <a id="goldmrrmonthly"></a>
@@ -137,6 +138,18 @@ How many days deals stayed in each open stage (qualification to negotiation), gr
 | `out_of_order_exits` | Number of those deals whose recorded exit date is earlier than their entry date. They are left out of the day figures. |
 | `median_days_in_stage` | Median number of days between entering and leaving the stage, for deals with consistent dates. Empty when every exit in the month is out of order. |
 | `avg_days_in_stage` | Average number of days between entering and leaving the stage, same deals as the median. |
+
+<a id="goldownerdirectory"></a>
+
+### `gold.owner_directory`
+
+One row per owner with the full name and team, so answers can name people instead of showing ids. It holds no e-mail or other contact detail.
+
+| Column | Description |
+|---|---|
+| `owner_id` | Primary key. Identifier of the owner in the CRM. |
+| `full_name` | The owner's full name as stored in the CRM, used to name people in answers. |
+| `team` | Team the owner belongs to, for example sdr, sales or enterprise. |
 
 <a id="goldownerworkload"></a>
 

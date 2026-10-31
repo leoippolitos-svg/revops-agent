@@ -47,7 +47,7 @@ The only field an automation may write is the lead's owner, see [[doc:writeback-
 
 ## Owners
 
-Owners are [[silver.owner]], with name and team. The agent never shows an owner id: it resolves the name through the map tool or [[silver.owner.full_name]], and the team through [[doc:entities]].
+Owners are in [[gold.owner_directory]], with name and team. The agent never shows an owner id: it resolves the name with the map tool's `owners` key, and the team through [[doc:entities]].
 
 ## Loss reasons
 

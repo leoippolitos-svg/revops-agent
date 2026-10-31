@@ -20,7 +20,7 @@ def test_every_intent_in_routing_md_has_tools_a_tier_and_a_skill_field():
     assert set(routes) == {"metric_lookup", "trend_analysis", "funnel_diagnosis", "definition_question",
                            "data_quality", "past_work_lookup", "report_request", "out_of_scope"}
     assert routes["funnel_diagnosis"] == {
-        "tools": ["search_context", "query_gold", "search_records"], "tier": "standard", "skill": "funnel-diagnosis"}
+        "tools": ["search_context", "query_gold", "search_records", "get_map"], "tier": "standard", "skill": "funnel-diagnosis"}
     assert routes["metric_lookup"]["skill"] is None
     assert routes["out_of_scope"]["tools"] == []
 

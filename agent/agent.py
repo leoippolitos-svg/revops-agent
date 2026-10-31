@@ -39,6 +39,7 @@ sys.path.insert(0, str(ROOT / "agent"))
 sys.path.insert(0, str(ROOT / "agent" / "tools"))
 
 from get_catalog import UnknownModel, get_catalog  # noqa: E402
+from get_map import MAPS, UnknownMap, get_map  # noqa: E402
 from model_client import AnthropicClient, ModelError  # noqa: E402
 from query_gold import QueryFailed, QueryRejected, query_gold  # noqa: E402
 from rag.retrieve import retrieve  # noqa: E402
@@ -60,6 +61,7 @@ TOOLS: dict[str, Callable[..., dict]] = {
     "search_context": search_context,
     "get_catalog": get_catalog,
     "search_records": search_records,
+    "get_map": get_map,
 }
 # What the model is told about each tool: the argument names it may use.
 # A description also says what the tool refuses: a refusal the model was not told about
@@ -75,14 +77,57 @@ SPECS = {
                     "arguments": {"model": "string, such as gold.mrr_monthly"}},
     "search_records": {"description": "Find past work and what was concluded.",
                        "arguments": {"question": "string", "k": "integer, optional, 1 to 5"}},
+    "get_map": {"description": ("Look up a closed map to resolve names and orders before querying: "
+                                + "; ".join(f"`{k}`: {v[0]}" for k, v in MAPS.items())
+                                + " Refuses any other key."),
+                "arguments": {"key": "string, one of " + ", ".join(MAPS)}},
 }
 # What a tool may raise on bad input. Anything else is a bug and is allowed to crash.
-TOOL_ERRORS = (QueryRejected, QueryFailed, InvalidInput, UnknownModel)
+TOOL_ERRORS = (QueryRejected, QueryFailed, InvalidInput, UnknownModel, UnknownMap)
+CLASSIFIER_PROMPT = ("Classify the question into exactly one intent id from this list and answer with the id "
+                     "only, nothing else: {intents}.")
 
 
 class ModelClient(Protocol):
     def complete(self, model: str, system: str, messages: list[dict], tools: list[dict]) -> dict:
         """Return {"text": str | None, "tool_call": {"name", "input"} | None, "usage": {...}}."""
+
+
+def prices() -> dict[str, dict]:
+    """US dollars per million tokens, per model, read from the price table in agent/tools/README.md.
+
+    A cell left empty means the price is not known. The cost of an answer that used such a
+    model is then None, never zero: a zero would hide a new model while it spends."""
+    text = (ROOT / "agent" / "tools" / "README.md").read_text(encoding="utf-8")
+    table = {}
+    for line in text.split("## Prices", 1)[-1].splitlines():
+        cells = [c.strip() for c in line.strip().strip("|").split("|")]
+        if len(cells) == 5 and re.fullmatch(r"`[a-z0-9-]+`", cells[0]):
+            values = [float(c) if re.fullmatch(r"\d+(\.\d+)?", c) else None for c in cells[1:]]
+            table[cells[0].strip("`")] = dict(zip(("input", "output", "cache_write", "cache_read"), values))
+    return table
+
+
+def estimate_cost(usage_by_model: dict[str, dict], table: dict[str, dict] | None = None) -> float | None:
+    """Sum the cost of every model call of one answer, the classifier included."""
+    table = prices() if table is None else table
+    total = 0.0
+    for model, tokens in usage_by_model.items():
+        price = table.get(model) or {}
+        for kind in ("input", "output", "cache_write", "cache_read"):
+            if tokens.get(kind):
+                if price.get(kind) is None:
+                    return None
+                total += tokens[kind] * price[kind] / 1_000_000
+    return round(total, 6)
+
+
+def _add_usage(usage_by_model: dict, model: str, usage: dict) -> None:
+    tokens = usage_by_model.setdefault(model, {"input": 0, "output": 0, "cache_write": 0, "cache_read": 0})
+    tokens["input"] += usage.get("input_tokens", 0)
+    tokens["output"] += usage.get("output_tokens", 0)
+    tokens["cache_write"] += usage.get("cache_creation_input_tokens", 0)
+    tokens["cache_read"] += usage.get("cache_read_input_tokens", 0)
 
 
 def model_ids() -> dict[str, str]:
@@ -177,10 +222,25 @@ def _log(path: Path, entry: dict) -> None:
 
 
 def run_agent(question: str, client: ModelClient, tools: dict[str, Callable] | None = None,
-              log_path: Path | None = None) -> dict:
-    """Answer one question. Returns the answer and how it was reached."""
+              log_path: Path | None = None, use_classifier: bool = False) -> dict:
+    """Answer one question. Returns the answer and how it was reached.
+
+    With use_classifier, the fast model picks the intent first (the router falls back to its
+    rules if the answer is not a known id), and its tokens count in the cost of the answer:
+    otherwise routing would look free."""
     started = time.perf_counter()
-    decision = route(question)
+    usage_by_model: dict[str, dict] = {}
+    classifier = None
+    if use_classifier:
+        from router import load_routes
+        fast = model_ids()["fast"]
+
+        def classifier(text: str) -> str:
+            reply = client.complete(fast, CLASSIFIER_PROMPT.format(intents=", ".join(load_routes())),
+                                    [{"role": "user", "content": text}], [])
+            _add_usage(usage_by_model, fast, reply.get("usage") or {})
+            return (reply.get("text") or "").strip()
+    decision = route(question, classifier=classifier)
     tools = tools or TOOLS
     log_path = log_path or DEFAULT_LOG
     tier, called, tokens = decision["tier"], [], {"input": 0, "output": 0}
@@ -199,6 +259,7 @@ def run_agent(question: str, client: ModelClient, tools: dict[str, Callable] | N
             reply = client.complete(model, system, messages, [] if exhausted else specs)
             model_calls += 1
             usage = reply.get("usage") or {}
+            _add_usage(usage_by_model, model, usage)
             tokens["input"] += usage.get("input_tokens", 0)
             tokens["output"] += usage.get("output_tokens", 0)
             call = reply.get("tool_call")
@@ -223,6 +284,10 @@ def run_agent(question: str, client: ModelClient, tools: dict[str, Callable] | N
         "intent": outcome["intent"], "via": decision.get("via"), "tier": tier, "tools": called,
         "model_calls": model_calls,
         "budget_exhausted": exhausted, "input_tokens": tokens["input"], "output_tokens": tokens["output"],
+        "cache_write_tokens": sum(u["cache_write"] for u in usage_by_model.values()),
+        "cache_read_tokens": sum(u["cache_read"] for u in usage_by_model.values()),
+        "classifier_used": use_classifier,
+        "cost_usd": estimate_cost(usage_by_model) if usage_by_model else 0.0,
         "latency_ms": round((time.perf_counter() - started) * 1000),
     })
     return outcome
