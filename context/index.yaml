@@ -30,3 +30,34 @@ concepts:
     path: concepts/cross-cutting-rules.md
     summary: Currency, dates, internal accounts, data-quality flags and sources of truth that apply to every analysis
     status: canonical
+
+# Other documents: the company, each area, metrics, the CRM and data maps, reports and
+# rules. Each has a kind, and tools/check_context.py checks the sections of that kind
+# (docs/standards/context-documents.md). The agent reads them in the order in
+# agent/directives/AGENT.md.
+documents:
+  - {id: company, kind: company, path: company/company.md, status: canonical, summary: "What Fernway sells, to whom, through which systems, and its glossary"}
+  - {id: okrs, kind: okrs, path: company/okrs.md, status: canonical, summary: "Objectives and key results of the cycle, with baselines and targets"}
+  - {id: entities, kind: entities, path: company/entities.md, status: canonical, summary: "Teams, people, segments and pipelines, and how to resolve vague references"}
+  - {id: area-marketing, kind: area, path: areas/area-marketing.md, status: canonical, summary: "How the Marketing area works"}
+  - {id: area-sdr, kind: area, path: areas/area-sdr.md, status: canonical, summary: "How the SDR area works"}
+  - {id: area-sales, kind: area, path: areas/area-sales.md, status: canonical, summary: "How the Sales area works"}
+  - {id: area-enterprise, kind: area, path: areas/area-enterprise.md, status: canonical, summary: "How the Enterprise area works"}
+  - {id: area-onboarding, kind: area, path: areas/area-onboarding.md, status: canonical, summary: "How the Onboarding area works"}
+  - {id: area-customer-success, kind: area, path: areas/area-customer-success.md, status: canonical, summary: "How the Customer Success area works"}
+  - {id: area-revops, kind: area, path: areas/area-revops.md, status: canonical, summary: "How the RevOps area works"}
+  - {id: metrics-marketing, kind: metrics, path: metrics/metrics-marketing.md, status: canonical, summary: "Formulas of Marketing metrics"}
+  - {id: metrics-sdr, kind: metrics, path: metrics/metrics-sdr.md, status: canonical, summary: "Formulas of SDR metrics"}
+  - {id: metrics-sales, kind: metrics, path: metrics/metrics-sales.md, status: canonical, summary: "Formulas of Sales metrics"}
+  - {id: metrics-enterprise, kind: metrics, path: metrics/metrics-enterprise.md, status: canonical, summary: "Formulas of Enterprise metrics"}
+  - {id: metrics-onboarding, kind: metrics, path: metrics/metrics-onboarding.md, status: canonical, summary: "Formulas of Onboarding metrics"}
+  - {id: metrics-customer-success, kind: metrics, path: metrics/metrics-customer-success.md, status: canonical, summary: "Formulas of Customer Success metrics"}
+  - {id: metrics-revops, kind: metrics, path: metrics/metrics-revops.md, status: canonical, summary: "Formulas of RevOps metrics"}
+  - {id: metrics-product, kind: metrics, path: metrics/metrics-product.md, status: draft, summary: "Product usage metrics, none in the data yet"}
+  - {id: crm-map, kind: crm-map, path: crm/crm-map.md, status: canonical, summary: "How the CRM is organised and where each object lands in gold"}
+  - {id: data-map, kind: data-map, path: crm/data-map.md, status: canonical, summary: "How to query the gold layer: grain, joins, model and validation queries"}
+  - {id: report-revenue-snapshot, kind: report, path: reports/report-revenue-snapshot.md, status: canonical, summary: "How every number on the revenue snapshot page is computed"}
+  - {id: benchmarks, kind: benchmark, path: reports/benchmarks.md, status: draft, summary: "External benchmarks, placeholders until sourced"}
+  - {id: icp, kind: rule, path: rules/icp.md, status: draft, summary: "Ideal customer profile and anti-profile"}
+  - {id: writeback-rules, kind: rule, path: rules/writeback-rules.md, status: canonical, summary: "The only fields automations may write, and the controls they need"}
+  - {id: apps, kind: inventory, path: rules/apps.md, status: canonical, summary: "Internal apps and what each computes"}

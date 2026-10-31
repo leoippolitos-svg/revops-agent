@@ -134,6 +134,54 @@ def test_missing_front_matter_fails(mini_repo):
     assert any("front matter is missing owner_team" in e for e in check_context.check(mini_repo))
 
 
+def add_area_doc(repo, body_sections=None, kind="area"):
+    """Add one non-concept document to the mini repo and list it under "documents"."""
+    names = body_sections or check_context.KIND_SECTIONS[kind]
+    body = "".join(f"## {name}\n\nText about {name.lower()}, see [[concept:revenue]].\n\n" for name in names)
+    folder = repo / "context" / "areas"
+    folder.mkdir(exist_ok=True)
+    (folder / "area-finance.md").write_text(
+        "---\nid: area-finance\ntitle: Finance\nkind: area\nowner_team: RevOps\nstatus: draft\n"
+        "last_reviewed: 2026-10-31\nrelated: [revenue]\n---\n\n# Finance\n\n" + body, encoding="utf-8")
+    index_path = repo / "context" / "index.yaml"
+    index = yaml.safe_load(index_path.read_text(encoding="utf-8"))
+    index["documents"] = [{"id": "area-finance", "kind": kind, "path": "areas/area-finance.md", "status": "draft"}]
+    index_path.write_text(yaml.safe_dump(index), encoding="utf-8")
+
+
+def test_a_complete_area_document_passes(mini_repo):
+    add_area_doc(mini_repo)
+    assert check_context.check(mini_repo) == []
+
+
+def test_an_area_document_missing_a_section_of_its_kind_fails(mini_repo):
+    add_area_doc(mini_repo, body_sections=[s for s in check_context.KIND_SECTIONS["area"] if s != "KPIs"])
+    assert any("a area document needs the section 'KPIs'" in e for e in check_context.check(mini_repo))
+
+
+def test_an_unknown_kind_fails(mini_repo):
+    add_area_doc(mini_repo, kind="area")
+    index_path = mini_repo / "context" / "index.yaml"
+    index = yaml.safe_load(index_path.read_text(encoding="utf-8"))
+    index["documents"][0]["kind"] = "poem"
+    index_path.write_text(yaml.safe_dump(index), encoding="utf-8")
+    assert any("unknown kind 'poem'" in e for e in check_context.check(mini_repo))
+
+
+def test_a_doc_annotation_must_resolve(mini_repo):
+    add_area_doc(mini_repo)
+    rewrite_doc(mini_repo, "None.", "See [[doc:area-finance]] and [[doc:area-nowhere]].")
+    errors = check_context.check(mini_repo)
+    assert any("doc:area-nowhere" in e for e in errors) and not any("doc:area-finance" in e for e in errors)
+
+
+def test_only_map_documents_may_hold_a_code_block(mini_repo):
+    add_area_doc(mini_repo)
+    doc = mini_repo / "context" / "areas" / "area-finance.md"
+    doc.write_text(doc.read_text(encoding="utf-8") + "```sql\nselect 1\n```\n", encoding="utf-8")
+    assert any("may hold a code block" in e for e in check_context.check(mini_repo))
+
+
 # --- daily_check -----------------------------------------------------------------
 
 
