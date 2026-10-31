@@ -1,6 +1,6 @@
 # Weekly funnel review, Spec
 
-Status: specified, not built
+Status: built
 
 ## Problem
 Nobody looks at the whole funnel every week. A stage can slow down or leak for weeks before someone notices, and a month-by-month number hides it, because the newest deals have not had time to close. The review finds the one stage that limits the funnel and says what to check, before the weekly revenue meeting.
@@ -43,14 +43,14 @@ If a gold table is missing, or the data is older than the weekly schedule allows
 Dry-run is the default: the report is printed and no file is written. `--write` turns the effect on. Running twice for the same data date overwrites the same file, so effects are not duplicated.
 
 ## How it would run
-The evidence part is deterministic and would be a script like the audit. The reading of the evidence needs judgment, so it is the agent using the skill. ADR-0009 names a scheduled cloud agent as an option for exactly this kind of work, and it stays an option until the agent exists. The agent keeps its four read-only tools; the only file it may write is the report above.
+The evidence part is `review.py`, deterministic like the audit. It never states a cause: its report ends with a hand-off, and reading the evidence needs judgment, so that is the agent using the skill. It is not scheduled: the synthetic data has a fixed date, so its freshness check would stop every weekly run. ADR-0009 names a scheduled cloud agent as an option for exactly this kind of work, and it stays an option until the agent exists. The agent keeps its four read-only tools; the only file it may write is the report above.
 
 ## Security checklist
-Standard: `docs/standards/security.md`, automation checklist. Left unticked until the automation is built.
+Standard: `docs/standards/security.md`, automation checklist. Ticked in the PR that built the evidence half (`review.py`, `tests/test_funnel_review.py`).
 
-- [ ] Idempotent: running twice does not duplicate effects
-- [ ] Retries with backoff, and a cap
-- [ ] Respects rate limits of every API it calls
-- [ ] Failures are logged and alerted, never swallowed
-- [ ] Credentials scoped to the minimum and registered
-- [ ] Dry-run mode for anything that would write to an external system
+- [x] Idempotent: running twice does not duplicate effects. Verified by a test that runs twice and finds one unchanged file.
+- [x] Retries with backoff, and a cap. Not applicable: there is no network call, only a local read-only file.
+- [x] Respects rate limits of every API it calls. Not applicable: it calls no API.
+- [x] Failures are logged and alerted, never swallowed. A missing table or stale data exits with code 1 and a message and writes nothing; tested.
+- [x] Credentials scoped to the minimum and registered. It uses none; it reads the registered `lakehouse` read-only.
+- [x] Dry-run mode for anything that would write to an external system. Dry-run is the default and writes no file; tested.
