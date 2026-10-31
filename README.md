@@ -14,7 +14,7 @@ Medallion lakehouse · context documents · intent routing · RAG with evals · 
 ![Tests](https://img.shields.io/badge/tests-435-brightgreen)
 ![Status](https://img.shields.io/badge/status-built%2C%20not%20run%20on%20a%20real%20model-yellow)
 
-[What this is](#what-this-is) · [Why](#why-it-exists) · [Reading guide](#reading-guide) · [See it](#see-it) · [Status](#what-is-built-and-what-is-not) · [How it works](#how-it-works) · [Structure](#project-structure) · [Run it](#run-it) · [Decisions](#design-decisions)
+[What this is](#what-this-is) · [Why](#why-it-exists) · [What it controls](#what-it-controls-and-what-it-cannot-touch) · [Worth](#what-it-is-worth-and-where-it-can-go) · [Reading guide](#reading-guide) · [See it](#see-it) · [Status](#what-is-built-and-what-is-not) · [How it works](#how-it-works) · [Structure](#project-structure) · [Run it](#run-it) · [Decisions](#design-decisions)
 
 </div>
 
@@ -43,6 +43,44 @@ Revenue teams rarely lack data. They lack **shared meaning**.
 
 So this project treats the agent as the last mile of a data and context system, not as a chatbot over a database. Most of the work, and most of the code, is everything around the model.
 
+## What it controls, and what it cannot touch
+
+The design rule is that **the agent advises and people execute.** Each row below is something the system can do, the limit that holds it, and where to read it. The limits are enforced in code, CI and read-only connections, not in a prompt ([ADR-0005](docs/adr/0005-enforce-rules-outside-the-model.md)).
+
+| What it does | What it can touch | The limit that holds | Read more |
+|---|---|---|---|
+| **Answers revenue questions** | The `gold` tables, through 4 tools | Read-only connection; one parsed `SELECT`; `silver` and `bronze` are refused ([ADR-0013](docs/adr/0013-query-gold-checks-the-parsed-query-and-the-connection.md)) | [`agent/`](agent) |
+| **Defines every metric once** | 7 context documents and the dbt catalog | A check fails the PR if the documents and the catalog disagree | [`context/`](context), [`docs/catalog.md`](docs/catalog.md) |
+| **Serves other tools** | Gold, the catalog and the documents, over MCP | Same guard as the agent; no SQL logic of its own ([ADR-0017](docs/adr/0017-mcp-server-speaks-json-rpc-by-hand.md)) | [`mcp_server/`](mcp_server) |
+| **Routes new leads** | One field: the lead's owner | Dry run by default; segment and capacity rules come from the context document; never an owner past the limit | [`automations/lead-routing/`](automations/lead-routing/SPEC.md) |
+| **Provisions a signed customer** | One workspace request per signed deal | Held when a duplicate is possible; the agent cannot run it | [`automations/closed-won-provisioning/`](automations/closed-won-provisioning/SPEC.md) |
+| **Audits data quality weekly** | Reads the quality snapshot, writes a report | Scheduled in CI; the report is the simulated alert | [`automations/audits/`](automations/audits/SPEC.md) |
+| **Reviews the funnel weekly** | Reads four gold tables, writes a report | Names the stage that moved most, never a cause; stops on stale data | [`automations/funnel-review/`](automations/funnel-review/SPEC.md) |
+| **Shows the numbers to leaders** | A read-only page over four gold tables | No form, no input, no script; labels the partial month | [`apps/revenue-snapshot/`](apps/revenue-snapshot/SPEC.md) |
+
+**What it never does:** write to a data source, send a message on its own, change a record, read `silver` or `bronze` to answer a business question, or accept real company data into the repository. Every outside connection, live or simulated, is listed in the [connector registry](connectors/registry.yaml) with its smallest scope. Today the CRM, billing, product and Slack connections are **simulated**: their effect is a log line.
+
+## What it is worth, and where it can go
+
+**The potential.** Each piece is one a revenue team usually has to build by hand and keep alive:
+
+- **One meaning per metric.** A new hire, an agent and a dashboard read the same definition, so two teams stop bringing two numbers to one meeting.
+- **A rule changed in one place.** Lead routing, provisioning and the funnel review read their thresholds from the context documents. Changing a rule is a document change reviewed in a pull request, not a code hunt.
+- **A memory that is searched.** Every unit of work leaves a record, so the agent can say what was concluded before and whether a new result confirms it.
+- **Honest answers.** The agent states the definition it used and says "there is no canonical definition for this yet" instead of guessing.
+
+**What a team should gain.** These are the outcomes the design is built to produce. They are **intent, not measured results**, because nothing here has run against a real team or a real model:
+
+| Gain | Why the design should deliver it |
+|---|---|
+| Fewer arguments about whose number is right | One canonical definition per concept, with the team differences written down |
+| Less time spent rebuilding the same report | Recurring questions become scheduled automations with a spec |
+| Safer automation | Dry run by default, a "must never" list, idempotent writes, and an error that is never reported as success |
+| Trust in the answers | The definition, the tables read and the caveats come with every number |
+| Changes that stay explainable | A pull request and a record for every change, searchable later |
+
+**Where it goes next.** Needing credentials or a real environment, so not done yet: run `--ask` once and score the evals, connect a real MCP client, turn the simulated Slack alert on behind its own decision record, and schedule the funnel review. More analyses, and more patterns from my own experience rewritten for the fictional company, will keep landing here as pull requests, each with a record.
+
 ## Reading guide
 
 Short on time? Read in this order.
@@ -54,6 +92,7 @@ Short on time? Read in this order.
 | 5 min | [`agent/directives/`](agent/directives) and [`agent/README.md`](agent/README.md) | The agent's protocol, its router and its four read-only tools |
 | 5 min | [`automations/lead-routing/SPEC.md`](automations/lead-routing/SPEC.md) | A spec-first automation: trigger, effects, failure behavior, "must never", dry run |
 | 5 min | [`docs/adr/`](docs/adr) | 17 short decisions, each with the reason and the alternative rejected |
+| 5 min | [`analyses/2026-01-new-mrr-december/`](analyses/2026-01-new-mrr-december/result.md) | A finished analysis: question, query, data checks, definitions, limits |
 | 5 min | [`records/`](records) | One record per merged pull request: the project's operational memory |
 | 10 min | [`docs/standards/`](docs/standards) | The rules the repo enforces on itself |
 
