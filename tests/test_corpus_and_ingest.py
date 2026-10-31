@@ -1,5 +1,6 @@
 """Tests for agent/rag/corpus.py, agent/rag/ingest.py and the category search."""
 
+import importlib.util
 import shutil
 import sys
 from pathlib import Path
@@ -11,7 +12,11 @@ sys.path.insert(0, str(ROOT / "agent" / "rag"))
 sys.path.insert(0, str(ROOT / "agent" / "tools"))
 
 import corpus  # noqa: E402
-import ingest  # noqa: E402
+
+# Loaded by path: the pipeline has its own module called "ingest", and the test run imports both.
+_spec = importlib.util.spec_from_file_location("rag_ingest", ROOT / "agent" / "rag" / "ingest.py")
+ingest = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(ingest)
 from search_context import InvalidInput, search_context  # noqa: E402
 
 
