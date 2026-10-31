@@ -1,0 +1,8 @@
+should_trigger:
+  - "who is our ideal customer?"
+  - "which segment should SDRs prospect next quarter?"
+  - "does our ICP still hold?"
+should_not_trigger:
+  - "how many MQLs last month?"
+  - "why did conversion drop?"
+  - "update the ICP document"

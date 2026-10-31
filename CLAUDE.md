@@ -43,6 +43,7 @@ Rules: [docs/standards/pull-requests.md](docs/standards/pull-requests.md)
 | Automations | [docs/standards/automations.md](docs/standards/automations.md) |
 | Environment setup and MCP | [docs/standards/environment-setup.md](docs/standards/environment-setup.md) |
 | Audits | [docs/standards/audits.md](docs/standards/audits.md) |
+| RevOps methodologies | [docs/standards/revops-methodologies.md](docs/standards/revops-methodologies.md) |
 | Investigation | [docs/standards/investigation.md](docs/standards/investigation.md) |
 | Continuous learning | [docs/standards/continuous-learning.md](docs/standards/continuous-learning.md) |
 | Multi-agent work | [docs/standards/multi-agent.md](docs/standards/multi-agent.md) |

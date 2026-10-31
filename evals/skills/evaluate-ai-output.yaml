@@ -1,0 +1,8 @@
+should_trigger:
+  - "test this prompt on a batch"
+  - "compare the two prompt versions"
+  - "are the AI drafts any good?"
+should_not_trigger:
+  - "write a new prompt from scratch"
+  - "open a PR"
+  - "how many MQLs last month?"
