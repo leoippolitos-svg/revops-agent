@@ -8,6 +8,6 @@ One file per metric: a table of period, value, source table and the date it was 
 
 ## When it is updated
 
-After each full month, from gold. External benchmarks are not here; they are in the `benchmarks` context document.
+After each full month, from gold, by the analyst; no job writes it yet. External benchmarks are not here; they are in the `benchmarks` context document.
 
 No baseline is recorded yet beyond what each metrics document states.
