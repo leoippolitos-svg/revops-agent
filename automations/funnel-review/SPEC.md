@@ -5,6 +5,44 @@ Status: built
 ## Problem
 Nobody looks at the whole funnel every week. A stage can slow down or leak for weeks before someone notices, and a month-by-month number hides it, because the newest deals have not had time to close. The review finds the one stage that limits the funnel and says what to check, before the weekly revenue meeting.
 
+## Why this process
+Funnel numbers are read every week, but the comparison is rarely fair: immature cohorts, partial months, small samples. The automation does the deterministic part the same way every week and hands the "why" to the diagnosis skill, so a cause is never stated without evidence.
+
+## Expected gains
+Projection on fictional volumes:
+
+| Item | Assumption | Result |
+|---|---|---|
+| Analyst time | 2 hours a week preparing the funnel comparison | about 8 hours a month |
+| Wrong reads avoided | immature cohorts and small samples excluded by rule | fewer false alarms |
+
+Measured by: weeks with a named constraint, and how many were confirmed by the diagnosis.
+
+## How it works
+```mermaid
+flowchart LR
+    S[By hand] --> F{Data fresh?}
+    F -->|no| X[Stop]
+    F -->|yes| M[Mature cohorts only]
+    M --> C[Compare recent vs previous]
+    C --> N{Moved beyond threshold?}
+    N -->|yes| K[Name the stage + hand-off to funnel-diagnosis]
+    N -->|no| O[No stage changed]
+```
+
+1. Stops if the data is older than seven days.
+2. Compares the latest three mature cohorts with the three before.
+3. Names the stage that moved most, or says nothing changed; the cause goes to the agent's diagnosis skill.
+
+## Where AI enters
+The evidence step is deterministic. The cause is the agent's step with the `funnel-diagnosis` skill, which has never run.
+
+## Tokens and cost
+No model call in the evidence step. The agent step would be one standard-tier answer, about 20,000 input tokens with cache; never measured.
+
+## Monitoring
+Catalog card `funnel-review`, status from its report files. Not scheduled while the data has a fixed date.
+
 ## Trigger
 Every Monday morning (UTC), after the weekly data-quality audit (`automations/audits/`), and on demand.
 

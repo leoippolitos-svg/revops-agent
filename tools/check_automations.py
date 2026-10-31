@@ -29,7 +29,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from check_apps import CHECKBOX, TABLE, gold_tables, sections  # noqa: E402
 
-REQUIRED_SECTIONS = ("Trigger", "Inputs", "Rules", "Effects", "Failure behavior", "Must never", "Security checklist")
+REQUIRED_SECTIONS = ("Problem", "Why this process", "Expected gains", "How it works", "Where AI enters", "Tokens and cost",
+                     "Monitoring", "Trigger", "Inputs", "Rules", "Effects", "Failure behavior", "Must never",
+                     "Security checklist")
 
 
 def check_automation(root: Path, folder: Path, gold: set[str]) -> list[str]:
@@ -52,6 +54,13 @@ def check_automation(root: Path, folder: Path, gold: set[str]) -> list[str]:
 
     if "write" not in found.get("Must never", "").lower():
         errors.append(f"{where}: 'Must never' must forbid writing to a data source")
+
+    # Gains on a fictional company are projections; a spec must never read as measured results.
+    if "Expected gains" in found and "projection" not in found["Expected gains"].lower():
+        errors.append(f"{where}: 'Expected gains' must say it is a projection and show its assumptions")
+    # The drawing is what lets someone who never saw the code understand the flow.
+    if "How it works" in found and "```mermaid" not in found["How it works"]:
+        errors.append(f"{where}: 'How it works' needs a Mermaid diagram")
 
     for table in TABLE.findall(found.get("Inputs", "")):
         if not table.startswith("gold."):

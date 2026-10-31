@@ -5,6 +5,45 @@ Status: built
 ## Problem
 When a deal is signed, the customer should get a workspace and an onboarding kickoff quickly. Today that waits for someone to notice the win. The steps are the same every time, but some deals must not be provisioned (no company, possible duplicate, already billed), and doing it twice for one company is hard to undo.
 
+## Why this process
+Provisioning is the same steps for every signed deal, and a missed or doubled workspace hurts the customer's first week. A person does it slowly and differently each time; an automation does it once per deal, the same way, and holds anything doubtful (a possible duplicate company) for a person.
+
+## Expected gains
+Projection on fictional volumes:
+
+| Item | Assumption | Result |
+|---|---|---|
+| Manual set-up avoided | 6 signed deals a month × 30 minutes | 3 hours a month |
+| Faster first contact | kickoff requested the same day instead of 2 days later | onboarding starts 2 days earlier |
+| Doubled workspaces avoided | idempotent by deal id | zero by design |
+
+Measured by: days from closed won to kickoff, in the onboarding milestones.
+
+## How it works
+```mermaid
+flowchart LR
+    E[Deal enters closed won] --> D{Checks in order}
+    D -->|not closed won| S[Skipped]
+    D -->|no company| R[Needs review]
+    D -->|possible duplicate| H[Held for a person]
+    D -->|already has a subscription| S
+    D -->|older than 60 days| R
+    D -->|ok| W[Write controls] --> K[Workspace + kickoff request]
+```
+
+1. A closed-won event arrives (run by hand here).
+2. The checks run in the order of the context document; only a clean deal goes on.
+3. The request goes through the write controls: kill switch, cap, breaker, read-back.
+
+## Where AI enters
+Nowhere: it is deterministic.
+
+## Tokens and cost
+No model call.
+
+## Monitoring
+Catalog card `closed-won-provisioning`, status from its log files. The reconciliation audit shows any won deal still without a subscription after two weeks.
+
 ## Trigger
 A deal entering closed_won. Simulated in this repository by one deal event per run: deal identifier, stage, company identifier (or none), the duplicate flag of the company, whether a subscription already exists, and optionally the date of the win.
 

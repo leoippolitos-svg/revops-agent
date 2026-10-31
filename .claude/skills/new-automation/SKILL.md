@@ -10,6 +10,8 @@ Standards: `docs/standards/pull-requests.md` (spec-driven flow) and the automati
 ## Steps
 
 
+The spec follows `docs/standards/automations.md`: problem, why this process, expected gains with the calculation (labelled as a projection), a Mermaid diagram of how it works, where AI enters, tokens and cost, and monitoring, before the trigger and rules.
+
 An audit (two sources compared) follows `docs/standards/audits.md`: explicit-id join, three destinations, an owner per class, a proposal and never a correction.
 1. **Research**: who benefits, what triggers it, what it changes, and which team owns the outcome. Write it down.
 2. **Spec**: create `automations/<name>/SPEC.md` with these sections: Trigger, Inputs (gold tables only), Rules, Effects, Failure behavior, Must never. Commit the spec before any code.

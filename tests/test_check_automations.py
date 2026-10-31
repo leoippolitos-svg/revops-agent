@@ -80,3 +80,18 @@ def test_a_writer_without_authorisation_and_an_orphan_authorisation_are_reported
     errors = check_automations.writeback_errors(tmp_path)
     assert any("'demo-writer'" in e and "no RECURRING-AUTHORIZATION" in e for e in errors)
     assert any("'retired-job'" in e and "remove it" in e for e in errors)
+
+
+def test_gains_must_be_labelled_as_a_projection_and_the_flow_drawn(tmp_path):
+    root = copy_repo(tmp_path)
+    edit(root, "Projection on fictional volumes", "We will save")
+    edit(root, "```mermaid", "```text")
+    errors = check_automations.check(root)
+    assert any("must say it is a projection" in e for e in errors)
+    assert any("needs a Mermaid diagram" in e for e in errors)
+
+
+def test_the_documentation_sections_are_required(tmp_path):
+    root = copy_repo(tmp_path)
+    edit(root, "## Why this process", "## Background")
+    assert any("missing the section 'Why this process'" in e for e in check_automations.check(root))
