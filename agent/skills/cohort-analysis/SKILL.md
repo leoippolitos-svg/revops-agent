@@ -19,6 +19,10 @@ description: "Compares groups of deals or customers that started in the same mon
 
 "Do recent cohorts win less?" Mature cohorts from May to August won 18% to 69% of what they closed; September has 14 qualified deals, under the minimum, so it is listed but not compared; October to December are immature.
 
+## Method
+
+Section 6 of `docs/standards/revops-methodologies.md`: declare the denominator (everyone created, or only those active at the end) and never mix them; use conditional retention (k to k+1); a status recalculated at cycle end changes the past.
+
 ## Troubleshooting
 
 - **A recent cohort looks terrible**: it is immature; its open deals have not closed yet.

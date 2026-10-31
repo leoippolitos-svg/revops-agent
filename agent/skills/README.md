@@ -16,3 +16,8 @@ Skills the RevOps agent loads to do business work. A skill named in an intent's 
 | is a change real or noise | `statistical-check` | fast | the metric's document |
 | change, approve or decide something | `escalate-to-human`, `writeback-request` | fast | `writeback-rules` |
 | this keeps coming back every week | `recommend-automation` | fast | `apps`, the run catalog |
+| who is our ideal customer | `icp-analysis` | standard | `icp`, `company` |
+| how is the business really doing | `business-health-diagnosis` | standard | `okrs`, `metrics-*` |
+| did an automation deliver | `automation-impact` | standard | the automation's spec |
+
+The methods behind these skills are in [docs/standards/revops-methodologies.md](../../docs/standards/revops-methodologies.md).

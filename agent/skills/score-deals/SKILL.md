@@ -18,6 +18,10 @@ description: "Ranks open deals by how likely they are to close, from stage, age 
 
 "Which deals should we focus on?" Ten deals in negotiation and proposal, ordered by stage and time in stage, each with its owner's name and the reason.
 
+## Method
+
+Section 5 of `docs/standards/revops-methodologies.md`: calibrate the rule on a closed cohort (score as of a past date, check the real rate rises by band); a deal above the size threshold leaves the score for a watchlist; order risk by value × (1 − score).
+
 ## Troubleshooting
 
 - **Days in stage look wrong**: some deals have stage dates out of order; they are counted apart in the time-in-stage table.

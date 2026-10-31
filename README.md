@@ -177,6 +177,7 @@ Short on time? Read in this order.
 | 5 min | [`catalog/`](catalog), [`docs/run-catalog.md`](docs/run-catalog.md), [`oncall/`](oncall) | Everything that runs, its health, and who reacts when it breaks |
 | 5 min | [`analyses/2026-01-new-mrr-december/`](analyses/2026-01-new-mrr-december/result.md) | A finished analysis: question, query, data checks, definitions, limits |
 | 5 min | [`docs/adr/`](docs/adr) | 24 short decisions, each with the reason and the alternative rejected |
+| 10 min | [`docs/standards/revops-methodologies.md`](docs/standards/revops-methodologies.md) | The analysis methods: ICP, funnel, retention, health and deal scores, cohorts, forecast, diagnosis protocol, evaluating AI output, measuring automation impact |
 | 10 min | [`docs/standards/`](docs/standards) and [`docs/lessons-learned.md`](docs/lessons-learned.md) | The rules the repo enforces on itself, and where they came from |
 
 ## How it works

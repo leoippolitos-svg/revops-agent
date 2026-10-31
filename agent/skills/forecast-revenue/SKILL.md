@@ -18,6 +18,10 @@ description: "Projects ending MRR or new MRR for the coming months from the pipe
 
 "Will we reach the MRR target?" "From $125,099 today, the middle case ends the year at about X with the range Y to Z, against the $250,000 target; the assumptions are listed below."
 
+## Method
+
+Section 7 of `docs/standards/revops-methodologies.md`: never project with the rate of an open cohort; include expected new pipeline; large deals (above about 10% of the open pipeline) enter flat; add a stress variant that treats old open deals as lost.
+
 ## Troubleshooting
 
 - **The forecast is far above history**: check that bookings were divided by 12; deal value is yearly.

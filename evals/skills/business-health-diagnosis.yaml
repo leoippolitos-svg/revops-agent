@@ -1,0 +1,8 @@
+should_trigger:
+  - "how is the business really doing?"
+  - "give me a full diagnosis of the SMB segment"
+  - "why are we off plan on revenue?"
+should_not_trigger:
+  - "what was MRR last month?"
+  - "define churn"
+  - "which deals should we focus on?"

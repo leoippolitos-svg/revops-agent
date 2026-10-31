@@ -18,6 +18,10 @@ description: "Lists accounts at risk of churn from health band, open high-priori
 
 "Which customers are at risk?" Today: "Health band, tickets and onboarding are not in gold yet, so I cannot list at-risk accounts from governed data; this needs gold models for them (listed in the backlog)."
 
+## Method
+
+Sections 3.5 and 4 of `docs/standards/revops-methodologies.md`: early warning signals stay separate from the health score; a criterion with no source is not zero (re-normalise and label the score partial); a health score reads the present, it does not predict churn.
+
 ## Troubleshooting
 
 - **The list is every red account**: a band alone is a weak signal; show the combination of signals for each.

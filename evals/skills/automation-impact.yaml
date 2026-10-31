@@ -1,0 +1,8 @@
+should_trigger:
+  - "did the lead routing automation work?"
+  - "how much time did our automations save?"
+  - "measure the impact of the reconciliation audit"
+should_not_trigger:
+  - "build an automation for this"
+  - "what does lead routing do?"
+  - "run the funnel review"
