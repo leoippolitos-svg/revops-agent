@@ -26,9 +26,38 @@ HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
 sys.path.insert(0, str(ROOT / "agent"))
 sys.path.insert(0, str(HERE))
+sys.path.insert(0, str(ROOT / "automations" / "_lib"))
 
 import agent  # noqa: E402
+from ai_step import AIStepError, run_ai_step  # noqa: E402
 from demo_model import DemoModel  # noqa: E402
+
+TITLE_PROMPT = ROOT / "agent" / "prompts" / "conversation-title.md"
+
+
+class DemoTitler:
+    """Plays the model with no key: the first words of the question become the title."""
+
+    def complete(self, model, system, messages, tools):
+        question = json.loads(messages[0]["content"])["question"]
+        words = question.rstrip("?!. ").split()
+        return {"text": json.dumps({"title": " ".join(words[:7])[:60]}), "tool_call": None, "usage": {}}
+
+
+def title_for(question: str, use_model: bool, log_path: Path | None = None) -> str:
+    """A short title for the thread, from the cheapest model; a bad reply falls back to the question."""
+    def validate(reply):
+        title = reply.get("title") if set(reply) == {"title"} else None
+        if not isinstance(title, str) or not title.strip() or len(title) > 60:
+            raise AIStepError("the title is missing or longer than 60 characters")
+        return reply
+    try:
+        step = run_ai_step("conversation-title", TITLE_PROMPT, {"question": question}, validate,
+                           demo_client=DemoTitler(), use_model=use_model,
+                           log_path=(log_path.parent / "ai-steps.jsonl") if log_path else None)
+        return step["output"]["title"]
+    except AIStepError:
+        return question[:60]
 
 HOST = "127.0.0.1"
 MAX_BODY_BYTES = 4_096
@@ -79,6 +108,7 @@ def answer(question: str, use_model: bool = False, log_path: Path | None = None)
     steps = client.calls if isinstance(client, DemoModel) else []
     return {
         "mode": "model" if use_model else "demo",
+        "title": title_for(question, use_model, log_path),
         "answer": outcome["answer"],
         "route": {k: plan[k] for k in ("intent", "via", "reason", "tier", "model", "budget", "tools", "fixed_docs", "skill")},
         "prompt_blocks": plan["system_blocks"],

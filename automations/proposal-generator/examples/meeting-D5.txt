@@ -1,0 +1,4 @@
+Discovery call with the operations team. They run 42 field technicians across two regions.
+Today everything is on paper job sheets and a shared spreadsheet for scheduling.
+Emergency call-outs take too long to dispatch because nobody knows where technicians are.
+They want to decide by 2026-03-15 after a trial with one region.

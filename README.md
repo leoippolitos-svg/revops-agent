@@ -78,7 +78,7 @@ So this project treats the agent as the last mile of a data and context system, 
 | Revenue-snapshot micro-app, app template and playbook | Yes | Page rendered from the local lakehouse |
 | Agent chat: local server, page, scripted model, trace of each answer | Yes, 13 tests | Runs locally on real gold data with the scripted model; never with a real model or hosted |
 | Automations: lead routing, provisioning, onboarding auto-advance, churn deactivation, deal amount, weekly audit, reconciliation, duplicate queue, funnel review | Yes, each with a spec, gains, diagram and tests | The weekly reads and the daily deactivation are scheduled; writes are simulated and behind kill switches |
-| AI automations: site qualification, prospecting drafts | Yes, with a scripted model; validation, prompt hashes and cost logging tested | Never called a real model; prices not set, so cost is null |
+| AI automations: site qualification, prospecting drafts, proposal generator, account review narrative | Yes, with a scripted model; validation, prompt hashes and cost logging tested | Never called a real model; prices not set, so cost is null |
 | Run catalog, job health, Slack alerts (simulated) | Yes | The collector is scheduled; Slack has never been posted to |
 | On-call agent and watchdog | Yes; the steps without AI are tested | Workflows exist; every switch is off and the agent step has never run |
 | Verification: reviewer agents, profile eval, personal-data guard, AI security review | Yes | The AI review is off until a key exists |
@@ -177,6 +177,7 @@ Short on time? Read in this order.
 | 5 min | [`catalog/`](catalog), [`docs/run-catalog.md`](docs/run-catalog.md), [`oncall/`](oncall) | Everything that runs, its health, and who reacts when it breaks |
 | 5 min | [`analyses/2026-01-new-mrr-december/`](analyses/2026-01-new-mrr-december/result.md) | A finished analysis: question, query, data checks, definitions, limits |
 | 5 min | [`docs/adr/`](docs/adr) | 24 short decisions, each with the reason and the alternative rejected |
+| 5 min | [`docs/prompt-library.md`](docs/prompt-library.md) | Every prompt the system sends to a model, who uses it, its answer shape and its hash |
 | 10 min | [`docs/standards/revops-methodologies.md`](docs/standards/revops-methodologies.md) | The analysis methods: ICP, funnel, retention, health and deal scores, cohorts, forecast, diagnosis protocol, evaluating AI output, measuring automation impact |
 | 10 min | [`docs/standards/`](docs/standards) and [`docs/lessons-learned.md`](docs/lessons-learned.md) | The rules the repo enforces on itself, and where they came from |
 
@@ -199,7 +200,7 @@ Short on time? Read in this order.
 - 🧩 **Four-block prompt with cache**: rules and category documents cached, today's date and retrieved context after the last marker
 - 🔎 **RAG with evals**: five categories, incremental reingest by hash, retrieval, router and profile evals
 - 🛡️ **Write controls**: kill switch, cap per run, circuit breaker, read-back, review queue, and a check that only authorised jobs write
-- 🤖 **Eleven automations, each documented the same way**: the problem, why the process exists, projected gains with their assumptions, a diagram, where AI enters, tokens and cost, monitoring
+- 🤖 **Thirteen automations, each documented the same way**: the problem, why the process exists, projected gains with their assumptions, a diagram, where AI enters, tokens and cost, monitoring
 - ✍️ **AI inside automations, kept under code**: prompts versioned with their hash checked in CI, outputs validated, guardrails structural, cost logged per run
 - 🧾 **Audits that propose**: explicit-id reconciliation with divergence, pending and known case, and a duplicate queue that never merges
 - 🚨 **Run catalog, Slack alerts, on-call agent, watchdog**, all with switches off until enabled
@@ -276,7 +277,7 @@ revops-agent/
 │   ├── rag/          # Corpus by category, retrieval, incremental ingest
 │   └── tools/        # Five read-only tools
 ├── mcp_server/       # Read-only MCP server over gold
-├── automations/      # Eleven automations and audits, the shared write controls, movement log and AI step
+├── automations/      # Thirteen automations and audits, the shared write controls, movement log and AI step
 ├── catalog/          # One card per thing that runs
 ├── oncall/           # On-call agent prompt, executor and watchdog
 ├── observability/    # Agent log with cost, job health, Slack notifier

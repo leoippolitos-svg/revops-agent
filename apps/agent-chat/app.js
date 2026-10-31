@@ -26,6 +26,7 @@ function trace(data) {
   details.append(el("summary", "How the agent got here"));
   const r = data.route;
   details.append(table([
+    ["Conversation title", data.title],
     ["Intent", `${r.intent} (decided by ${r.via}: ${r.reason})`],
     ["Model tier", `${r.tier}, ${r.model}, budget of ${r.budget} tool calls`],
     ["Tools offered", r.tools.join(", ") || "none"],

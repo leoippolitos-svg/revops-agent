@@ -5,7 +5,7 @@ Run from the repository root:
 
 The repository is the source of truth of every prompt (docs/standards/prompt-patterns.md).
 Each prompt file in automations/<name>/prompts/ must have its SHA-256 written in that
-automation's SPEC.md, in the form "prompt sha256: `<hash>`". Changing a prompt without
+automation's SPEC.md, and each prompt in agent/prompts/ in docs/prompt-library.md,, in the form "prompt sha256: `<hash>`". Changing a prompt without
 updating the spec fails here, so a result or an evaluation can always be tied to the exact
 prompt that produced it. Line endings are normalised before hashing.
 """
@@ -22,11 +22,13 @@ def sha(path: Path) -> str:
 
 def check(root: Path) -> list[str]:
     errors = []
-    for prompt in sorted((root / "automations").glob("*/prompts/*.md")):
-        spec = prompt.parents[1] / "SPEC.md"
+    # Automation prompts are recorded in their own spec; the agent's prompts in the prompt library.
+    pairs = [(p, p.parents[1] / "SPEC.md") for p in sorted((root / "automations").glob("*/prompts/*.md"))]
+    pairs += [(p, root / "docs" / "prompt-library.md") for p in sorted((root / "agent" / "prompts").glob("*.md"))]
+    for prompt, spec in pairs:
         where = prompt.relative_to(root).as_posix()
         if not spec.is_file():
-            errors.append(f"{where}: the automation has no SPEC.md")
+            errors.append(f"{where}: {spec.relative_to(root).as_posix()} does not exist")
             continue
         recorded = re.findall(rf"{re.escape(prompt.name)}`?, prompt sha256: `([0-9a-f]{{64}})`", spec.read_text(encoding="utf-8"))
         if not recorded:
