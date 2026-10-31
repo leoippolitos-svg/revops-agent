@@ -167,6 +167,7 @@ Short on time? Read in this order.
 | Time | Read | You will see |
 |---|---|---|
 | 2 min | This page, then the [status table](#what-is-built-and-what-is-not) | What exists and what was never run |
+| 5 min | [`docs/replication-guide.md`](docs/replication-guide.md) | How to stand this up in a real company: order, what is essential, pitfalls, readiness checklist |
 | 3 min | [`apps/agent-chat/`](apps/agent-chat/README.md), or run it: `python apps/agent-chat/server.py` | The agent answering, with its route, documents, prompt blocks and tools shown under each answer |
 | 5 min | [`context/company/`](context/company), [`context/areas/area-sales.md`](context/areas/area-sales.md), [`context/metrics/metrics-sales.md`](context/metrics/metrics-sales.md) | How the business is written down: company, who is who, an area, its metrics |
 | 5 min | [`agent/directives/AGENT.md`](agent/directives/AGENT.md) and [`routing.md`](agent/directives/routing.md) | The reading order, the rules it never breaks, intents and their profiles |

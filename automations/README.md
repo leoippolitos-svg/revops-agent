@@ -20,4 +20,6 @@ Gains are **projections on fictional volumes**, with their assumptions in each s
 | [`prospecting-drafts/`](prospecting-drafts/SPEC.md) | a new lead with a qualification | draft a first touch and a follow-up from evidence-backed arguments; never sends | about 10 hours a month of SDR writing | yes: fast model, only eligible arguments reach it, forbidden claims rejected in code |
 | [`funnel-review/`](funnel-review/SPEC.md) | by hand | name the funnel stage that moved most | about 8 hours a month of analyst time | the cause step (never run) |
 
+Worked examples documented to the standard but not built are in [`_examples/`](_examples/README.md), starting with a multi-year contract split.
+
 Every automation has a card in [`catalog/`](../catalog) and appears in [docs/run-catalog.md](../docs/run-catalog.md).
