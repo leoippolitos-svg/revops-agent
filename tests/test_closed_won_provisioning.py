@@ -36,11 +36,17 @@ def make_db(path: Path, backlog=7) -> Path:
     con.close()
     return path
 
+@pytest.fixture(autouse=True)
+def kill_switch_on(monkeypatch):
+    """Writes need the kill switch on; tests that check it is off unset it themselves."""
+    monkeypatch.setenv("CLOSED_WON_PROVISIONING_ENABLED", "true")
+
+
 
 # --- the rules come from the context document ---------------------------------------------
 
 def test_the_rules_are_read_from_the_document():
-    assert provision.load_rules() == {"wait_days": 14, "milestone": "kickoff"}
+    assert provision.load_rules() == {"wait_days": 14, "milestone": "kickoff", "cutoff_days": 60}
 
 
 def test_changing_the_document_changes_the_wait_with_no_code_change(tmp_path):
@@ -68,8 +74,8 @@ def test_a_clean_closed_won_deal_gets_a_kickoff_request():
 @pytest.mark.parametrize("overrides, outcome, text", [
     ({"stage": "negotiation"}, "skipped", "not in closed_won"),
     ({"stage": None}, "skipped", "not in closed_won"),
-    ({"company_id": None}, "skipped", "no company"),
-    ({"company_id": ""}, "skipped", "no company"),
+    ({"company_id": None}, "needs review", "no company"),
+    ({"company_id": ""}, "needs review", "no company"),
     ({"company_is_possible_duplicate": True}, "held", "possible duplicate"),
     ({"has_subscription": True}, "skipped", "already has a subscription"),
 ])

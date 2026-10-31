@@ -69,3 +69,14 @@ def test_must_never_has_to_forbid_writes(tmp_path):
     root = copy_repo(tmp_path)
     edit(root, "- Write to any data source", "- Do something else")
     assert any("must forbid writing" in e for e in check_automations.check(root))
+
+
+def test_a_writer_without_authorisation_and_an_orphan_authorisation_are_reported(tmp_path):
+    (tmp_path / "automations" / "demo").mkdir(parents=True)
+    (tmp_path / "automations" / "demo" / "run.py").write_text('c = WriteControls("demo-writer", True)\n', encoding="utf-8")
+    (tmp_path / "context" / "rules").mkdir(parents=True)
+    (tmp_path / "context" / "rules" / "writeback-rules.md").write_text(
+        "- RECURRING-AUTHORIZATION: retired-job. Scope: x.\n", encoding="utf-8")
+    errors = check_automations.writeback_errors(tmp_path)
+    assert any("'demo-writer'" in e and "no RECURRING-AUTHORIZATION" in e for e in errors)
+    assert any("'retired-job'" in e and "remove it" in e for e in errors)

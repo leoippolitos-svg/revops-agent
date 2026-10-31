@@ -25,11 +25,12 @@ The single list of what may be written into another system, by which automation,
 
 ### Fields that may be written
 
-| System | Object and field | Automation | Authorization | Decision |
-|---|---|---|---|---|
-| CRM | the owner of a new lead | lead routing | recurring | ADR-0010 |
-| Product | one workspace and its onboarding kickoff per signed deal | closed-won provisioning | recurring | ADR-0011 |
-| Slack | one alert message per finding | audits and the on-call check | recurring | registered in the connector registry |
+| System | Object and field | Automation | Authorization | Decision | Cap per run |
+|---|---|---|---|---|---|
+| CRM | the owner of a new lead | `lead-routing` | recurring | ADR-0010 | 50 |
+| Product | one workspace and its onboarding kickoff per signed deal | `closed-won-provisioning` | recurring | ADR-0011 | 20 |
+
+The cap is read by the automation at run time: past it, the rest of the run waits for review. Each automation writes only when its kill switch, `<NAME>_ENABLED=true` (for example `LEAD_ROUTING_ENABLED`), is set; without it a `--write` run is a shadow run.
 
 ### Authorization levels
 

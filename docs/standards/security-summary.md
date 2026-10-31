@@ -1,6 +1,6 @@
 ---
 derived_from: docs/standards/security.md
-source_sha256: bdfa18a8e042fe7ca5fac82e0745abf68fd2e69dd35f6db6bd608f20527984a0
+source_sha256: 72b98dcd1a68544f7b95b336066ab8256e36116e4622e9c31318f69837768a13
 ---
 
 # Security in one page

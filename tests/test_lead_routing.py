@@ -39,6 +39,12 @@ def lead(lead_id="L1", company="C1", segment="mid_market", owner=None):
 def decide(leads, db, rules=None):
     return route_leads.route(leads, route_leads.read_workload(db), rules or route_leads.load_rules())
 
+@pytest.fixture(autouse=True)
+def kill_switch_on(monkeypatch):
+    """Writes need the kill switch on; tests that check it is off unset it themselves."""
+    monkeypatch.setenv("LEAD_ROUTING_ENABLED", "true")
+
+
 
 # --- the rules come from the context document -------------------------------------------
 
