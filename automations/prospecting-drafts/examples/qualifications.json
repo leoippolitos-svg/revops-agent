@@ -1,0 +1,23 @@
+{
+  "C-101": {
+    "fit": "strong",
+    "technicians_mentioned": true,
+    "services": [
+      "HVAC maintenance",
+      "refrigeration"
+    ],
+    "evidence": [
+      "Commercial heating, ventilation and air conditioning maintenance across the Midlands since 1998.",
+      "Our team of 140 field technicians handles planned maintenance and 24/7 emergency call-outs for offices, schools and retail parks.",
+      "We schedule more than 900 jobs a month and are moving from paper job sheets to digital work orders this year."
+    ],
+    "summary": "Northbridge HVAC Services: strong fit. Mentions HVAC maintenance, refrigeration. Has field technicians."
+  },
+  "C-102": {
+    "fit": "weak",
+    "technicians_mentioned": false,
+    "services": [],
+    "evidence": [],
+    "summary": "Lumen Studio: weak fit. No field technicians mentioned."
+  }
+}

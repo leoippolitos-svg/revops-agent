@@ -1,0 +1,15 @@
+id: site-qualification
+name: Site qualification
+kind: automation
+owner: Sales
+purpose: Reads a company's website and writes a validated qualification summary for
+  the SDR.
+trigger: a qualification request (run by hand here)
+where: automations/site-qualification/SPEC.md
+writes: the qualification field (simulated)
+ai: claude-haiku-5-5 through ai_step (demo without a key)
+cost: logged per run in ai-steps.jsonl; prices not set
+status_source:
+  type: log
+  pattern: site-qualification-*.json
+situation: manual

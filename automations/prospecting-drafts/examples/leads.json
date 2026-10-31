@@ -1,0 +1,5 @@
+[
+  {"lead_id": "L-5001", "company_id": "C-101", "company_name": "Northbridge HVAC Services", "first_name": "Morgan", "job_title": "Head of Field Service"},
+  {"lead_id": "L-5002", "company_id": "C-102", "company_name": "Lumen Studio", "first_name": "Sam", "job_title": "Founder"},
+  {"lead_id": "L-5003", "company_id": "C-999", "company_name": "Unknown Facilities", "first_name": "Kim", "job_title": "Operations Manager"}
+]

@@ -17,9 +17,9 @@ connectors:
     access: read
     scopes: [messages]
     auth: ANTHROPIC_API_KEY in .env
-    consumers: [agent]
+    consumers: [agent, automations/site-qualification, automations/prospecting-drafts]
     owner: RevOps
-    note: adapter in agent/model_client.py, tested against a fake API; never called with a real key
+    note: adapter in agent/model_client.py, tested against a fake API; never called with a real key; automations call it through automations/_lib/ai_step.py
 
   - id: crm
     system: CRM (HubSpot-like)
