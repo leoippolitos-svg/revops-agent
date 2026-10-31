@@ -11,7 +11,7 @@ Medallion lakehouse · context by area · intent routing · RAG with evals · re
 ![Python](https://img.shields.io/badge/python-3.12-3776AB?logo=python&logoColor=white)
 ![DuckDB](https://img.shields.io/badge/DuckDB-lakehouse-FFF000?logo=duckdb&logoColor=black)
 ![dbt](https://img.shields.io/badge/dbt-transformations-FF694B?logo=dbt&logoColor=white)
-![Tests](https://img.shields.io/badge/tests-558-brightgreen)
+![Tests](https://img.shields.io/badge/tests-587-brightgreen)
 ![Status](https://img.shields.io/badge/status-built%2C%20not%20run%20on%20a%20real%20model-yellow)
 
 [Quick start](#quick-start) · [What this is](#what-this-is) · [Why](#why-it-exists) · [Status](#what-is-built-and-what-is-not) · [What it controls](#what-it-controls-and-what-it-cannot-touch) · [Proof](#proof-it-works) · [Reading guide](#reading-guide) · [How it works](#how-it-works) · [Run it](#run-it) · [Decisions](#design-decisions)
@@ -69,8 +69,8 @@ So this project treats the agent as the last mile of a data and context system, 
 
 | Piece | Built and tested | Run for real |
 |---|---|---|
-| Data pipeline: generator, bronze → silver → gold with dbt | Yes, 14 gold models with tests | Yes, end to end on fictional data |
-| Context layer: 7 concepts and 27 documents by kind, catalog, checks | Yes | Yes |
+| Data pipeline: generator, bronze → silver → gold with dbt | Yes, 18 gold models with tests | Yes, end to end on fictional data |
+| Context layer: 7 concepts and 32 documents by kind, catalog, checks | Yes | Yes |
 | Retrieval by category, incremental reingest, 50 retrieval, 67 router and 12 profile cases | Yes | Yes, scored above |
 | Five agent tools, router cascade, category profiles, four-block prompt, cost per answer | Yes, with a scripted model | No model call; prices left empty, so cost is logged as null |
 | Model adapter (Claude Messages API, standard library, cache markers) | Yes, against a fake API | No, never used a key |
@@ -81,7 +81,8 @@ So this project treats the agent as the last mile of a data and context system, 
 | AI automations: site qualification, prospecting drafts, proposal generator, account review narrative | Yes, with a scripted model; validation, prompt hashes and cost logging tested | Never called a real model; prices not set, so cost is null |
 | Run catalog, job health, Slack alerts (simulated) | Yes | The collector is scheduled; Slack has never been posted to |
 | On-call agent and watchdog | Yes; the steps without AI are tested | Workflows exist; every switch is off and the agent step has never run |
-| Verification: reviewer agents, profile eval, personal-data guard, AI security review | Yes | The AI review is off until a key exists |
+| Verification: reviewer agents, profile eval, personal-data guard, prompt hashes | Yes | Yes, in CI |
+| Security review pipeline: AI review of each diff, red on HIGH or CRITICAL, Slack alert, push scan | Yes, evaluator and scan tested both ways | Off until the action is pinned and a key exists |
 | With vs without context comparison | Design and 18 questions | No, needs a model |
 
 Open owner questions, such as the funnel-review thresholds, are in [`memory/decisions/`](memory/decisions) and [`BACKLOG.md`](BACKLOG.md), not buried in code.
@@ -96,7 +97,7 @@ The design rule is that **the agent advises and people execute.** Each row is so
 | What it does | What it can touch | The limit that holds | Read more |
 |---|---|---|---|
 | **Answers revenue questions** | `gold` tables and context, through 5 read-only tools | One parsed `SELECT`; `silver` and `bronze` refused; closed map keys; real total next to every sample ([ADR-0013](docs/adr/0013-query-gold-checks-the-parsed-query-and-the-connection.md), [ADR-0019](docs/adr/0019-a-fifth-read-only-tool-for-closed-maps.md)) | [`agent/`](agent) |
-| **Defines every metric once** | 7 concepts and 27 documents by company, area, metric, CRM map, report and rule | A check fails the PR if a document misses a section of its kind or points at a column that does not exist | [`context/`](context), [`docs/catalog.md`](docs/catalog.md) |
+| **Defines every metric once** | 7 concepts and 32 documents by company, area, metric, CRM map, report and rule | A check fails the PR if a document misses a section of its kind or points at a column that does not exist | [`context/`](context), [`docs/catalog.md`](docs/catalog.md) |
 | **Serves other tools** | Gold, the catalog and the documents, over MCP | Same guard as the agent; no SQL logic of its own ([ADR-0017](docs/adr/0017-mcp-server-speaks-json-rpc-by-hand.md)) | [`mcp_server/`](mcp_server) |
 | **Routes new leads** | One field: the lead's owner (simulated) | Kill switch, cap per run, circuit breaker, read-back, "needs review" never "skipped"; rules from the context document | [`automations/lead-routing/`](automations/lead-routing/SPEC.md) |
 | **Provisions a signed customer** | One workspace request per signed deal (simulated) | Same controls; held on a possible duplicate; no back-fill past 60 days | [`automations/closed-won-provisioning/`](automations/closed-won-provisioning/SPEC.md) |
@@ -167,6 +168,7 @@ Short on time? Read in this order.
 | Time | Read | You will see |
 |---|---|---|
 | 2 min | This page, then the [status table](#what-is-built-and-what-is-not) | What exists and what was never run |
+| 5 min | [`docs/standards/environment-setup.md`](docs/standards/environment-setup.md) | How a machine and the repository are set up for AI agents, and how MCP servers get credentials without a secret in any config |
 | 5 min | [`docs/replication-guide.md`](docs/replication-guide.md) | How to stand this up in a real company: order, what is essential, pitfalls, readiness checklist |
 | 3 min | [`apps/agent-chat/`](apps/agent-chat/README.md), or run it: `python apps/agent-chat/server.py` | The agent answering, with its route, documents, prompt blocks and tools shown under each answer |
 | 5 min | [`context/company/`](context/company), [`context/areas/area-sales.md`](context/areas/area-sales.md), [`context/metrics/metrics-sales.md`](context/metrics/metrics-sales.md) | How the business is written down: company, who is who, an area, its metrics |
@@ -206,7 +208,8 @@ Short on time? Read in this order.
 - 🚨 **Run catalog, Slack alerts, on-call agent, watchdog**, all with switches off until enabled
 - 💬 **A local chat** that shows each answer with its route, documents, prompt blocks and tools, no key needed
 - 🔁 **Correction loop and session closing**: a corrected answer becomes a pull request; every session leaves a digest
-- 🔒 **Rule zero enforced**: pre-commit and CI block secrets, real company terms and personal data
+- 🔒 **Rule zero enforced**: pre-commit and CI block secrets, real company terms and personal data; an AI security review pipeline is ready to switch on
+- 📚 **Methods written down**: RevOps methodologies, a prompt library, a replication guide and lessons learned
 
 ## Architecture
 
@@ -290,12 +293,12 @@ revops-agent/
 ├── connectors/       # Registry of every external connection
 ├── design-system/    # Design tokens used by the micro-apps
 ├── destinations/     # Simulated reverse ETL
-├── tests/            # 558 tests covering every piece above
+├── tests/            # 587 tests covering every piece above
 ├── docs/
 │   ├── standards/    # The rules: context, modeling, security, apps, audits, verification, process...
 │   ├── adr/          # Architecture decision records
 │   └── lessons-learned.md
-├── tools/            # Repo checks, catalog collector, leak and personal-data guards, git hooks
+├── tools/            # Repo checks, catalog collector, leak, personal-data and push guards, prompt hashes, MCP env wrapper, git hooks
 ├── WORKSPACE.md      # Where work lives, and the project index
 ├── BACKLOG.md        # Pending items that must not get lost
 └── .claude/          # Coding-agent skills and reviewer agents
