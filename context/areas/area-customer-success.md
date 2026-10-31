@@ -32,8 +32,8 @@ Four customer success managers, team value `customer_success`.
 |---|---|---|
 | Churned MRR | [[gold.mrr_monthly.churned_mrr_usd]] | value of subscriptions that ended |
 | Active customers | [[gold.active_customer_monthly.active_customers]] | paid subscription in force |
-| Health band | not in gold yet | from [[silver.health_score.band]] |
-| Tickets by category | not in gold yet | from [[silver.ticket]] |
+| Accounts by health band | [[gold.account_health.latest_band]] | the latest score of each company |
+| Tickets by category and priority | [[gold.ticket_monthly]] | opened and closed per month |
 
 ## CRM objects
 
@@ -46,7 +46,7 @@ See [[doc:benchmarks]].
 ## Frequent questions
 
 - "How many customers churned?" Churned subscriptions and churned MRR, from billing. A red band is a risk, not a churn.
-- "Which accounts are at risk?" Red band and open high-priority tickets; that needs gold models, so today it is a data task.
+- "Which accounts are at risk?" The `detect-risk` skill: red band, onboarding stuck before go-live, and churned MRR history, each signal named.
 
 ## Anti-confusions
 

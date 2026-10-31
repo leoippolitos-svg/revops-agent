@@ -34,7 +34,7 @@ Marketing has no deal owners, so nobody from Marketing is in [[silver.owner]]. C
 | Form submissions | [[gold.mql_monthly.form_submissions]] | every submission, flagged or not |
 | Marketing qualified leads | [[gold.mql_monthly.marketing_mqls]] | Marketing's count, canonical for Marketing |
 | Flags in conflict | [[gold.mql_monthly.conflicting_flags]] | where Marketing and Sales disagree |
-| Cost per marketing qualified lead | not in gold yet | campaign budget in [[silver.campaign.budget_usd]]; needs a gold model |
+| Cost per marketing qualified lead | [[gold.campaign_channel_monthly]] | budget over Marketing's MQLs, by channel and month |
 
 ## CRM objects
 
@@ -47,7 +47,7 @@ External benchmarks are in [[doc:benchmarks]]. Internal history is the monthly s
 ## Frequent questions
 
 - "How many MQLs did we get last month?" Marketing's count, for a full month.
-- "Which channel brings the most MQLs?" Needs submissions by campaign channel, which is not in gold yet; the agent says it is a data task.
+- "Which channel brings the most MQLs?" MQLs and budget by channel in [[gold.campaign_channel_monthly]], with cost per MQL next to the count.
 
 ## Anti-confusions
 

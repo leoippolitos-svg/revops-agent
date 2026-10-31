@@ -31,7 +31,7 @@ Five SDRs, team value `sdr` in [[silver.owner.team]]. SDRs never receive routed 
 
 | KPI | Where | Notes |
 |---|---|---|
-| MQL to qualification | not in gold yet | needs submissions joined to deals |
+| MQL to deal in 30 days | [[gold.mql_to_deal_monthly]] | the last 30 days are not mature yet |
 | Speed to lead | not in the data | the time of first touch is not recorded |
 | Sales-accepted leads | [[gold.mql_monthly.sales_mqls]] | the Sales flag, shown next to Marketing's |
 

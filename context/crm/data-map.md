@@ -31,6 +31,11 @@ The protocol and map for querying the lakehouse: which layer the agent may read,
 | [[gold.funnel_time_in_stage_monthly]] | one row per month of exit and stage | only deals that left the stage |
 | [[gold.mql_monthly]] | one row per month | two flags, never added |
 | [[gold.owner_workload]] | one row per owner, now | newest export only |
+| [[gold.account_health]] | one row per company | the latest health score |
+| [[gold.ticket_monthly]] | one row per month, category and priority | a missing combination is zero |
+| [[gold.campaign_channel_monthly]] | one row per month and channel | budget by start month, MQLs by submission month |
+| [[gold.mql_to_deal_monthly]] | one row per month of the MQL | the last 30 days are immature |
+| [[gold.onboarding_progress]] | one row per subscription | milestone dates and the current one |
 | [[gold.data_quality_snapshot]] | one row, now | the data date is its as-of day |
 
 ## Canonical joins

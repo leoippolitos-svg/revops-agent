@@ -7,7 +7,6 @@ Pending items that must not get lost between sessions. Never delete a line: move
 - Run `agent/agent.py --ask` once with a real key, then the first scored evals (context A/B, skill triggers, answer quality).
 - Connect a real MCP client to `mcp_server/server.py`.
 - Confirm the funnel-review thresholds and owner teams (currently accepted assumptions, see `memory/decisions/`).
-- Gold models for metrics marked "not in gold yet": cost per MQL, time to go-live, health band, tickets by category, MQL to deal.
 - Replace the placeholder benchmarks with sourced figures.
 - Evaluate Dokploy for hosting tests, use and demos.
 - Host the web chat app when a host and a key exist (ADR-0022).
@@ -15,6 +14,8 @@ Pending items that must not get lost between sessions. Never delete a line: move
 - Decide whether question text may be kept for usage analysis (memory/query-history.README.md).
 
 ## Done
+
+- 2026-10-31: gold models for cost per MQL, MQL to deal, health band, tickets and time to go-live.
 
 - 2026-10-31: README rewritten for newcomers (#45, #48).
 - 2026-10-31: first finished analysis, new MRR in December (#47).

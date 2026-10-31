@@ -21,7 +21,7 @@ The official definitions of how customers use Fernway's product: active users, w
 | Active technicians | technicians who completed at least one work order in the last 28 days | product usage events | not in the data |
 | Work orders completed | work orders closed in the period, per customer | product usage events | not in the data |
 | Adoption stage | trial use, team use, company-wide use, by share of licensed technicians active | product usage events | not in the data |
-| Health score | the score the Customer Success tool computes, see [[silver.health_score.score]] | Customer Success tool | in silver, not in gold yet |
+| Health score | the latest score the Customer Success tool computes | [[gold.account_health.latest_score]] | in gold |
 
 ## Window and grain
 

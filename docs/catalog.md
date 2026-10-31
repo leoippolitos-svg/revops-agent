@@ -20,6 +20,10 @@ Business grain, ready to use. The agent and the MCP server read only this layer.
 - [`gold.onboarding_progress`](#goldonboardingprogress)
 - [`gold.subscription_lifecycle`](#goldsubscriptionlifecycle)
 - [`gold.deal_amount`](#golddealamount)
+- [`gold.account_health`](#goldaccounthealth)
+- [`gold.ticket_monthly`](#goldticketmonthly)
+- [`gold.campaign_channel_monthly`](#goldcampaignchannelmonthly)
+- [`gold.mql_to_deal_monthly`](#goldmqltodealmonthly)
 - [`gold.owner_directory`](#goldownerdirectory)
 - [`gold.owner_workload`](#goldownerworkload)
 
@@ -224,6 +228,61 @@ One row per deal with its owner, stage and yearly amount. The input of the deal 
 | `owner_id` | Owner of the deal. |
 | `stage` | Current stage of the deal. |
 | `amount_usd` | Yearly contract value of the deal in US dollars, as stored in the CRM. |
+
+<a id="goldaccounthealth"></a>
+
+### `gold.account_health`
+
+The latest health score and band of each company, from the Customer Success tool. A reading of the present, not a churn prediction.
+
+| Column | Description |
+|---|---|
+| `company_id` | Primary key. Identifier of the company. |
+| `latest_scored_at` | Date of the latest score. |
+| `latest_score` | The latest score, from 0 to 100. |
+| `latest_band` | The latest band, red, yellow or green. |
+
+<a id="goldticketmonthly"></a>
+
+### `gold.ticket_monthly`
+
+Support tickets opened and closed per month, category and priority. A month with no ticket of a kind has no row.
+
+| Column | Description |
+|---|---|
+| `month_category_priority_key` | Primary key. Month, category and priority joined by a vertical bar. |
+| `month` | First day of the month. |
+| `category` | Ticket category, for example billing, bug, feature_request, how_to or integration. |
+| `priority` | Ticket priority, low, medium or high. |
+| `tickets_opened` | Tickets of this category and priority opened in the month. |
+| `tickets_closed` | Tickets of this category and priority closed in the month. |
+
+<a id="goldcampaignchannelmonthly"></a>
+
+### `gold.campaign_channel_monthly`
+
+Per month and campaign channel, the budget of campaigns started in the month, and the form submissions and Marketing MQLs they brought. Cost per MQL is budget over MQLs.
+
+| Column | Description |
+|---|---|
+| `month_channel_key` | Primary key. Month and channel joined by a vertical bar. |
+| `month` | First day of the month. |
+| `channel` | Campaign channel, for example paid_search, email or webinar. |
+| `budget_usd` | Budget in US dollars of the campaigns of this channel that started in the month. |
+| `form_submissions` | Form submissions attributed to campaigns of this channel in the month. |
+| `marketing_mqls` | Submissions with Marketing's MQL flag, for campaigns of this channel in the month. |
+
+<a id="goldmqltodealmonthly"></a>
+
+### `gold.mql_to_deal_monthly`
+
+Per month of the MQL, Marketing's MQLs and how many led to a deal for the same company within 30 days.
+
+| Column | Description |
+|---|---|
+| `month` | Primary key. First day of the month of the MQL. |
+| `marketing_mqls` | Submissions with Marketing's MQL flag in the month. |
+| `mqls_with_deal_30d` | Of those, how many had a deal created for the same company within 30 days after the submission. |
 
 <a id="goldownerdirectory"></a>
 

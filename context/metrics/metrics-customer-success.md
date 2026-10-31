@@ -22,7 +22,8 @@ The official formula of every metric the Customer Success area reports, where ea
 | Monthly MRR churn rate | churned MRR over starting MRR of the month | [[gold.mrr_monthly.churned_mrr_usd]] over [[gold.mrr_monthly.starting_mrr_usd]] | in gold |
 | Active customers | companies with a paid subscription in force at month end | [[gold.active_customer_monthly.active_customers]] | in gold |
 | Net revenue retention | (starting MRR minus churned MRR plus expansion) over starting MRR | [[gold.mrr_monthly]] | in gold, equals gross retention today |
-| Accounts in the red band | companies whose latest score is red | [[silver.health_score.band]] | not in gold yet |
+| Accounts in the red band | companies whose latest score is red | [[gold.account_health.latest_band]] | in gold |
+| Tickets opened | tickets opened in the month, by category and priority | [[gold.ticket_monthly.tickets_opened]] | in gold |
 
 ## Window and grain
 
