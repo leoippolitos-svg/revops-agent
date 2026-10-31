@@ -1,0 +1,53 @@
+# Profile eval: for each question, the plan the agent makes before any model call.
+# A case passes when the intent is one of `intents` (more than one reading can be right),
+# every document in `must_load` is in the system prompt, and every tool in `must_offer`
+# is offered. It never calls a model, so it says nothing about the answer itself.
+cases:
+  - question: "How many MQLs did we get in September?"
+    intents: [metric_lookup]
+    must_load: [company, entities, data-map]
+    must_offer: [query_gold, get_map]
+  - question: "What was ending MRR last month?"
+    intents: [metric_lookup]
+    must_load: [company, data-map]
+    must_offer: [query_gold]
+  - question: "How many open deals does Dana Cole have?"
+    intents: [metric_lookup]
+    must_load: [entities]
+    must_offer: [get_map, query_gold]
+  - question: "Why did conversion drop last month?"
+    intents: [funnel_diagnosis]
+    must_load: [funnel-stages, metrics-sales, crm-map, data-map]
+    must_offer: [query_gold, search_records, get_map]
+  - question: "Which stage should we fix first, proposal or negotiation?"
+    intents: [funnel_diagnosis]
+    must_load: [funnel-stages, crm-map]
+    must_offer: [query_gold]
+  - question: "How has MRR moved this year?"
+    intents: [trend_analysis]
+    must_load: [okrs, data-map]
+    must_offer: [query_gold]
+  - question: "What counts as an active customer?"
+    intents: [definition_question]
+    must_load: [company]
+    must_offer: [search_context]
+  - question: "Why don't the Marketing and Sales MQL numbers match?"
+    intents: [data_quality]
+    must_load: [cross-cutting-rules, metrics-revops, data-map]
+    must_offer: [get_catalog, query_gold]
+  - question: "Did we analyze churn in enterprise before?"
+    intents: [past_work_lookup]
+    must_load: []
+    must_offer: [search_records]
+  - question: "Build me a pipeline review for Monday"
+    intents: [report_request]
+    must_load: [company, okrs, data-map]
+    must_offer: [query_gold, get_map]
+  - question: "Update this deal to closed won"
+    intents: [out_of_scope]
+    must_load: []
+    must_offer: []
+  - question: "MQLs from webinars"
+    intents: [metric_lookup, trend_analysis]
+    must_load: [data-map]
+    must_offer: [query_gold]

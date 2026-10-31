@@ -20,5 +20,7 @@ check:  ## Run the repository checks
 	$(PYTHON) tools/check_apps.py
 	$(PYTHON) tools/check_automations.py
 	$(PYTHON) tools/check_derived.py
+	$(PYTHON) tools/check_pii.py
+	$(PYTHON) evals/run_profiles.py --check
 	$(PYTHON) tools/catalog.py check
 	$(PYTHON) tools/catalog.py page --check

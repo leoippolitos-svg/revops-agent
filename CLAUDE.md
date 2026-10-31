@@ -39,6 +39,7 @@ Rules: [docs/standards/pull-requests.md](docs/standards/pull-requests.md)
 | Security | [docs/standards/security.md](docs/standards/security.md) |
 | Apps | [docs/standards/apps.md](docs/standards/apps.md) |
 | Team process and git | [docs/standards/team-process.md](docs/standards/team-process.md) |
+| Verification | [docs/standards/verification.md](docs/standards/verification.md) |
 | Connectors | [docs/standards/connectors.md](docs/standards/connectors.md) |
 | RAG | [docs/standards/rag.md](docs/standards/rag.md) |
 
