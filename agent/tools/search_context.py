@@ -13,6 +13,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "agent" / "rag"))
 
+from corpus import CATEGORIES  # noqa: E402
 from retrieve import retrieve  # noqa: E402
 
 MAX_QUESTION_CHARS = 500
@@ -40,10 +41,15 @@ def check_search_input(question, k) -> None:
         raise InvalidInput(f"k must be a whole number from 1 to {MAX_K}.")
 
 
-def search_context(question: str, k: int = 3, context_dir: Path | None = None) -> dict:
-    """The k best context sections for a question, each with its document id and status."""
+def search_context(question: str, k: int = 3, context_dir: Path | None = None, category: str = "domain") -> dict:
+    """The k best sections for a question, each with its document id, status and category.
+
+    `category` is one of corpus.CATEGORIES: domain (definitions, the default), reference
+    (company, areas, metrics, maps, rules), decisions, conventions or incidents (project history)."""
     check_search_input(question, k)
-    results = retrieve(question, k, context_dir)
+    if category not in CATEGORIES:
+        raise InvalidInput(f"category must be one of {', '.join(CATEGORIES)}.")
+    results = retrieve(question, k, context_dir, categories=(category,))
     for result in results:
         if result["status"] in WARNINGS:
             result["warning"] = WARNINGS[result["status"]]
