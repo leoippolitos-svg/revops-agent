@@ -1,0 +1,21 @@
+{
+  "_comment": "Copy the block you need into your MCP client's configuration. Values are ${env:NAME} placeholders: never paste a secret here. If your client cannot resolve them, use tools/mcp_env_wrapper.py (docs/standards/environment-setup.md).",
+  "mcpServers": {
+    "revops-gold": {
+      "command": "python",
+      "args": ["mcp_server/server.py"],
+      "env": {}
+    },
+    "github": {
+      "command": "python",
+      "args": ["tools/mcp_env_wrapper.py", "--env-file", ".env", "--need", "GITHUB_TOKEN", "--",
+               "npx", "-y", "@modelcontextprotocol/server-github"],
+      "env": {}
+    },
+    "github-if-your-client-resolves-env": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {"GITHUB_PERSONAL_ACCESS_TOKEN": "${env:GITHUB_TOKEN}"}
+    }
+  }
+}
