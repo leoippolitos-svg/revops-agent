@@ -69,3 +69,15 @@ def test_must_never_has_to_forbid_writes(tmp_path):
     root = copy_repo(tmp_path)
     edit(root, "- Write to any data source", "- Do something else")
     assert any("must forbid writing" in e for e in check_apps.check(root))
+
+
+def test_an_app_without_readme_or_inventory_row_is_reported(tmp_path):
+    root = copy_repo(tmp_path)
+    (root / "apps" / "revenue-snapshot" / "README.md").unlink()
+    errors = check_apps.check(root)  # the copy has no context/rules/apps.md either
+    assert any("missing README.md" in e for e in errors)
+    assert any("no row in context/rules/apps.md" in e for e in errors)
+
+
+def test_the_template_is_not_checked_as_an_app():
+    assert not any("_template" in e for e in check_apps.check(ROOT))

@@ -12,6 +12,9 @@ For each folder in apps/ (the _template is skipped), it exits with code 1 if:
   3. "Must never" does not forbid writing to a data source.
   4. "Data read" names a table that is not a gold model, or a gold table that
      does not exist.
+  5. README.md is missing, or the app has no row in the `apps` context document
+     (context/rules/apps.md), which is how the agent learns what the app computes
+     (docs/standards/apps.md).
 """
 
 import re
@@ -74,9 +77,17 @@ def check_app(root: Path, folder: Path, gold: set[str]) -> list[str]:
 def check(root: Path) -> list[str]:
     gold = gold_tables(root)
     folders = sorted(p for p in (root / "apps").iterdir() if p.is_dir() and not p.name.startswith("_"))
+    inventory_path = root / "context" / "rules" / "apps.md"
+    inventory = inventory_path.read_text(encoding="utf-8") if inventory_path.is_file() else ""
     errors = []
     for folder in folders:
         errors += check_app(root, folder, gold)
+        where = folder.relative_to(root).as_posix()
+        if not (folder / "README.md").is_file():
+            errors.append(f"{where}: missing README.md")
+        # A row starts with the app name in the first column of the inventory table.
+        if not re.search(rf"^\| {re.escape(folder.name)} \|", inventory, flags=re.MULTILINE):
+            errors.append(f"{where}: no row in context/rules/apps.md, so the agent cannot explain this app")
     return errors
 
 

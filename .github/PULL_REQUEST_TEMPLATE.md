@@ -10,6 +10,9 @@
 ## Context changes
 <!-- Context documents created or updated, or "none". -->
 
+## Test plan
+<!-- The checks and tests run, and what was verified by hand. -->
+
 ## Checklist
 - [ ] Branch named `<type>/<short-description>`
 - [ ] Record added in `records/`
