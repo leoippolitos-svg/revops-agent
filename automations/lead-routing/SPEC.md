@@ -1,6 +1,6 @@
 # Lead routing, Spec
 
-Status: specified, not built
+Status: built
 
 ## Problem
 A new marketing qualified lead waits until someone decides who takes it. The decision is the same every time (segment, then capacity), but it is made by hand, so some owners are overloaded and some leads wait. The automation applies the rule the moment a lead is flagged.
@@ -35,11 +35,11 @@ If `gold.owner_workload` is missing or empty, the run stops with an error and as
 Dry-run is the default: the assignments are printed and nothing is written. `--write` turns the effect on, and in this repository the effect is only the log file. Running twice for the same lead overwrites the same line.
 
 ## Security checklist
-Standard: `docs/standards/security.md`, automation checklist. Left unticked until the automation is built.
+Standard: `docs/standards/security.md`, automation checklist. Ticked in the PR that built it (`route.py`, `tests/test_lead_routing.py`).
 
-- [ ] Idempotent: running twice does not duplicate effects
-- [ ] Retries with backoff, and a cap
-- [ ] Respects rate limits of every API it calls
-- [ ] Failures are logged and alerted, never swallowed
-- [ ] Credentials scoped to the minimum and registered
-- [ ] Dry-run mode for anything that would write to an external system
+- [x] Idempotent: running twice does not duplicate effects. Verified by a test that runs twice and finds the same file.
+- [x] Retries with backoff, and a cap. Not applicable: there is no network call, the effect is a local file.
+- [x] Respects rate limits of every API it calls. Not applicable: it calls no API.
+- [x] Failures are logged and alerted, never swallowed. A missing or empty table, a bad event or a repeated lead id exits with code 1 and a message; tested.
+- [x] Credentials scoped to the minimum and registered. It uses none; it reads the registered `lakehouse` read-only and its simulated write is the registered `crm-owner-assignment`.
+- [x] Dry-run mode for anything that would write to an external system. Dry-run is the default and writes no file; tested.

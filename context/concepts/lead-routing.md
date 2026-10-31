@@ -3,7 +3,7 @@ id: lead-routing
 title: Lead routing
 owner_team: RevOps
 status: canonical
-last_reviewed: 2026-10-30
+last_reviewed: 2026-10-31
 related: [mql, funnel-stages, cross-cutting-rules]
 ---
 
@@ -30,6 +30,7 @@ Lead routing decides which owner receives a new marketing qualified lead. The se
 - [[gold.owner_workload.open_deals]] counts deals, not leads waiting to be worked. An owner with a full inbox of new leads can still look free.
 - Teams other than sales and enterprise (sdr, customer_success, onboarding) never receive routed leads.
 - The limits above are a policy, not a measurement. Change them here, never in code.
+- Open question for the owner: the rule above lets account continuity override capacity, but the automation spec forbids assigning a lead to an owner at the limit. The automation lists such a lead for a person instead of choosing either. Say which text is canonical.
 
 ## Team differences
 
