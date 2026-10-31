@@ -14,3 +14,4 @@ status_source:
   workflow: catalog-collect.yml
   expected_every_days: 1
 situation: active
+rerun_ok: true

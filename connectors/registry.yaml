@@ -59,6 +59,16 @@ connectors:
     owner: RevOps
     note: ADR-0020; messages are built by code and written to observability/logs/slack-<date>.md; the webhook host must be hooks.slack.com
 
+  - id: github-actions
+    system: GitHub Actions
+    status: simulated
+    access: read-write
+    scopes: ["read workflow runs", "rerun a workflow whose card says rerun_ok", "open a pull request on an oncall/<id> branch"]
+    auth: the GITHUB_TOKEN of each run, with the permissions written in each workflow file
+    consumers: [tools/catalog.py, oncall/oncall.py, oncall/watchdog.py]
+    owner: RevOps
+    note: ADR-0021; reruns and pull requests need the kill switches ONCALL_ACTIONS_ENABLED and WATCHDOG_ENABLED; never enabled here
+
   - id: crm-owner-assignment
     system: CRM (HubSpot-like)
     status: documented

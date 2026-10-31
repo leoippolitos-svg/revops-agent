@@ -15,6 +15,7 @@ One card per thing that runs: automations, scheduled jobs, the agent, apps and s
 | `writes` | what it changes anywhere, or "nothing" |
 | `ai`, `cost` | the model it calls, if any, and what it costs |
 | `status_source` | where its health comes from: `github_actions` (a workflow), `log` (a file pattern in the log folder) or `none`; `expected_every_days` makes a late run visible |
+| `rerun_ok` | optional; `true` only for a job that reads or syncs idempotently, so the on-call agent and the watchdog may start it again |
 | `situation` | `active` (runs on its own), `manual` (runs when a person runs it) or `stopped` (kept for history, never deleted) |
 
 ## Rules

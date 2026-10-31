@@ -64,7 +64,7 @@ def check_automation(root: Path, folder: Path, gold: set[str]) -> list[str]:
 WRITER = re.compile(r"WriteControls\(\s*\"([a-z-]+)\"")
 MARKER = re.compile(r"RECURRING-AUTHORIZATION: ([a-z-]+)\.")
 # Names authorised in the rules but written by code outside automations/ (tools/, scripts).
-SEARCH = ("automations", "tools", "observability")
+SEARCH = ("automations", "tools", "observability", "oncall")
 
 
 def writeback_errors(root: Path) -> list[str]:
