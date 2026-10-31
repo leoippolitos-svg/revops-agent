@@ -11,7 +11,7 @@ Medallion lakehouse · context by area · intent routing · RAG with evals · re
 ![Python](https://img.shields.io/badge/python-3.12-3776AB?logo=python&logoColor=white)
 ![DuckDB](https://img.shields.io/badge/DuckDB-lakehouse-FFF000?logo=duckdb&logoColor=black)
 ![dbt](https://img.shields.io/badge/dbt-transformations-FF694B?logo=dbt&logoColor=white)
-![Tests](https://img.shields.io/badge/tests-521-brightgreen)
+![Tests](https://img.shields.io/badge/tests-534-brightgreen)
 ![Status](https://img.shields.io/badge/status-built%2C%20not%20run%20on%20a%20real%20model-yellow)
 
 [What this is](#what-this-is) · [Why](#why-it-exists) · [What it controls](#what-it-controls-and-what-it-cannot-touch) · [Worth](#what-it-is-worth-and-where-it-can-go) · [Reading guide](#reading-guide) · [See it](#see-it) · [Status](#what-is-built-and-what-is-not) · [How it works](#how-it-works) · [Structure](#project-structure) · [Run it](#run-it) · [Decisions](#design-decisions)
@@ -58,6 +58,7 @@ The design rule is that **the agent advises and people execute.** Each row is so
 | **Audits and reconciles weekly** | Reads gold, writes reports and alerts | Explicit-id joins; divergence, pending or known case; a proposal, never a correction ([audit standard](docs/standards/audits.md)) | [`automations/`](automations) |
 | **Watches everything that runs** | Workflow runs, job health, Slack threads | One card per job; alerts built by code; the on-call agent may only open a PR or ask for a rerun of an idempotent job ([ADR-0021](docs/adr/0021-an-on-call-agent-between-two-steps-without-ai.md)) | [`catalog/`](catalog), [`oncall/`](oncall) |
 | **Shows the numbers to leaders** | A read-only page over four gold tables | No form, no input, no script; labels the partial month | [`apps/revenue-snapshot/`](apps/revenue-snapshot/SPEC.md) |
+| **Lets anyone watch it answer** | A local chat over the agent, with the trace of every answer | 127.0.0.1 only, Origin check, one validated field, strict CSP, a scripted model when there is no key ([ADR-0023](docs/adr/0023-a-local-chat-app-to-show-the-agent.md)) | [`apps/agent-chat/`](apps/agent-chat/README.md) |
 
 **What it never does:** write to a data source from the agent, send a message written by a model, change a record outside the [write-back rules](context/rules/writeback-rules.md), read `silver` or `bronze` to answer a business question, or accept real company data into the repository. Every outside connection is in the [connector registry](connectors/registry.yaml) with its smallest scope; the CRM, billing, product, Slack and GitHub write paths are **simulated or switched off**.
 
@@ -82,7 +83,7 @@ The design rule is that **the agent advises and people execute.** Each row is so
 | Problems found before someone asks | Job health, alerts, an on-call agent and a watchdog |
 | Changes that stay explainable | A pull request, a record and a session digest for every change |
 
-**Where it goes next**, needing credentials or a real environment: run `--ask` once and score the evals, switch on the Slack webhook, the on-call agent and the AI security review, connect a real MCP client, and host a web chat (deferred in [ADR-0022](docs/adr/0022-the-web-chat-app-waits-for-a-host-and-a-key.md)).
+**Where it goes next**, needing credentials or a real environment: run `--ask` once and score the evals, switch on the Slack webhook, the on-call agent and the AI security review, connect a real MCP client, and host the chat for a team with sign-in (the local chat exists; hosting is [ADR-0022](docs/adr/0022-the-web-chat-app-waits-for-a-host-and-a-key.md)).
 
 ## Reading guide
 
@@ -91,18 +92,27 @@ Short on time? Read in this order.
 | Time | Read | You will see |
 |---|---|---|
 | 2 min | This page, then the [status table](#what-is-built-and-what-is-not) | What exists and what was never run |
+| 3 min | [`apps/agent-chat/`](apps/agent-chat/README.md), or run it: `python apps/agent-chat/server.py` | The agent answering, with its route, documents, prompt blocks and tools shown under each answer |
 | 5 min | [`context/company/`](context/company), [`context/areas/area-sales.md`](context/areas/area-sales.md), [`context/metrics/metrics-sales.md`](context/metrics/metrics-sales.md) | How the business is written down: company, who is who, an area, its metrics |
 | 5 min | [`agent/directives/AGENT.md`](agent/directives/AGENT.md) and [`routing.md`](agent/directives/routing.md) | The reading order, the rules it never breaks, intents and their profiles |
 | 5 min | [`context/rules/writeback-rules.md`](context/rules/writeback-rules.md) and [`automations/lead-routing/SPEC.md`](automations/lead-routing/SPEC.md) | What may be written, by whom, under which controls |
 | 5 min | [`automations/reconciliation/`](automations/reconciliation/SPEC.md) and [`docs/standards/audits.md`](docs/standards/audits.md) | An audit that proposes and never corrects |
 | 5 min | [`catalog/`](catalog), [`docs/run-catalog.md`](docs/run-catalog.md), [`oncall/`](oncall) | Everything that runs, its health, and who reacts when it breaks |
 | 5 min | [`analyses/2026-01-new-mrr-december/`](analyses/2026-01-new-mrr-december/result.md) | A finished analysis: question, query, data checks, definitions, limits |
-| 5 min | [`docs/adr/`](docs/adr) | 22 short decisions, each with the reason and the alternative rejected |
+| 5 min | [`docs/adr/`](docs/adr) | 23 short decisions, each with the reason and the alternative rejected |
 | 10 min | [`docs/standards/`](docs/standards) and [`docs/lessons-learned.md`](docs/lessons-learned.md) | The rules the repo enforces on itself, and where they came from |
 
 ## See it
 
 Nothing below needs an API key.
+
+**0. Watch it answer.** `python apps/agent-chat/server.py` opens a local chat. The answer in demo mode comes from a scripted model, but the route, the documents loaded, the prompt blocks and the tool call on the lakehouse are the real agent:
+
+<div align="center">
+
+<img src="docs/img/agent-chat.jpg" alt="The local agent chat: an answer and, under it, the intent, tier, tools, documents loaded, prompt blocks and tools called" width="640">
+
+</div>
 
 **1. The plan before any model is called.** The router picks an intent (and logs which step decided), the tools, the model tier, the fixed documents it will always read, and a call budget. The system prompt is four blocks, the two stable ones cached:
 
@@ -164,6 +174,7 @@ This is a proposal. Nothing was corrected.
 | Model adapter (Claude Messages API, standard library, cache markers) | Yes, against a fake API | No, never used a key |
 | Read-only MCP server (JSON-RPC over stdio) | Yes, against hand-made messages | No real MCP client |
 | Revenue-snapshot micro-app, app template and playbook | Yes | Page rendered from the local lakehouse |
+| Agent chat: local server, page, scripted model, trace of each answer | Yes, 13 tests | Runs locally on real gold data with the scripted model; never with a real model or hosted |
 | Automations: lead routing, provisioning (with write controls), weekly audit, reconciliation, duplicate queue, funnel review | Yes | The three weekly reads are scheduled; writes are simulated log lines |
 | Run catalog, job health, Slack alerts (simulated) | Yes | The collector is scheduled; Slack has never been posted to |
 | On-call agent and watchdog | Yes; the steps without AI are tested | Workflows exist; every switch is off and the agent step has never run |
@@ -193,6 +204,7 @@ Open owner questions, such as the funnel-review thresholds, are in [`memory/deci
 - 🛡️ **Write controls**: kill switch, cap per run, circuit breaker, read-back, review queue, and a check that only authorised jobs write
 - 🧾 **Audits that propose**: explicit-id reconciliation with divergence, pending and known case, and a duplicate queue that never merges
 - 🚨 **Run catalog, Slack alerts, on-call agent, watchdog**, all with switches off until enabled
+- 💬 **A local chat** that shows each answer with its route, documents, prompt blocks and tools, no key needed
 - 🔁 **Correction loop and session closing**: a corrected answer becomes a pull request; every session leaves a digest
 - 🔒 **Rule zero enforced**: pre-commit and CI block secrets, real company terms and personal data
 
@@ -264,7 +276,7 @@ revops-agent/
 ├── catalog/          # One card per thing that runs
 ├── oncall/           # On-call agent prompt, executor and watchdog
 ├── observability/    # Agent log with cost, job health, Slack notifier
-├── apps/             # Micro-apps and their template, spec-first
+├── apps/             # Micro-apps (agent chat, revenue snapshot) and their template, spec-first
 ├── analyses/         # Analyses as code: query, result, definitions used
 ├── evals/            # Retrieval, routing, profile, skill-trigger and context A/B sets
 ├── projects/         # Work that spans sessions, with digests
@@ -273,7 +285,7 @@ revops-agent/
 ├── connectors/       # Registry of every external connection
 ├── design-system/    # Design tokens used by the micro-apps
 ├── destinations/     # Simulated reverse ETL
-├── tests/            # 521 tests covering every piece above
+├── tests/            # 534 tests covering every piece above
 ├── docs/
 │   ├── standards/    # The rules: context, modeling, security, apps, audits, verification, process...
 │   ├── adr/          # Architecture decision records
@@ -309,6 +321,7 @@ Then try each piece. None of these calls a model.
 |---|---|
 | The whole test suite | `python -m pytest` |
 | Every repo check | `make check`, or run the scripts in `tools/` one by one |
+| The agent in a local chat, with the trace of every answer | `python apps/agent-chat/server.py`, then open http://127.0.0.1:8765 |
 | How the agent would handle a question | `python agent/agent.py --plan "your question"` |
 | A closed map (owners, stages, teams, job health) | `python agent/tools/get_map.py owners` |
 | The evals | `python evals/run_retrieval.py`, `run_router.py`, `run_profiles.py` |
@@ -369,6 +382,7 @@ Each decision is a short record with the context, the choice and the alternative
 | [0020](docs/adr/0020-slack-alerts-built-by-code-and-simulated.md) | Slack alerts are built by code, one thread per item, simulated until a webhook exists |
 | [0021](docs/adr/0021-an-on-call-agent-between-two-steps-without-ai.md) | An on-call agent between two steps without AI, and a watchdog |
 | [0022](docs/adr/0022-the-web-chat-app-waits-for-a-host-and-a-key.md) | The web chat app waits for a host and a key |
+| [0023](docs/adr/0023-a-local-chat-app-to-show-the-agent.md) | A local chat app shows the agent, with a scripted model when there is no key |
 
 Standards live in [docs/standards/](docs/standards/).
 

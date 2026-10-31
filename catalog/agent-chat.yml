@@ -1,0 +1,14 @@
+id: agent-chat
+name: Agent chat (local demo)
+kind: app
+owner: RevOps lead
+purpose: A local chat that shows the agent answering and how it got there; a scripted
+  model when there is no key.
+trigger: by hand
+where: apps/agent-chat/SPEC.md
+writes: nothing
+ai: none in demo mode; the agent's models with --model (never run)
+cost: free in demo mode
+status_source:
+  type: none
+situation: manual

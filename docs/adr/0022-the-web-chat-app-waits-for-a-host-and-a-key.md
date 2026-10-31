@@ -1,6 +1,6 @@
 # ADR-0022: The web chat app waits for a host and a key
 
-- Status: accepted
+- Status: accepted; the local, no-key part is now ADR-0023
 - Date: 2026-10-31
 
 ## Context

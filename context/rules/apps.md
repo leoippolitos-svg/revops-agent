@@ -18,6 +18,7 @@ Every internal app RevOps runs, what it computes and where its data lives, so th
 
 | App | What it shows | Data it reads | Writes | Spec |
 |---|---|---|---|---|
+| agent-chat | a local chat with the agent and, under each answer, how it got there (route, documents, prompt blocks, tools) | gold through the agent's read-only tools, and the context documents | nothing | [apps/agent-chat/SPEC.md](../../apps/agent-chat/SPEC.md) |
 | revenue-snapshot | MRR, customers, funnel entries and MQLs by month, each with its definition | four gold tables, read-only | nothing | [apps/revenue-snapshot/SPEC.md](../../apps/revenue-snapshot/SPEC.md) |
 
 How each number is computed: [[doc:report-revenue-snapshot]].

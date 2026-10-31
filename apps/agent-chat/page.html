@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RevOps agent chat</title>
+  <link rel="stylesheet" href="/app.css">
+</head>
+<body>
+  <header>
+    <h1>RevOps agent</h1>
+    <p class="muted">Ask a revenue question about Fernway, a fictional company. Every answer shows how the agent got there: the route, the documents it loaded, the prompt blocks and the tools it called. <strong id="mode">Demo mode: no language model is called.</strong></p>
+  </header>
+  <main id="thread" aria-live="polite"></main>
+  <form id="ask" autocomplete="off">
+    <label for="question" class="visually-hidden">Question</label>
+    <input id="question" maxlength="500" placeholder="How many MQLs did we get last month?" required>
+    <button type="submit">Ask</button>
+  </form>
+  <p class="examples muted">Try: <button type="button" class="example">How many MQLs did we get in September?</button>
+    <button type="button" class="example">Why did conversion drop last month?</button>
+    <button type="button" class="example">What counts as an active customer?</button>
+    <button type="button" class="example">Update this deal to closed won</button></p>
+  <script src="/app.js"></script>
+</body>
+</html>
