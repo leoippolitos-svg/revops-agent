@@ -14,7 +14,8 @@
 | Retrieval eval | does the expected document appear in the top 3? | every PR | the final answer |
 | Router eval | is the intent right, on tuned and held-out questions? | every PR | questions unlike the sets |
 | Profile eval (`evals/run_profiles.py`) | for each question, was the right intent picked, the right documents loaded and the right tools offered? | every PR | the answer itself: no model is called |
-| AI security review | does the diff break the security rules? | PR, when switched on | see "green is not reviewed" |
+| AI security review ([pipeline](security-review-pipeline.md)) | does the diff break the security rules? Red on HIGH or CRITICAL, with a Slack alert | PR, when switched on | see "green is not reviewed" |
+| Push scan (`tools/push_scan.py`) | did a push to main add something shaped like a secret? | push to main, with the pipeline | anything that is not a known credential shape |
 | Derived-copy check | did a short copy fall behind its source? | every PR, warns | the content of the rule |
 | Watchdog | did today's scheduled job run? | daily | whether it ran correctly |
 | Adversarial reviewer (`.claude/agents/adversarial-reviewer.md`) | can a second agent break this analysis or change? | before asking for merge | anything it was not shown |
