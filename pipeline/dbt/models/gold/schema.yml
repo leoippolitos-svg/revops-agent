@@ -169,6 +169,18 @@ models:
       - name: avg_days_in_stage
         description: Average number of days between entering and leaving the stage, same deals as the median.
 
+  - name: owner_directory
+    description: One row per owner with the full name and team, so answers can name people instead of showing ids. It holds no e-mail or other contact detail.
+    columns:
+      - name: owner_id
+        description: Primary key. Identifier of the owner in the CRM.
+        data_tests: [unique, not_null]
+      - name: full_name
+        description: The owner's full name as stored in the CRM, used to name people in answers.
+        data_tests: [not_null]
+      - name: team
+        description: Team the owner belongs to, for example sdr, sales or enterprise.
+        data_tests: [not_null]
   - name: owner_workload
     description: Open deals per owner as of the newest daily export, one row per owner, including owners with no open deal. It holds no names or contact details.
     columns:

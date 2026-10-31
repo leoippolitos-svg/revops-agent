@@ -28,8 +28,8 @@ The team of a person is [[silver.owner.team]]; the same value is in [[gold.owner
 
 ## People and roles
 
-- Every person who owns companies or deals is a row in [[silver.owner]], with [[silver.owner.owner_id]], [[silver.owner.full_name]] and [[silver.owner.team]].
-- The agent answers with the full name, never the id: the id is resolved through the map tool or this table.
+- Every person who owns companies or deals is a row in [[gold.owner_directory]], with [[gold.owner_directory.owner_id]], [[gold.owner_directory.full_name]] and [[gold.owner_directory.team]].
+- The agent answers with the full name, never the id: the map tool's `owners` key resolves one into the other.
 - A deal's owner is [[silver.deal.owner_id]]; a company's owner is [[silver.company.owner_id]]. They can differ: the deal owner sells, the company owner keeps the relationship.
 - Leaders by role: one head per team, recorded in the people directory outside the data. The agent does not guess who leads a team.
 
