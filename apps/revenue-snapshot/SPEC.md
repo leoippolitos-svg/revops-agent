@@ -1,6 +1,6 @@
 # Revenue snapshot, Spec
 
-Status: specified, not built
+Status: built
 
 ## Problem
 Leaders ask the same four questions every Monday: how is recurring revenue moving, how many customers do we have, how much entered the funnel, and how many leads Marketing handed over. Today each answer comes from a different report with a different definition. This app shows all four on one page, each with the definition it uses.
@@ -45,12 +45,12 @@ If gold is missing or the data date is older than two days, the page says so at 
 Colors, type and spacing come from `design-system/tokens.json`. The page reads on a phone and prints on one sheet.
 
 ## Security checklist
-Standard: `docs/standards/security.md`. Nothing is ticked, because nothing is built. Each item is ticked in the PR that builds the app, with how it was verified.
+Standard: `docs/standards/security.md`. Ticked in the PR that built the app (`snapshot.py`, `tests/test_revenue_snapshot.py`), with how each was verified.
 
-- [ ] No secret in client code or in the repository
-- [ ] Reads data only through gold, read-only
-- [ ] All inputs validated on the server side
-- [ ] No raw SQL built from user input; parameters only
-- [ ] Errors logged without leaking internal details to the user
-- [ ] Dependencies pinned
-- [ ] Spec and security review committed with the PR
+- [x] No secret in client code or in the repository: the page is a static file and the code reads no key; `check_leaks` and gitleaks pass
+- [x] Reads data only through gold, read-only: every query goes through `query_gold`; a test checks the queries match the spec's list and that silver values never appear
+- [x] All inputs validated on the server side: the page has no inputs; a test checks the output has no form, input or script
+- [x] No raw SQL built from user input; parameters only: the four queries are fixed text with no parameters
+- [x] Errors logged without leaking internal details to the user: a test checks the page and the log show no path or stack trace
+- [x] Dependencies pinned: none added; it uses the already pinned `duckdb` and `pyyaml`
+- [x] Spec and security review committed with the PR

@@ -47,13 +47,13 @@ def test_missing_section_is_reported(tmp_path):
 
 def test_ticked_item_on_an_unbuilt_app_is_reported(tmp_path):
     root = copy_repo(tmp_path)
-    edit(root, "- [ ] Dependencies pinned", "- [x] Dependencies pinned")
+    edit(root, "Status: built", "Status: specified, not built")  # the real spec is built and fully ticked
     assert any("ticked but the app is not built" in e for e in check_apps.check(root))
 
 
 def test_built_app_with_unticked_item_is_reported(tmp_path):
     root = copy_repo(tmp_path)
-    edit(root, "Status: specified, not built", "Status: built")
+    edit(root, "- [x] Dependencies pinned", "- [ ] Dependencies pinned")
     assert any("built but a checklist item is not ticked" in e for e in check_apps.check(root))
 
 
