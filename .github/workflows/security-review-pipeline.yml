@@ -1,0 +1,54 @@
+name: Security review pipeline
+
+# The reusable pipeline (docs/standards/security-review-pipeline.md). Other workflows call it;
+# it holds all the logic, so a repository only needs a short switch file.
+#   pr-review: the AI review reads only the diff, comments on the pull request, and the
+#              evaluator turns HIGH or CRITICAL findings into a red check and one Slack alert;
+#   push-scan: a cheap scan of the lines a push to main added, for a push that skipped review.
+on:
+  workflow_call:
+    secrets:
+      ANTHROPIC_API_KEY:
+        required: false
+      SLACK_WEBHOOK_URL:
+        required: false
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  pr-review:
+    if: ${{ github.event_name == 'pull_request' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      # Pin this action to a full commit SHA before switching the pipeline on.
+      - uses: anthropics/claude-code-security-review@main
+        with:
+          claude-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+          comment-pr: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: Red on HIGH or CRITICAL, alert in Slack
+        env:
+          SLACK_ALERTS_ENABLED: ${{ vars.SLACK_ALERTS_ENABLED }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: python tools/security_review_eval.py claudecode-results.json --notify --summary "$GITHUB_STEP_SUMMARY"
+
+  push-scan:
+    if: ${{ github.event_name == 'push' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Scan the lines this push added
+        run: python tools/push_scan.py --range HEAD~1..HEAD

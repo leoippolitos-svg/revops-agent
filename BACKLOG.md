@@ -10,7 +10,7 @@ Pending items that must not get lost between sessions. Never delete a line: move
 - Replace the placeholder benchmarks with sourced figures.
 - Evaluate Dokploy for hosting tests, use and demos.
 - Host the web chat app when a host and a key exist (ADR-0022).
-- Pin the AI security review action to a commit, then switch it on.
+- Pin the AI security review action to a commit, add the secret, then switch the pipeline on (docs/standards/security-review-pipeline.md).
 - Decide whether question text may be kept for usage analysis (memory/query-history.README.md).
 
 ## Done

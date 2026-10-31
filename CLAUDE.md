@@ -40,6 +40,7 @@ Rules: [docs/standards/pull-requests.md](docs/standards/pull-requests.md)
 | Apps | [docs/standards/apps.md](docs/standards/apps.md) |
 | Team process and git | [docs/standards/team-process.md](docs/standards/team-process.md) |
 | Verification | [docs/standards/verification.md](docs/standards/verification.md) |
+| Security review pipeline | [docs/standards/security-review-pipeline.md](docs/standards/security-review-pipeline.md) |
 | Automations | [docs/standards/automations.md](docs/standards/automations.md) |
 | Environment setup and MCP | [docs/standards/environment-setup.md](docs/standards/environment-setup.md) |
 | Audits | [docs/standards/audits.md](docs/standards/audits.md) |
