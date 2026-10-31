@@ -17,7 +17,7 @@ connectors:
     access: read
     scopes: [messages]
     auth: ANTHROPIC_API_KEY in .env
-    consumers: [agent, automations/site-qualification, automations/prospecting-drafts]
+    consumers: [agent, apps/agent-chat, automations/site-qualification, automations/prospecting-drafts, automations/proposal-generator, automations/ebr-narrative]
     owner: RevOps
     note: adapter in agent/model_client.py, tested against a fake API; never called with a real key; automations call it through automations/_lib/ai_step.py
 

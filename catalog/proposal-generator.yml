@@ -1,0 +1,15 @@
+id: proposal-generator
+name: Proposal generator
+kind: automation
+owner: Sales
+purpose: Extracts facts from a meeting note and assembles a proposal draft in code;
+  never sent.
+trigger: a seller asks for a proposal (run by hand here)
+where: automations/proposal-generator/SPEC.md
+writes: a drafts file; never the CRM
+ai: claude-haiku-5-5 through ai_step (demo without a key)
+cost: logged per run in ai-steps.jsonl; prices not set
+status_source:
+  type: log
+  pattern: proposals-*.json
+situation: manual

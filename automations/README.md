@@ -18,6 +18,8 @@ Gains are **projections on fictional volumes**, with their assumptions in each s
 | [`deal-amount/`](deal-amount/SPEC.md) | a discount change | propose the new net amount for Finance to approve | 3 fewer wrong amounts a month | no |
 | [`site-qualification/`](site-qualification/SPEC.md) | a qualification request | read a company's website and write a validated summary for the SDR | 4 hours a month of SDR research | yes: fast model, validated JSON, quotes checked against the site |
 | [`prospecting-drafts/`](prospecting-drafts/SPEC.md) | a new lead with a qualification | draft a first touch and a follow-up from evidence-backed arguments; never sends | about 10 hours a month of SDR writing | yes: fast model, only eligible arguments reach it, forbidden claims rejected in code |
+| [`proposal-generator/`](proposal-generator/SPEC.md) | a seller asks for a proposal | extract facts from the meeting note and assemble the draft in code | about 6 hours a month of seller writing | yes: the model only extracts facts, checked against the note |
+| [`ebr-narrative/`](ebr-narrative/SPEC.md) | before an executive review | a brief for the CSM from gold, numbers checked | 5 hours a month of preparation | yes: prose only, every number must be in the data pack |
 | [`funnel-review/`](funnel-review/SPEC.md) | by hand | name the funnel stage that moved most | about 8 hours a month of analyst time | the cause step (never run) |
 
 Worked examples documented to the standard but not built are in [`_examples/`](_examples/README.md), starting with a multi-year contract split.

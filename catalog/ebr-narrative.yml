@@ -1,0 +1,15 @@
+id: ebr-narrative
+name: Account review narrative
+kind: automation
+owner: Customer Success
+purpose: Writes the brief a CSM reads before an executive review, with numbers only
+  from gold.
+trigger: by hand, before a review
+where: automations/ebr-narrative/SPEC.md
+writes: a briefs file
+ai: claude-haiku-5-5 through ai_step (demo without a key)
+cost: logged per run in ai-steps.jsonl; prices not set
+status_source:
+  type: log
+  pattern: ebr-briefs-*.json
+situation: manual
