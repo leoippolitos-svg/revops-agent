@@ -169,6 +169,54 @@ models:
       - name: avg_days_in_stage
         description: Average number of days between entering and leaving the stage, same deals as the median.
 
+  - name: deal_subscription_reconciliation
+    description: One row per closed won deal or subscription, matched on the deal id the subscription carries, with whether they matched and the monthly gap between the deal amount and the subscription MRR. The input of the reconciliation audit.
+    columns:
+      - name: deal_id
+        description: Identifier of the deal, from the CRM or carried by the subscription.
+        data_tests: [not_null]
+      - name: subscription_id
+        description: Identifier of the subscription in billing; empty when a won deal has none.
+      - name: company_id
+        description: Company of the deal, or of the subscription when the deal is missing.
+      - name: owner_id
+        description: Owner of the deal; empty when the deal is missing from the CRM.
+      - name: closed_at
+        description: Date the deal was closed won; empty when the deal is missing.
+      - name: started_at
+        description: Date the subscription started; empty when there is none.
+      - name: deal_amount_usd
+        description: Yearly contract value of the deal in US dollars.
+      - name: subscription_mrr_usd
+        description: Monthly recurring revenue of the subscription in US dollars.
+      - name: match_status
+        description: matched, won_without_subscription or subscription_without_deal.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [matched, won_without_subscription, subscription_without_deal]
+      - name: monthly_gap_usd
+        description: Deal amount divided by 12 minus the subscription MRR, for matched rows only; zero means they agree.
+  - name: possible_duplicate_company
+    description: Company records flagged as possible duplicates, one row each, with the shared name key and how many records carry it. A review list; nothing is merged.
+    columns:
+      - name: company_id
+        description: Primary key. Identifier of the company record in the CRM.
+        data_tests: [unique, not_null]
+      - name: name
+        description: Company name as stored.
+        data_tests: [not_null]
+      - name: name_key
+        description: The name in lower case without spaces at the ends, which groups the possible duplicates.
+        data_tests: [not_null]
+      - name: records_with_name
+        description: How many flagged records share this name key.
+        data_tests: [not_null]
+      - name: owner_id
+        description: Owner of the company record.
+      - name: created_at
+        description: Date the company record was created.
   - name: owner_directory
     description: One row per owner with the full name and team, so answers can name people instead of showing ids. It holds no e-mail or other contact detail.
     columns:

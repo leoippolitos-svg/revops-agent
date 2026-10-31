@@ -1,0 +1,17 @@
+id: reconciliation
+name: Deal and subscription reconciliation
+kind: automation
+owner: RevOps lead
+purpose: Lists every won deal that does not match billing, by deal id, with its owner
+  and a proposed fix.
+trigger: schedule, Mondays, in the weekly audit workflow
+where: automations/reconciliation/SPEC.md
+writes: a report and a Slack alert (simulated)
+ai: none
+cost: free (CI minutes)
+status_source:
+  type: github_actions
+  workflow: weekly-audit.yml
+  expected_every_days: 8
+rerun_ok: true
+situation: active

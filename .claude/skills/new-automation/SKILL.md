@@ -9,6 +9,8 @@ Standards: `docs/standards/pull-requests.md` (spec-driven flow) and the automati
 
 ## Steps
 
+
+An audit (two sources compared) follows `docs/standards/audits.md`: explicit-id join, three destinations, an owner per class, a proposal and never a correction.
 1. **Research**: who benefits, what triggers it, what it changes, and which team owns the outcome. Write it down.
 2. **Spec**: create `automations/<name>/SPEC.md` with these sections: Trigger, Inputs (gold tables only), Rules, Effects, Failure behavior, Must never. Commit the spec before any code.
 3. **Context**: every business rule the automation applies (segments, capacity, thresholds) lives in `context/`, not in code. Load `context-docs` and update it.
