@@ -282,3 +282,14 @@ def test_owner_directory_names_every_owner_and_holds_no_contact_detail(lakehouse
     columns = {row[0] for row in query(db, "SELECT column_name FROM information_schema.columns "
                                            "WHERE table_schema = 'gold' AND table_name = 'owner_directory'")}
     assert columns == {"owner_id", "full_name", "team"}
+
+
+def test_the_new_metric_models_agree_with_silver(lakehouse):
+    db, _ = lakehouse
+    companies_scored = query(db, "SELECT count(DISTINCT company_id) FROM silver.health_score")[0][0]
+    assert query(db, "SELECT count(*) FROM gold.account_health")[0][0] == companies_scored
+    assert query(db, "SELECT sum(tickets_opened) FROM gold.ticket_monthly")[0][0] == query(db, "SELECT count(*) FROM silver.ticket")[0][0]
+    flagged = query(db, "SELECT count(*) FROM silver.form_submission WHERE marketing_mql_flag")[0][0]
+    assert query(db, "SELECT sum(marketing_mqls) FROM gold.mql_to_deal_monthly")[0][0] == flagged
+    assert query(db, "SELECT count(*) FROM gold.mql_to_deal_monthly WHERE mqls_with_deal_30d > marketing_mqls") == [(0,)]
+    assert query(db, "SELECT sum(budget_usd) FROM gold.campaign_channel_monthly")[0][0] == query(db, "SELECT sum(budget_usd) FROM silver.campaign")[0][0]

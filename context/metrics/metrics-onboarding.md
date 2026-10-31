@@ -18,8 +18,8 @@ The official formula of every metric the Onboarding area reports, where each ter
 
 | Metric | Formula | Source | Status |
 |---|---|---|---|
-| Time to go-live | days from the kickoff milestone to the go_live milestone of a subscription | [[silver.onboarding_milestone.reached_at]] | not in gold yet |
-| Stuck before go-live | subscriptions with a kickoff and no go_live after 60 days | [[silver.onboarding_milestone]] | not in gold yet |
+| Time to go-live | days from the kickoff milestone to the go_live milestone of a subscription; report the median and the count | [[gold.onboarding_progress.kickoff_at]], [[gold.onboarding_progress.go_live_at]] | in gold |
+| Stuck before go-live | subscriptions with a kickoff and no go_live after 60 days | [[gold.onboarding_progress.current_milestone]], [[gold.onboarding_progress.kickoff_at]] | in gold |
 
 ## Window and grain
 

@@ -22,7 +22,7 @@ The official formula of every metric the Marketing area reports, where each term
 | Marketing qualified leads | submissions with Marketing's flag | [[gold.mql_monthly.marketing_mqls]] | in gold |
 | Sales-accepted share | Sales flags over Marketing flags, same month | [[gold.mql_monthly.sales_mqls]] over [[gold.mql_monthly.marketing_mqls]] | in gold |
 | Conflicting flags | submissions where the two flags disagree | [[gold.mql_monthly.conflicting_flags]] | in gold |
-| Cost per MQL | campaign budget started in the month over MQLs of those campaigns | [[silver.campaign.budget_usd]], [[silver.form_submission.campaign_id]] | not in gold yet |
+| Cost per MQL | budget of campaigns started in the month over Marketing's MQLs, by channel | [[gold.campaign_channel_monthly.budget_usd]] over [[gold.campaign_channel_monthly.marketing_mqls]] | in gold |
 
 ## Window and grain
 

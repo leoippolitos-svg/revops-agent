@@ -30,8 +30,8 @@ Three onboarding managers, team value `onboarding`.
 
 | KPI | Where | Notes |
 |---|---|---|
-| Time to go-live | not in gold yet | from [[silver.onboarding_milestone]], kickoff to go_live |
-| Customers past each milestone | not in gold yet | kickoff, configured, go_live |
+| Time to go-live | [[gold.onboarding_progress]] | days from [[gold.onboarding_progress.kickoff_at]] to [[gold.onboarding_progress.go_live_at]] |
+| Customers past each milestone | [[gold.onboarding_progress.current_milestone]] | kickoff, configured, go_live |
 
 ## CRM objects
 
@@ -43,7 +43,7 @@ See [[doc:benchmarks]].
 
 ## Frequent questions
 
-- "How long does onboarding take?" Needs a gold model of milestones; until it exists the agent says it is a data task.
+- "How long does onboarding take?" The median days from kickoff to go-live in [[gold.onboarding_progress]], for subscriptions that reached go-live, with the count.
 
 ## Anti-confusions
 

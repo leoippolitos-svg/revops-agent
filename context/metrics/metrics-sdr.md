@@ -19,7 +19,7 @@ The official formula of every metric the SDR area reports, where each term comes
 | Metric | Formula | Source | Status |
 |---|---|---|---|
 | Sales-accepted leads | contacts with the Sales flag, by month of submission | [[gold.mql_monthly.sales_mqls]] | in gold |
-| MQL to deal | MQLs whose company opened a deal within 30 days, over MQLs | [[silver.form_submission]], [[silver.deal.created_at]] | not in gold yet |
+| MQL to deal | MQLs whose company opened a deal within 30 days, over MQLs; the last 30 days are immature | [[gold.mql_to_deal_monthly.mqls_with_deal_30d]] over [[gold.mql_to_deal_monthly.marketing_mqls]] | in gold |
 | Speed to lead | time from submission to first touch | not recorded | not in the data |
 
 ## Window and grain

@@ -269,6 +269,79 @@ models:
         data_tests: [not_null]
       - name: amount_usd
         description: Yearly contract value of the deal in US dollars, as stored in the CRM.
+  - name: account_health
+    description: The latest health score and band of each company, from the Customer Success tool. A reading of the present, not a churn prediction.
+    columns:
+      - name: company_id
+        description: Primary key. Identifier of the company.
+        data_tests: [unique, not_null]
+      - name: latest_scored_at
+        description: Date of the latest score.
+        data_tests: [not_null]
+      - name: latest_score
+        description: The latest score, from 0 to 100.
+        data_tests: [not_null]
+      - name: latest_band
+        description: The latest band, red, yellow or green.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [red, yellow, green]
+  - name: ticket_monthly
+    description: Support tickets opened and closed per month, category and priority. A month with no ticket of a kind has no row.
+    columns:
+      - name: month_category_priority_key
+        description: Primary key. Month, category and priority joined by a vertical bar.
+        data_tests: [unique, not_null]
+      - name: month
+        description: First day of the month.
+        data_tests: [not_null]
+      - name: category
+        description: Ticket category, for example billing, bug, feature_request, how_to or integration.
+        data_tests: [not_null]
+      - name: priority
+        description: Ticket priority, low, medium or high.
+        data_tests: [not_null]
+      - name: tickets_opened
+        description: Tickets of this category and priority opened in the month.
+        data_tests: [not_null]
+      - name: tickets_closed
+        description: Tickets of this category and priority closed in the month.
+        data_tests: [not_null]
+  - name: campaign_channel_monthly
+    description: Per month and campaign channel, the budget of campaigns started in the month, and the form submissions and Marketing MQLs they brought. Cost per MQL is budget over MQLs.
+    columns:
+      - name: month_channel_key
+        description: Primary key. Month and channel joined by a vertical bar.
+        data_tests: [unique, not_null]
+      - name: month
+        description: First day of the month.
+        data_tests: [not_null]
+      - name: channel
+        description: Campaign channel, for example paid_search, email or webinar.
+        data_tests: [not_null]
+      - name: budget_usd
+        description: Budget in US dollars of the campaigns of this channel that started in the month.
+        data_tests: [not_null]
+      - name: form_submissions
+        description: Form submissions attributed to campaigns of this channel in the month.
+        data_tests: [not_null]
+      - name: marketing_mqls
+        description: Submissions with Marketing's MQL flag, for campaigns of this channel in the month.
+        data_tests: [not_null]
+  - name: mql_to_deal_monthly
+    description: Per month of the MQL, Marketing's MQLs and how many led to a deal for the same company within 30 days.
+    columns:
+      - name: month
+        description: Primary key. First day of the month of the MQL.
+        data_tests: [unique, not_null]
+      - name: marketing_mqls
+        description: Submissions with Marketing's MQL flag in the month.
+        data_tests: [not_null]
+      - name: mqls_with_deal_30d
+        description: Of those, how many had a deal created for the same company within 30 days after the submission.
+        data_tests: [not_null]
   - name: owner_directory
     description: One row per owner with the full name and team, so answers can name people instead of showing ids. It holds no e-mail or other contact detail.
     columns:
