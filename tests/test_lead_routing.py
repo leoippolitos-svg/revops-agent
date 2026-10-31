@@ -86,9 +86,29 @@ def test_an_account_owner_in_the_wrong_team_does_not_count_as_continuity(db):
     assert decide([lead(segment="enterprise", owner="s1")], db)[0]["owner_id"] == "e1"
 
 
-def test_an_account_owner_at_the_limit_is_not_given_the_lead_and_a_person_decides(db):
-    out = decide([lead(owner="s3")], db)[0]
-    assert out["outcome"] == "not routed" and "a person decides" in out["rule"]
+def test_an_account_owner_at_the_limit_still_gets_the_lead_within_the_tolerance(db):
+    out = decide([lead(owner="s3")], db)[0]  # s3 has 30, the ceiling is 31 (5% over 30, rounded down)
+    assert out["owner_id"] == "s3" and "within the tolerance" in out["rule"]
+
+
+def test_the_owner_who_reached_the_ceiling_gets_no_more_and_a_person_decides(db):
+    out = decide([lead("A", owner="s3"), lead("B", owner="s3")], db)  # the second would make 32
+    assert out[0]["owner_id"] == "s3" and out[1]["outcome"] == "not routed" and "a person decides" in out[1]["rule"]
+
+
+def test_an_enterprise_owner_has_no_tolerance_because_five_percent_of_eight_is_under_one_deal(db):
+    out = decide([lead(segment="enterprise", owner="e2")], db)[0]  # e2 has 8, the ceiling is 8
+    assert out["outcome"] == "not routed" and "ceiling of 8" in out["rule"]
+
+
+def test_the_tolerance_is_read_from_the_document_and_a_wider_one_changes_the_ceiling(tmp_path, db):
+    assert route_leads.load_rules()["tolerance_percent"] == 5
+    context = tmp_path / "context"
+    shutil.copytree(ROOT / "context", context)
+    doc = context / "concepts" / "lead-routing.md"
+    doc.write_text(doc.read_text(encoding="utf-8").replace("at most 5% over", "at most 20% over"), encoding="utf-8")
+    rules = route_leads.load_rules(context)
+    assert [d["owner_id"] for d in decide([lead("A", owner="s3"), lead("B", owner="s3")], db, rules)] == ["s3", "s3"]  # ceiling 36
 
 
 def test_a_tie_goes_to_the_lowest_owner_id(tmp_path):

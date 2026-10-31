@@ -45,7 +45,11 @@ def load_rules(context_dir: Path = ROOT / "context") -> dict:
                 team_of[segment] = team
     if set(team_of) != set(SEGMENT_WORDS.values()):
         raise RoutingError("lead-routing.md no longer states which team each segment goes to in the expected words")
-    return {"limit": {"sales": int(limits.group(1)), "enterprise": int(limits.group(2))}, "team_of": team_of}
+    tolerance = re.search(r"at most (\d+)% over the limit", flat)
+    if not tolerance:
+        raise RoutingError("lead-routing.md no longer states the continuity tolerance in the expected words")
+    return {"limit": {"sales": int(limits.group(1)), "enterprise": int(limits.group(2))}, "team_of": team_of,
+            "tolerance_percent": int(tolerance.group(1))}
 
 
 def read_workload(db_path: Path) -> dict[str, dict]:
@@ -85,11 +89,13 @@ def _decide(lead: dict, workload: dict, open_deals: dict, rules: dict) -> tuple[
     limit = rules["limit"][team]
     current = lead.get("owner_id")
     if current in workload and workload[current]["team"] == team:
-        # Account continuity comes first. The spec forbids giving a lead to an owner at the limit,
-        # so a full account owner is a case for a person, not an automatic hand-over to someone else.
-        if open_deals[current] >= limit:
-            return None, f"account owner is at the {team} limit of {limit}; a person decides"
-        return current, "account continuity"
+        # Account continuity comes first, and may pass the limit by the tolerance in the document
+        # (rounded down, in whole deals). Beyond that it is a case for a person, not a hand-over to someone else.
+        ceiling = limit * (100 + rules["tolerance_percent"]) // 100
+        if open_deals[current] >= ceiling:
+            return None, f"account owner is at the {team} ceiling of {ceiling}; a person decides"
+        over = " (over the limit, within the tolerance)" if open_deals[current] >= limit else ""
+        return current, "account continuity" + over
     # Fewest open deals, and a tie goes to the lowest owner_id so the same input gives the same answer.
     room = sorted((open_deals[o], o) for o, info in workload.items() if info["team"] == team and open_deals[o] < limit)
     if not room:

@@ -27,7 +27,7 @@ If `gold.owner_workload` is missing or empty, the run stops with an error and as
 - Write to any data source other than the single owner assignment, and only with `--write`
 - Read from silver or bronze
 - Assign a lead to a team other than the one the segment picks
-- Assign a lead to an owner at the capacity limit
+- Assign a lead to an owner at the capacity limit, except an account owner within the continuity tolerance stated in the context document
 - Delete, merge or edit any other field of a lead or company
 - Let the agent run it or change who owns a lead
 
