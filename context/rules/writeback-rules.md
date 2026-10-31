@@ -27,8 +27,11 @@ The single list of what may be written into another system, by which automation,
 
 | System | Object and field | Automation | Authorization | Decision | Cap per run |
 |---|---|---|---|---|---|
+| CRM | a deal amount after a discount change | `deal-amount` | **proposal only**, approved item by item by Finance | ADR-0024 | n/a |
 | CRM | the owner of a new lead | `lead-routing` | recurring | ADR-0010 | 50 |
 | Product | one workspace and its onboarding kickoff per signed deal | `closed-won-provisioning` | recurring | ADR-0011 | 20 |
+| Customer Success tool | the onboarding milestone of a subscription | `onboarding-advance` | recurring | ADR-0024 | 50 |
+| Product and CRM | switch off a churned workspace and mark its company inactive | `churn-deactivation` | recurring | ADR-0024 | 10 |
 | Slack | one alert message per finding, in the alerts channel | `slack-alerts` | recurring | ADR-0020 | 30 |
 | GitHub | start again a workflow whose card says `rerun_ok`, asked by the on-call agent | `oncall-actions` | recurring | ADR-0021 | 5 |
 | GitHub | start again a late workflow whose card says `rerun_ok` | `watchdog-recovery` | recurring | ADR-0021 | 5 |
@@ -42,6 +45,8 @@ The cap is read by the automation at run time: past it, the rest of the run wait
   - RECURRING-AUTHORIZATION: closed-won-provisioning. Scope: one workspace request and one kickoff request per signed deal. Out of scope: plan, price, users, and anything for a deal that is not closed won.
   - RECURRING-AUTHORIZATION: oncall-actions. Scope: rerun a workflow whose catalog card says `rerun_ok: true`, when the on-call report asks for it. Out of scope: any other action, any workflow without that flag, merging or deploying.
   - RECURRING-AUTHORIZATION: watchdog-recovery. Scope: rerun a late workflow whose catalog card says `rerun_ok: true`. Out of scope: anything else.
+  - RECURRING-AUTHORIZATION: onboarding-advance. Scope: move a subscription to the next onboarding milestone when the product event in `onboarding-milestones` arrives. Out of scope: skipping or moving back a milestone, any other field.
+  - RECURRING-AUTHORIZATION: churn-deactivation. Scope: switch off the workspace of a subscription past the grace period, and mark its company inactive, when the company has no other active subscription. Out of scope: deleting a workspace or data, any active customer.
   - RECURRING-AUTHORIZATION: slack-alerts. Scope: one message per finding in the alerts channel, text built by code, one thread per item. Out of scope: direct messages, any other channel, any text written by a model.
 - **Proposal and approval**: for a sensitive field (an amount, a status that affects billing), the automation only writes a proposal. A person approves item by item, never in bulk, and a separate manual step applies it with the approver's name and the previous value.
 - **Forbidden**: everything not listed.

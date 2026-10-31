@@ -6,11 +6,14 @@ Everything that runs, generated from `catalog/*.yml` by `python tools/catalog.py
 |---|---|---|---|---|---|---|---|
 | [Agent chat (local demo)](../catalog/agent-chat.yml) | app | manual | RevOps lead | by hand | nothing | none in demo mode; the agent's models with --model (never run) | none |
 | [Run catalog collector](../catalog/catalog-collect.yml) | job | active | RevOps lead | schedule, 08:00, 13:00 and 18:00 UTC | job health file and Slack alerts (simulated) | none | catalog-collect.yml |
+| [Deactivation after churn](../catalog/churn-deactivation.yml) | automation | active | Customer Success | schedule, daily 06:00 UTC | workspace access and company status (simulated), movement log | none | daily-automations.yml |
 | [Closed-won provisioning](../catalog/closed-won-provisioning.yml) | automation | manual | Customer Success | a deal enters closed_won (run by hand here) | one workspace request (simulated) | none | provisioning-*.md |
+| [Deal amount recalculation](../catalog/deal-amount.yml) | automation | manual | Sales | a discount change (run by hand here) | a proposals file; never the CRM | none | amount-proposals-*.md |
 | [Duplicate companies review queue](../catalog/duplicate-companies.yml) | automation | active | RevOps lead | schedule, Mondays, in the weekly audit workflow | a review queue file | none | weekly-audit.yml |
 | [Weekly funnel review](../catalog/funnel-review.yml) | automation | manual | RevOps lead | by hand; not scheduled while the data has a fixed date | a report file | the agent half (never run) | funnel-review-*.md |
 | [Lead routing](../catalog/lead-routing.yml) | automation | manual | RevOps lead | a new lead event (run by hand here) | the lead owner (simulated) | none | lead-routing-*.md |
 | [Read-only MCP server](../catalog/mcp-server.yml) | server | manual | RevOps lead | started by an MCP client | nothing | none | none |
+| [Onboarding auto-advance](../catalog/onboarding-advance.yml) | automation | manual | Customer Success | a product event (run by hand here) | the onboarding milestone (simulated) and the movement log | none | movements-*.md |
 | [On-call agent](../catalog/oncall.yml) | agent | active | RevOps lead | after every collection | pull requests on oncall/<id> and reruns of rerun_ok workflows (both off until enabled) | claude-sonnet-5-5 through Claude Code, only when a problem exists (never run) | oncall.yml |
 | [Deal and subscription reconciliation](../catalog/reconciliation.yml) | automation | active | RevOps lead | schedule, Mondays, in the weekly audit workflow | a report and a Slack alert (simulated) | none | weekly-audit.yml |
 | [Revenue snapshot page](../catalog/revenue-snapshot.yml) | app | manual | RevOps lead | by hand | nothing | none | none |

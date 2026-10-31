@@ -1,0 +1,6 @@
+[
+  {"event_id": "dsc-2001", "deal_id": 5, "list_amount_usd": 14000, "discount_percent": 10},
+  {"event_id": "dsc-2002", "deal_id": 24, "list_amount_usd": 26000, "discount_percent": 30},
+  {"event_id": "dsc-2003", "deal_id": 26, "list_amount_usd": 14300, "discount_percent": 0},
+  {"event_id": "dsc-2004", "deal_id": 36, "list_amount_usd": 9000, "discount_percent": 5}
+]

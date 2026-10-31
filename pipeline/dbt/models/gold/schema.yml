@@ -217,6 +217,58 @@ models:
         description: Owner of the company record.
       - name: created_at
         description: Date the company record was created.
+  - name: onboarding_progress
+    description: One row per subscription with the date of each onboarding milestone and the latest one reached. The input of the onboarding auto-advance.
+    columns:
+      - name: subscription_id
+        description: Primary key. Identifier of the subscription in billing.
+        data_tests: [unique, not_null]
+      - name: company_id
+        description: Company of the subscription.
+      - name: kickoff_at
+        description: Date the kickoff milestone was reached; empty if not yet.
+      - name: configured_at
+        description: Date the configured milestone was reached; empty if not yet.
+      - name: go_live_at
+        description: Date the go-live milestone was reached; empty if not yet.
+      - name: current_milestone
+        description: The latest milestone reached, or not_started.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [not_started, kickoff, configured, go_live]
+  - name: subscription_lifecycle
+    description: One row per subscription with its status, dates and how many other active subscriptions its company has. The input of the deactivation after churn.
+    columns:
+      - name: subscription_id
+        description: Primary key. Identifier of the subscription in billing.
+        data_tests: [unique, not_null]
+      - name: company_id
+        description: Company of the subscription.
+      - name: status
+        description: active or churned, from billing.
+        data_tests: [not_null]
+      - name: started_at
+        description: Date the subscription started.
+      - name: ended_at
+        description: Date the subscription ended; empty while active.
+      - name: other_active_subscriptions
+        description: Number of other active subscriptions of the same company.
+        data_tests: [not_null]
+  - name: deal_amount
+    description: One row per deal with its owner, stage and yearly amount. The input of the deal amount recalculation.
+    columns:
+      - name: deal_id
+        description: Primary key. Identifier of the deal in the CRM.
+        data_tests: [unique, not_null]
+      - name: owner_id
+        description: Owner of the deal.
+      - name: stage
+        description: Current stage of the deal.
+        data_tests: [not_null]
+      - name: amount_usd
+        description: Yearly contract value of the deal in US dollars, as stored in the CRM.
   - name: owner_directory
     description: One row per owner with the full name and team, so answers can name people instead of showing ids. It holds no e-mail or other contact detail.
     columns:

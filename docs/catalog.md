@@ -17,6 +17,9 @@ Business grain, ready to use. The agent and the MCP server read only this layer.
 - [`gold.funnel_time_in_stage_monthly`](#goldfunneltimeinstagemonthly)
 - [`gold.deal_subscription_reconciliation`](#golddealsubscriptionreconciliation)
 - [`gold.possible_duplicate_company`](#goldpossibleduplicatecompany)
+- [`gold.onboarding_progress`](#goldonboardingprogress)
+- [`gold.subscription_lifecycle`](#goldsubscriptionlifecycle)
+- [`gold.deal_amount`](#golddealamount)
 - [`gold.owner_directory`](#goldownerdirectory)
 - [`gold.owner_workload`](#goldownerworkload)
 
@@ -178,6 +181,49 @@ Company records flagged as possible duplicates, one row each, with the shared na
 | `records_with_name` | How many flagged records share this name key. |
 | `owner_id` | Owner of the company record. |
 | `created_at` | Date the company record was created. |
+
+<a id="goldonboardingprogress"></a>
+
+### `gold.onboarding_progress`
+
+One row per subscription with the date of each onboarding milestone and the latest one reached. The input of the onboarding auto-advance.
+
+| Column | Description |
+|---|---|
+| `subscription_id` | Primary key. Identifier of the subscription in billing. |
+| `company_id` | Company of the subscription. |
+| `kickoff_at` | Date the kickoff milestone was reached; empty if not yet. |
+| `configured_at` | Date the configured milestone was reached; empty if not yet. |
+| `go_live_at` | Date the go-live milestone was reached; empty if not yet. |
+| `current_milestone` | The latest milestone reached, or not_started. |
+
+<a id="goldsubscriptionlifecycle"></a>
+
+### `gold.subscription_lifecycle`
+
+One row per subscription with its status, dates and how many other active subscriptions its company has. The input of the deactivation after churn.
+
+| Column | Description |
+|---|---|
+| `subscription_id` | Primary key. Identifier of the subscription in billing. |
+| `company_id` | Company of the subscription. |
+| `status` | active or churned, from billing. |
+| `started_at` | Date the subscription started. |
+| `ended_at` | Date the subscription ended; empty while active. |
+| `other_active_subscriptions` | Number of other active subscriptions of the same company. |
+
+<a id="golddealamount"></a>
+
+### `gold.deal_amount`
+
+One row per deal with its owner, stage and yearly amount. The input of the deal amount recalculation.
+
+| Column | Description |
+|---|---|
+| `deal_id` | Primary key. Identifier of the deal in the CRM. |
+| `owner_id` | Owner of the deal. |
+| `stage` | Current stage of the deal. |
+| `amount_usd` | Yearly contract value of the deal in US dollars, as stored in the CRM. |
 
 <a id="goldownerdirectory"></a>
 

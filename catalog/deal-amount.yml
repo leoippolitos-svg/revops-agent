@@ -1,0 +1,15 @@
+id: deal-amount
+name: Deal amount recalculation
+kind: automation
+owner: Sales
+purpose: Turns every discount change into an amount proposal that Finance approves
+  item by item.
+trigger: a discount change (run by hand here)
+where: automations/deal-amount/SPEC.md
+writes: a proposals file; never the CRM
+ai: none
+cost: free
+status_source:
+  type: log
+  pattern: amount-proposals-*.md
+situation: manual
