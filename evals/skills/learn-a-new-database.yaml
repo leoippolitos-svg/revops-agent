@@ -1,0 +1,8 @@
+should_trigger:
+  - "we have a new database, how do we start?"
+  - "map this new schema before we analyse it"
+  - "how does this warehouse work?"
+should_not_trigger:
+  - "add a gold model for churn"
+  - "fix the failing dbt test"
+  - "what is MRR?"

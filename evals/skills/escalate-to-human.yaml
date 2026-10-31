@@ -1,0 +1,8 @@
+should_trigger:
+  - "reassign this lead to Dana"
+  - "approve this discount"
+  - "can you change the deal stage to closed won?"
+should_not_trigger:
+  - "how many leads did Dana get?"
+  - "what is the lead routing rule?"
+  - "why did conversion drop?"

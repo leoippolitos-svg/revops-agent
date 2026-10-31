@@ -1,0 +1,8 @@
+should_trigger:
+  - "build me an alert when a big deal stalls"
+  - "I want a new feature for the team"
+  - "create something that does this every week"
+should_not_trigger:
+  - "fix this typo"
+  - "run the tests"
+  - "what is the funnel definition?"

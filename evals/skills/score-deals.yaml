@@ -1,0 +1,8 @@
+should_trigger:
+  - "which deals should we focus on this week?"
+  - "which deals are likely to close this month?"
+  - "which deals are stuck in the pipeline?"
+should_not_trigger:
+  - "what is our win rate?"
+  - "how many open deals does each owner have?"
+  - "define the proposal stage"

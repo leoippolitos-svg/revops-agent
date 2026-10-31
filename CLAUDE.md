@@ -41,6 +41,10 @@ Rules: [docs/standards/pull-requests.md](docs/standards/pull-requests.md)
 | Team process and git | [docs/standards/team-process.md](docs/standards/team-process.md) |
 | Verification | [docs/standards/verification.md](docs/standards/verification.md) |
 | Audits | [docs/standards/audits.md](docs/standards/audits.md) |
+| Investigation | [docs/standards/investigation.md](docs/standards/investigation.md) |
+| Continuous learning | [docs/standards/continuous-learning.md](docs/standards/continuous-learning.md) |
+| Multi-agent work | [docs/standards/multi-agent.md](docs/standards/multi-agent.md) |
+| Prompt patterns | [docs/standards/prompt-patterns.md](docs/standards/prompt-patterns.md) |
 | Connectors | [docs/standards/connectors.md](docs/standards/connectors.md) |
 | RAG | [docs/standards/rag.md](docs/standards/rag.md) |
 

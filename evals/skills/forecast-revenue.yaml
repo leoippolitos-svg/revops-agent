@@ -1,0 +1,8 @@
+should_trigger:
+  - "where will MRR land by year end?"
+  - "are we going to hit the MRR target?"
+  - "forecast new MRR for next quarter"
+should_not_trigger:
+  - "how has MRR moved this year?"
+  - "what was ending MRR last month?"
+  - "why did conversion drop?"
