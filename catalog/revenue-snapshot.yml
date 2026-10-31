@@ -1,0 +1,14 @@
+id: revenue-snapshot
+name: Revenue snapshot page
+kind: app
+owner: RevOps lead
+purpose: One read-only page with MRR, customers, funnel entries and MQLs, each with
+  its definition.
+trigger: by hand
+where: apps/revenue-snapshot/SPEC.md
+writes: nothing
+ai: none
+cost: free
+status_source:
+  type: none
+situation: manual

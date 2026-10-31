@@ -1,0 +1,14 @@
+id: closed-won-provisioning
+name: Closed-won provisioning
+kind: automation
+owner: Customer Success
+purpose: Requests a workspace and the onboarding kickoff once per signed deal.
+trigger: a deal enters closed_won (run by hand here)
+where: automations/closed-won-provisioning/SPEC.md
+writes: one workspace request (simulated)
+ai: none
+cost: free
+status_source:
+  type: log
+  pattern: provisioning-*.md
+situation: manual

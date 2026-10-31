@@ -97,7 +97,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"ERROR {error}", file=sys.stderr)
         return 1
 
-    report, _ = build_report(snapshot, previous_counts(args.logs, str(snapshot["as_of"])))
+    report, rose = build_report(snapshot, previous_counts(args.logs, str(snapshot["as_of"])))
     print(report)
     if args.write:
         args.logs.mkdir(parents=True, exist_ok=True)
@@ -105,6 +105,13 @@ def main(argv: list[str] | None = None) -> int:
         path = args.logs / f"audit-{snapshot['as_of']}.md"
         path.write_text(report, encoding="utf-8", newline="\n")
         print(f"wrote {path}")
+        if rose:
+            # One alert, built by code, through the shared Slack notifier and its kill switch.
+            sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "observability"))
+            from notify import send
+            result = send("weekly-audit", f"Data-quality flags rose (data as of {snapshot['as_of']})",
+                          list(rose), write=True, logs=args.logs)
+            print(f"alert: {result['status']}")
     else:
         print("dry run: nothing written (use --write)")
     return 0

@@ -36,6 +36,8 @@ MAPS = {
     "segments": ("The company segments and how they are defined.", "section", ("entities", "Segments")),
     "pipelines": ("The CRM pipelines and what is not tracked as a pipeline.", "section", ("entities", "Pipelines")),
     "apps": ("The internal apps and what each one computes.", "section", ("apps", "Items")),
+    "jobs": ("The health of everything that runs, from the last collection: ok, failing, late or unknown.",
+             "file", Path("observability") / "logs" / "job-health.json"),
 }
 
 
@@ -58,6 +60,11 @@ def get_map(key: str, root: Path = ROOT, db_path: Path | None = None) -> dict:
     if kind == "query":
         result = query_gold(source, db_path=db_path)
         return {"key": key, "description": description, "columns": result["columns"], "rows": result["rows"]}
+    if kind == "file":
+        path = root / source
+        if not path.is_file():
+            return {"key": key, "description": description, "text": "No collection has run yet, so job health is unknown."}
+        return {"key": key, "description": description, **json.loads(path.read_text(encoding="utf-8"))}
     doc_id, heading = source
     return {"key": key, "description": description, "document": doc_id, "text": _section(doc_id, heading, root)}
 

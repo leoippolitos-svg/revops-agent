@@ -55,6 +55,10 @@ jobs:
         run: python tools/check_automations.py
       - name: Warn about stale derived copies
         run: python tools/check_derived.py
+      - name: Check the run catalog and its page
+        run: |
+          python tools/catalog.py check
+          python tools/catalog.py page --check
 
   # The README and this job use Python 3.12; local development may use a newer one.
   tests:

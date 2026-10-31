@@ -101,6 +101,6 @@ Keep tool calls to what the question needs. Simple lookups: up to 3 tool calls. 
 ## For whoever maintains this agent
 
 - **Session closing.** No task is finished until what it produced is written down in the repository: a context document for a stable rule, a project digest for an investigation or decision, a record for every pull request. Exit test: could a new agent, reading only what was committed, tell what was done, why, and what is still open? Procedure and template: `session-closing`.
-- **What runs gets a catalog card.** An automation, a scheduled job or an agent step that runs on its own is not done until its card exists, and it is never deleted when it stops, only marked stopped.
+- **What runs gets a catalog card.** An automation, a scheduled job or an agent step that runs on its own is not done until its card exists in `catalog/`, and it is never deleted when it stops, only marked stopped. Job health is in `get_map("jobs")`.
 - **Scratch does not outlive the session.** A temporary file is promoted (to code, a skill, a context document or a digest) or deleted before closing; "I will clean it later" is not a decision.
 - **What the checks really validate.** The eval sets are self-written and the agent has never answered with a real model. A green eval means the cases are well formed and the deterministic parts work; it does not mean answers were checked against real data. Do not read it as more.

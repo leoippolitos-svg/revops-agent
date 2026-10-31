@@ -1,0 +1,14 @@
+id: lead-routing
+name: Lead routing
+kind: automation
+owner: RevOps lead
+purpose: Assigns each new marketing qualified lead to an owner by segment and capacity.
+trigger: a new lead event (run by hand here)
+where: automations/lead-routing/SPEC.md
+writes: the lead owner (simulated)
+ai: none
+cost: free
+status_source:
+  type: log
+  pattern: lead-routing-*.md
+situation: manual

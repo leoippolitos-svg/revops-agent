@@ -49,3 +49,7 @@ def test_every_document_map_points_at_a_section_that_exists():
     for key, (_, kind, _) in MAPS.items():
         if kind == "section":
             assert get_map(key)["text"]
+
+
+def test_jobs_says_unknown_until_a_collection_ran(tmp_path):
+    assert "No collection has run yet" in get_map("jobs", root=tmp_path)["text"]
