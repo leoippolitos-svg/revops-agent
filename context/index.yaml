@@ -63,3 +63,6 @@ documents:
   - {id: apps, kind: inventory, path: rules/apps.md, status: canonical, summary: "Internal apps and what each computes"}
   - {id: agent-security, kind: rule, path: rules/agent-security.md, status: canonical, summary: "What the agent may answer, for whom, and what it refuses"}
   - {id: session-closing, kind: process, path: rules/session-closing.md, status: canonical, summary: "How every session leaves its knowledge in the repository"}
+  - {id: onboarding-milestones, kind: rule, path: rules/onboarding-milestones.md, status: canonical, summary: "Onboarding milestones: rules an automation applies"}
+  - {id: churn-deactivation, kind: rule, path: rules/churn-deactivation.md, status: canonical, summary: "Deactivation after churn: rules an automation applies"}
+  - {id: deal-discount, kind: rule, path: rules/deal-discount.md, status: canonical, summary: "Deal amount and discount: rules an automation applies"}

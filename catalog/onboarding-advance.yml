@@ -1,0 +1,15 @@
+id: onboarding-advance
+name: Onboarding auto-advance
+kind: automation
+owner: Customer Success
+purpose: Moves a subscription to the next onboarding milestone when the product reports
+  the evidence, and logs every move.
+trigger: a product event (run by hand here)
+where: automations/onboarding-advance/SPEC.md
+writes: the onboarding milestone (simulated) and the movement log
+ai: none
+cost: free
+status_source:
+  type: log
+  pattern: movements-*.md
+situation: manual

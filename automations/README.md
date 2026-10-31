@@ -13,6 +13,9 @@ Gains are **projections on fictional volumes**, with their assumptions in each s
 | [`audits/`](audits/SPEC.md) | Mondays | count data-quality flags and say what rose | about 3 hours a month; issues caught a week earlier | no |
 | [`reconciliation/`](reconciliation/SPEC.md) | Mondays | list won deals that do not match billing, with owner and proposal | revenue gaps found 3 weeks earlier | no |
 | [`duplicate-companies/`](duplicate-companies/SPEC.md) | Mondays | queue duplicate groups for a person to decide | 1.5 hours a week; zero automatic merges | no |
+| [`onboarding-advance/`](onboarding-advance/SPEC.md) | a product event | move the onboarding milestone when the evidence arrives, with a movement log | 2 hours a month; the board accurate to the day | no |
+| [`churn-deactivation/`](churn-deactivation/SPEC.md) | daily | switch off churned workspaces after the grace period, mark the company inactive | about $1,000 a month of free usage closed | no |
+| [`deal-amount/`](deal-amount/SPEC.md) | a discount change | propose the new net amount for Finance to approve | 3 fewer wrong amounts a month | no |
 | [`funnel-review/`](funnel-review/SPEC.md) | by hand | name the funnel stage that moved most | about 8 hours a month of analyst time | the cause step (never run) |
 
 Every automation has a card in [`catalog/`](../catalog) and appears in [docs/run-catalog.md](../docs/run-catalog.md).

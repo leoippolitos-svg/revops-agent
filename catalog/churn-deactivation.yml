@@ -1,0 +1,17 @@
+id: churn-deactivation
+name: Deactivation after churn
+kind: automation
+owner: Customer Success
+purpose: Switches off a churned workspace after the grace period and marks the company
+  inactive; never deletes.
+trigger: schedule, daily 06:00 UTC
+where: automations/churn-deactivation/SPEC.md
+writes: workspace access and company status (simulated), movement log
+ai: none
+cost: free (CI minutes)
+status_source:
+  type: github_actions
+  workflow: daily-automations.yml
+  expected_every_days: 2
+rerun_ok: true
+situation: active

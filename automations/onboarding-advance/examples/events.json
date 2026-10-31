@@ -1,0 +1,6 @@
+[
+  {"event_id": "evt-1001", "subscription_id": 34, "event": "workspace_configured", "at": "2026-01-16"},
+  {"event_id": "evt-1002", "subscription_id": 47, "event": "first_job_completed", "at": "2026-01-17"},
+  {"event_id": "evt-1003", "subscription_id": 29, "event": "first_job_completed", "at": "2026-01-17"},
+  {"event_id": "evt-1004", "subscription_id": 9999, "event": "workspace_configured", "at": "2026-01-17"}
+]

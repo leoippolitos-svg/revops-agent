@@ -1,0 +1,33 @@
+name: Daily automations
+
+# Rebuilds the fictional lakehouse and runs the daily automations
+# (automations/churn-deactivation). Writes are simulated and need the kill switch
+# CHURN_DEACTIVATION_ENABLED; without it the run is a shadow run that only reports.
+on:
+  schedule:
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  daily:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: Build the lakehouse
+        run: python tools/setup.py
+      - name: Deactivate workspaces after churn
+        env:
+          CHURN_DEACTIVATION_ENABLED: ${{ vars.CHURN_DEACTIVATION_ENABLED }}
+        run: python automations/churn-deactivation/deactivate.py --db data/lakehouse.duckdb --write
+      - uses: actions/upload-artifact@v4
+        with:
+          name: daily-automations
+          path: observability/logs/movements-*.md
+          if-no-files-found: ignore
