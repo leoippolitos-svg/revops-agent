@@ -1,0 +1,42 @@
+name: Retrieval reingest
+
+# After a merge that touches the retrieval corpus, update the incremental index and score
+# retrieval again, so a merged context change is measured the day it lands
+# (agent/rag/ingest.py, docs/standards/rag.md). The lexical search reads files directly,
+# so the agent already sees the change; this run is the check that it still finds the
+# right documents, and the place an embedding step would go.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "context/**"
+      - "docs/adr/**"
+      - "docs/standards/**"
+      - "memory/decisions/**"
+      - "projects/**/CONTEXT.md"
+      - "agent/rag/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  reingest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: Update the incremental index
+        run: python agent/rag/ingest.py
+      - name: Score retrieval and routing
+        run: |
+          python evals/run_retrieval.py --check
+          python evals/run_router.py --check
+          python evals/run_profiles.py --check
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rag-index
+          path: data/rag-index.json

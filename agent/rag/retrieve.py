@@ -6,7 +6,10 @@ this file later without touching the agent.
     python agent/rag/retrieve.py "Are trial accounts counted as customers?"
 
 The index is built in memory from the files on every call, so nobody can ever query a
-half-built index (docs/standards/rag.md). Only the standard library is used.
+half-built index (docs/standards/rag.md), and a merged change is searchable at once. Only the
+standard library is used. What is searched, by category, is defined in corpus.py; the default
+is the domain category (every context document), and the agent can ask for decisions,
+conventions or project history explicitly.
 """
 
 import math
@@ -16,6 +19,9 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import yaml
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from corpus import CATEGORIES, chunks_of, sources  # noqa: E402
 
 # Common words carry no meaning for ranking and would match every document.
 STOPWORDS = frozenset(
@@ -36,6 +42,7 @@ class Chunk:
     title: str
     section: str
     text: str
+    category: str = "domain"
 
 
 def tokenize(text: str) -> list[str]:
@@ -67,10 +74,12 @@ def split_document(text: str) -> tuple[dict, list[tuple[str, str]]]:
     return yaml.safe_load(front) or {}, [(h, t) for h, t in sections if t]
 
 
-def load_chunks(context_dir: Path) -> list[Chunk]:
-    """One chunk per section of every document listed in the index. Planned entries have no file."""
+def load_chunks(context_dir: Path, categories: tuple[str, ...] = ("domain",)) -> list[Chunk]:
+    """One chunk per section of every document in the chosen categories. Planned entries have no file."""
     index = yaml.safe_load((context_dir / "index.yaml").read_text(encoding="utf-8"))
     chunks = []
+    if "domain" not in categories:
+        index = {}
     for entry in index.get("concepts", []):
         path = context_dir / entry["path"]
         if entry["status"] == "planned" or not path.is_file():
@@ -79,9 +88,15 @@ def load_chunks(context_dir: Path) -> list[Chunk]:
         # (a "..", an absolute path) is an error, not a file to open.
         if not path.resolve().is_relative_to(context_dir.resolve()):
             raise ValueError(f"index entry '{entry['id']}' points outside the context folder")
-        front, sections = split_document(path.read_text(encoding="utf-8"))
-        for heading, body in sections:
-            chunks.append(Chunk(entry["id"], entry["status"], front.get("title", entry["id"]), heading, body))
+        for title, heading, body in chunks_of(path.read_text(encoding="utf-8")):
+            chunks.append(Chunk(entry["id"], entry["status"], title or entry["id"], heading, body))
+    others = [c for c in categories if c != "domain"]  # reference, decisions, conventions, incidents
+    if others:
+        for source in sources(context_dir.parent):
+            if source.category in others:
+                for title, heading, body in chunks_of(source.path.read_text(encoding="utf-8")):
+                    chunks.append(Chunk(source.doc_id, source.status, title or source.doc_id, heading, body,
+                                        source.category))
     return chunks
 
 
@@ -110,14 +125,19 @@ def rank(question: str, chunks: list[Chunk]) -> list[tuple[float, Chunk]]:
     return sorted(scored, key=lambda pair: -pair[0])
 
 
-def retrieve(question: str, k: int = 3, context_dir: Path | None = None) -> list[dict]:
-    """The k best context sections, each with its document id and status."""
+def retrieve(question: str, k: int = 3, context_dir: Path | None = None,
+             categories: tuple[str, ...] = ("domain",)) -> list[dict]:
+    """The k best sections, each with its document id, status and category."""
     if k < 1:
         raise ValueError("k must be at least 1")
+    unknown = set(categories) - set(CATEGORIES)
+    if unknown:
+        raise ValueError(f"unknown category {sorted(unknown)}; use {', '.join(CATEGORIES)}")
     context_dir = context_dir or Path(__file__).resolve().parents[2] / "context"
     return [
-        {"doc_id": c.doc_id, "status": c.status, "section": c.section, "text": c.text, "score": round(s, 3)}
-        for s, c in rank(question, load_chunks(context_dir))[:k]
+        {"doc_id": c.doc_id, "status": c.status, "category": c.category, "heading": c.section,
+         "section": c.section, "text": c.text, "score": round(s, 3)}
+        for s, c in rank(question, load_chunks(context_dir, tuple(categories)))[:k]
     ]
 
 

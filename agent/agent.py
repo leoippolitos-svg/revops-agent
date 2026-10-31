@@ -71,8 +71,11 @@ SPECS = {
                                    "anything that is not a read, silver or bronze tables, table functions that read "
                                    "files or the network. Returns at most 200 rows as a sample plus the real total."),
                    "arguments": {"sql": "string"}},
-    "search_context": {"description": "Find the business definition of a concept.",
-                       "arguments": {"question": "string", "k": "integer, optional, 1 to 5"}},
+    "search_context": {"description": ("Find context sections. Default category `domain`: business definitions. "
+                                       "Others: `reference` (company, areas, metrics, maps, rules), `decisions` "
+                                       "(what was decided), `conventions` (how work is done), `incidents` (project history)."),
+                       "arguments": {"question": "string", "k": "integer, optional, 1 to 5",
+                                     "category": "string, optional: domain, reference, decisions, conventions or incidents"}},
     "get_catalog": {"description": "Describe a table and its columns.",
                     "arguments": {"model": "string, such as gold.mrr_monthly"}},
     "search_records": {"description": "Find past work and what was concluded.",
