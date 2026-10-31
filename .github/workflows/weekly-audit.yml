@@ -24,8 +24,22 @@ jobs:
         run: python tools/setup.py
       - name: Run the audit
         run: python automations/audits/audit.py --db data/lakehouse.duckdb --write
+        env:
+          SLACK_ALERTS_ENABLED: ${{ vars.SLACK_ALERTS_ENABLED }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      - name: Reconcile won deals and subscriptions
+        run: python automations/reconciliation/reconcile.py --db data/lakehouse.duckdb --write
+        env:
+          SLACK_ALERTS_ENABLED: ${{ vars.SLACK_ALERTS_ENABLED }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      - name: Queue possible duplicate companies
+        run: python automations/duplicate-companies/duplicates.py --db data/lakehouse.duckdb --write
       - uses: actions/upload-artifact@v4
         with:
           name: audit-report
-          path: observability/logs/audit-*.md
+          path: |
+            observability/logs/audit-*.md
+            observability/logs/reconciliation-*.md
+            observability/logs/duplicate-companies-*.md
+            observability/logs/slack-*.md
           if-no-files-found: error

@@ -1,0 +1,17 @@
+id: duplicate-companies
+name: Duplicate companies review queue
+kind: automation
+owner: RevOps lead
+purpose: Turns the duplicate flag into one proposal per group for a person to decide;
+  never merges.
+trigger: schedule, Mondays, in the weekly audit workflow
+where: automations/duplicate-companies/SPEC.md
+writes: a review queue file
+ai: none
+cost: free (CI minutes)
+status_source:
+  type: github_actions
+  workflow: weekly-audit.yml
+  expected_every_days: 8
+rerun_ok: true
+situation: active

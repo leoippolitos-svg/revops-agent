@@ -15,6 +15,8 @@ Business grain, ready to use. The agent and the MCP server read only this layer.
 - [`gold.mql_monthly`](#goldmqlmonthly)
 - [`gold.data_quality_snapshot`](#golddataqualitysnapshot)
 - [`gold.funnel_time_in_stage_monthly`](#goldfunneltimeinstagemonthly)
+- [`gold.deal_subscription_reconciliation`](#golddealsubscriptionreconciliation)
+- [`gold.possible_duplicate_company`](#goldpossibleduplicatecompany)
 - [`gold.owner_directory`](#goldownerdirectory)
 - [`gold.owner_workload`](#goldownerworkload)
 
@@ -138,6 +140,44 @@ How many days deals stayed in each open stage (qualification to negotiation), gr
 | `out_of_order_exits` | Number of those deals whose recorded exit date is earlier than their entry date. They are left out of the day figures. |
 | `median_days_in_stage` | Median number of days between entering and leaving the stage, for deals with consistent dates. Empty when every exit in the month is out of order. |
 | `avg_days_in_stage` | Average number of days between entering and leaving the stage, same deals as the median. |
+
+<a id="golddealsubscriptionreconciliation"></a>
+
+### `gold.deal_subscription_reconciliation`
+
+One row per closed won deal or subscription, matched on the deal id the subscription carries, with whether they matched and the monthly gap between the deal amount and the subscription MRR. The input of the reconciliation audit.
+
+**Context:** [Cross-cutting rules](../context/concepts/cross-cutting-rules.md)
+
+| Column | Description |
+|---|---|
+| `deal_id` | Identifier of the deal, from the CRM or carried by the subscription. |
+| `subscription_id` | Identifier of the subscription in billing; empty when a won deal has none. |
+| `company_id` | Company of the deal, or of the subscription when the deal is missing. |
+| `owner_id` | Owner of the deal; empty when the deal is missing from the CRM. |
+| `closed_at` | Date the deal was closed won; empty when the deal is missing. |
+| `started_at` | Date the subscription started; empty when there is none. |
+| `deal_amount_usd` | Yearly contract value of the deal in US dollars. |
+| `subscription_mrr_usd` | Monthly recurring revenue of the subscription in US dollars. |
+| `match_status` | matched, won_without_subscription or subscription_without_deal. |
+| `monthly_gap_usd` | Deal amount divided by 12 minus the subscription MRR, for matched rows only; zero means they agree. |
+
+<a id="goldpossibleduplicatecompany"></a>
+
+### `gold.possible_duplicate_company`
+
+Company records flagged as possible duplicates, one row each, with the shared name key and how many records carry it. A review list; nothing is merged.
+
+**Context:** [Cross-cutting rules](../context/concepts/cross-cutting-rules.md)
+
+| Column | Description |
+|---|---|
+| `company_id` | Primary key. Identifier of the company record in the CRM. |
+| `name` | Company name as stored. |
+| `name_key` | The name in lower case without spaces at the ends, which groups the possible duplicates. |
+| `records_with_name` | How many flagged records share this name key. |
+| `owner_id` | Owner of the company record. |
+| `created_at` | Date the company record was created. |
 
 <a id="goldownerdirectory"></a>
 
