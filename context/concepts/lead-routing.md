@@ -17,7 +17,7 @@ Lead routing decides which owner receives a new marketing qualified lead. The se
 
 - Only leads that [[concept:mql]] counts are routed: the submission carries Marketing's flag, [[silver.form_submission.marketing_mql_flag]].
 - The segment of the company, [[silver.company.segment]], picks the team. Enterprise goes to the enterprise team. Small business and mid market go to the sales team. The team of an owner is [[gold.owner_workload.team]].
-- If the company already has an owner ([[silver.company.owner_id]]) in the right team, the lead goes to that owner, so one account keeps one contact point. Capacity does not override this.
+- If the company already has an owner ([[silver.company.owner_id]]) in the right team, the lead goes to that owner, so one account keeps one contact point. Capacity overrides this only beyond a tolerance: the account owner may go at most 5% over the limit below, rounded down. Past that, the lead is listed for a person to decide.
 - Otherwise the lead goes to the owner of the right team with the fewest open deals, [[gold.owner_workload.open_deals]]. A tie goes to the lowest [[gold.owner_workload.owner_id]], so the same input always gives the same answer.
 - Capacity is a limit on open deals per owner: 30 for the sales team and 8 for the enterprise team. An owner at the limit receives no new lead.
 - When every owner of the team is at the limit, the lead is not assigned. It is listed for a person to decide, and the shortage is reported.
@@ -30,7 +30,7 @@ Lead routing decides which owner receives a new marketing qualified lead. The se
 - [[gold.owner_workload.open_deals]] counts deals, not leads waiting to be worked. An owner with a full inbox of new leads can still look free.
 - Teams other than sales and enterprise (sdr, customer_success, onboarding) never receive routed leads.
 - The limits above are a policy, not a measurement. Change them here, never in code.
-- Open question for the owner: the rule above lets account continuity override capacity, but the automation spec forbids assigning a lead to an owner at the limit. The automation lists such a lead for a person instead of choosing either. Say which text is canonical.
+- The 5% tolerance gives the sales team room for one deal over its limit and the enterprise team none, because 5% of 8 is less than one deal.
 
 ## Team differences
 
