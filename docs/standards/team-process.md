@@ -8,7 +8,7 @@ How people and AI agents work in this repository. The pull-request rules are in 
 2. **Spec before code.** Anything that runs, writes or is used by others starts as a spec (app, automation) or a short plan in the project's `CONTEXT.md`, reviewed before the first line of code.
 3. **Branch** named `<type>/<short-description>`, never work on `main`.
 4. **Build the smallest version**, with its tests.
-5. **Verify independently**: whoever builds does not check alone. A second agent or a script tries to break the result (see the verification standard when it exists, and the `pr-review` skill).
+5. **Verify independently**: whoever builds does not check alone. A second agent or a script tries to break the result: the `adversarial-reviewer` and `done-verifier` subagents in `.claude/agents/`, the `pr-review` skill and [verification.md](verification.md).
 6. **Close the session** (context document `session-closing`) and open the pull request with its record.
 
 ### Who approves

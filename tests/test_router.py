@@ -110,3 +110,12 @@ def test_the_router_meets_the_accuracy_target_on_each_case_file(name):
     cases = yaml.safe_load((ROOT / "evals" / name).read_text(encoding="utf-8"))["cases"]
     accuracy, misses = run_router.score(cases)
     assert accuracy >= run_router.TARGET_ACCURACY, misses
+
+
+def test_the_profile_eval_passes_every_case():
+    sys.path.insert(0, str(ROOT / "evals"))
+    import run_profiles
+    import yaml
+    cases = yaml.safe_load((ROOT / "evals" / "profile_cases.yaml").read_text(encoding="utf-8"))["cases"]
+    rate, failures = run_profiles.score(cases)
+    assert rate == 1.0, failures
