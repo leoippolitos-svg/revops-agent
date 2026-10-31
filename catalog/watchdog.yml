@@ -1,0 +1,16 @@
+id: watchdog
+name: Watchdog
+kind: job
+owner: RevOps lead
+purpose: Starts again a scheduled job that did not run, and alerts only when that
+  is not possible.
+trigger: schedule, daily 09:30 UTC
+where: oncall/watchdog.py
+writes: reruns of rerun_ok workflows (off until enabled)
+ai: none
+cost: free (CI minutes)
+status_source:
+  type: github_actions
+  workflow: watchdog.yml
+  expected_every_days: 2
+situation: active

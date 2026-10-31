@@ -1,0 +1,17 @@
+id: oncall
+name: On-call agent
+kind: agent
+owner: RevOps lead
+purpose: After each collection, diagnoses failing or late items, may open a fix pull
+  request, and posts one Slack thread per item.
+trigger: after every collection
+where: oncall/prompt.md
+writes: pull requests on oncall/<id> and reruns of rerun_ok workflows (both off until
+  enabled)
+ai: claude-sonnet-5-5 through Claude Code, only when a problem exists (never run)
+cost: not measured
+status_source:
+  type: github_actions
+  workflow: oncall.yml
+  expected_every_days: 1
+situation: active

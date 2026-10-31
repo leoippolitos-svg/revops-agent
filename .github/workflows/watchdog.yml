@@ -1,0 +1,30 @@
+name: Watchdog
+
+# When a scheduled job did not run, start it again before alerting anyone
+# (oncall/watchdog.py, ADR-0021). Only jobs whose card says rerun_ok: true are started,
+# and only when WATCHDOG_ENABLED is true; otherwise the run reports what it would do.
+on:
+  schedule:
+    - cron: "30 9 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: write   # gh workflow run for a job whose card allows a rerun
+
+jobs:
+  watchdog:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: Recover late jobs, alert only when recovery fails
+        env:
+          GH_TOKEN: ${{ github.token }}
+          WATCHDOG_RECOVERY_ENABLED: ${{ vars.WATCHDOG_ENABLED }}
+          SLACK_ALERTS_ENABLED: ${{ vars.SLACK_ALERTS_ENABLED }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: python oncall/watchdog.py --write

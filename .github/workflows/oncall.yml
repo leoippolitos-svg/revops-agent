@@ -1,0 +1,60 @@
+name: On-call agent
+
+# Runs after every collection (catalog-collect.yml). Three steps, ADR-0021:
+#   1. list the failing or late items, without AI;
+#   2. the agent diagnoses them and may open a pull request (oncall/prompt.md);
+#      it runs only when there is a problem, ONCALL_AGENT_ENABLED is true and the
+#      ANTHROPIC_API_KEY secret exists, and its shell is limited to gh, git and python;
+#   3. execute the allowed actions and post one Slack message per item, without AI.
+# The agent never merges. A pull request it opens with GITHUB_TOKEN does not trigger CI;
+# checks run when a person updates or merges it.
+on:
+  workflow_run:
+    workflows: ["Run catalog collector"]
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: write        # push the oncall/<id> branch
+  pull-requests: write   # open the pull request
+  actions: write         # rerun a workflow whose card allows it
+
+concurrency:
+  group: oncall
+  cancel-in-progress: false
+
+jobs:
+  oncall:
+    runs-on: ubuntu-latest
+    env:
+      ONCALL_DIR: oncall-run
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: Collect health
+        run: python tools/catalog.py collect --write
+      - name: List problems (no AI)
+        id: problems
+        run: |
+          python oncall/oncall.py problems --out "$ONCALL_DIR"
+          echo "count=$(python -c "import json;print(len(json.load(open('$ONCALL_DIR/problems.json'))))")" >> "$GITHUB_OUTPUT"
+      - name: Agent diagnoses and may open a pull request
+        if: steps.problems.outputs.count != '0' && vars.ONCALL_AGENT_ENABLED == 'true'
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          npx -y @anthropic-ai/claude-code -p "$(cat oncall/prompt.md)" \
+            --model claude-sonnet-5-5 \
+            --allowedTools "Read,Edit,Write,Bash(gh run:*),Bash(gh pr:*),Bash(git:*),Bash(python:*)" \
+            --output-format json > "$ONCALL_DIR/agent.json"
+      - name: Execute allowed actions and alert (no AI)
+        if: steps.problems.outputs.count != '0'
+        env:
+          ONCALL_ACTIONS_ENABLED: ${{ vars.ONCALL_ACTIONS_ENABLED }}
+          SLACK_ALERTS_ENABLED: ${{ vars.SLACK_ALERTS_ENABLED }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: python oncall/oncall.py execute --dir "$ONCALL_DIR" --write

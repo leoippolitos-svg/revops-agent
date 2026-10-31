@@ -14,3 +14,4 @@ status_source:
   workflow: weekly-audit.yml
   expected_every_days: 8
 situation: active
+rerun_ok: true
