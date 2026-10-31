@@ -5,6 +5,47 @@ Status: built
 ## Problem
 A new marketing qualified lead waits until someone decides who takes it. The decision is the same every time (segment, then capacity), but it is made by hand, so some owners are overloaded and some leads wait. The automation applies the rule the moment a lead is flagged.
 
+## Why this process
+The routing decision is the same rule every time (segment, continuity, capacity), but made by hand it is slow and uneven: some owners are overloaded and some leads wait. The automation applies the rule the moment a lead is flagged and lists what it cannot decide.
+
+## Expected gains
+Projection on fictional volumes:
+
+| Item | Assumption | Result |
+|---|---|---|
+| Speed to owner | 40 leads a month, each waiting 4 working hours for a manual decision | about 160 lead-hours of waiting removed |
+| Manual routing time | 40 leads × 3 minutes | 2 hours a month |
+| Overloaded owners | capacity checked on every lead | no owner past the limit (except the 5% continuity tolerance) |
+
+Measured by: time from flag to owner, and open deals per owner against the limit.
+
+## How it works
+```mermaid
+flowchart LR
+    L[New MQL event] --> C{Company and segment?}
+    C -->|missing| R[Needs review]
+    C -->|ok| T[Team by segment]
+    T --> A{Account owner within tolerance?}
+    A -->|yes| W[Assign to account owner]
+    A -->|no| F{Anyone under the limit?}
+    F -->|yes| M[Fewest open deals]
+    F -->|no| R
+    W & M --> K[Write controls] --> O[Owner field, simulated]
+```
+
+1. A flagged lead arrives; without a company or segment it is listed.
+2. The segment picks the team; the account owner keeps the lead within the 5% tolerance.
+3. Otherwise the owner with the fewest open deals gets it; the write goes through the controls.
+
+## Where AI enters
+Nowhere: it is deterministic.
+
+## Tokens and cost
+No model call.
+
+## Monitoring
+Catalog card `lead-routing`, status from its log files. The number to watch: leads in needs review, and owners near the limit.
+
 ## Trigger
 A new lead event: a form submission that Marketing flagged. Simulated in this repository by one lead record per run (company, segment, current company owner if any).
 

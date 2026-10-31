@@ -5,6 +5,45 @@ Status: built
 ## Problem
 A deal won in the CRM should become a subscription in billing within two weeks, at the same value. When it does not, revenue is missing or a customer is not provisioned, and nobody notices until the month closes. This audit lists every disagreement by deal id, says who fixes it, and proposes the fix. It follows `docs/standards/audits.md`.
 
+## Why this process
+Revenue missing from billing or a customer not provisioned is found at month close, weeks late. Matching deals and subscriptions by id every week turns that into a short list with an owner and a proposal for each item, while the problem is still small.
+
+## Expected gains
+Projection on fictional volumes:
+
+| Item | Assumption | Result |
+|---|---|---|
+| Revenue found earlier | 1 won deal a month without a subscription at $1,500 MRR, found 3 weeks earlier | about $1,000 of MRR a month not left uncollected |
+| Analyst time | 2 hours a month matching deals and subscriptions by hand | 2 hours a month |
+
+Measured by: divergences open week by week, and days from a divergence to its fix.
+
+## How it works
+```mermaid
+flowchart LR
+    S[Monday schedule] --> R[Read gold.deal_subscription_reconciliation]
+    R --> C{Class}
+    C -->|subscription without deal| K[Known case: Sales links it]
+    C -->|won, within wait| P[Pending]
+    C -->|won, past wait| D[Divergence: Finance]
+    C -->|amount differs| D
+    D --> A[Slack alert]
+    K & P & D --> F[Report with owner and proposal]
+```
+
+1. Reads every won deal and subscription matched by deal id.
+2. Puts each record in one class, with its owner and a proposal.
+3. Writes the report and alerts on divergences; nothing is corrected.
+
+## Where AI enters
+Nowhere: it is deterministic.
+
+## Tokens and cost
+No model call.
+
+## Monitoring
+Catalog card `reconciliation`, status from `weekly-audit.yml`. The number to watch: divergences open.
+
 ## Trigger
 Weekly, in the Monday audit workflow, after the lakehouse is rebuilt. Can be run by hand.
 

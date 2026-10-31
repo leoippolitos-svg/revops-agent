@@ -2,6 +2,45 @@
 
 Status: built
 
+## Problem
+Data-quality issues (duplicate companies, deals without a company, subscriptions without a deal, won deals without a subscription) creep in every week. Nobody notices until a number in a meeting is wrong, and then nobody knows whether the issue is new.
+
+## Why this process
+The flags already exist in gold; what was missing is someone looking every week and comparing with the last look. A dashboard waits to be opened; a weekly report that says "this rose" goes to the people who fix it. It reports, it never fixes, so it needs no write authorization.
+
+## Expected gains
+Projection on fictional volumes, to be measured once it runs:
+
+| Item | Assumption | Result |
+|---|---|---|
+| Manual weekly check avoided | 45 minutes a week of an analyst counting flags by hand | about 3 hours a month |
+| Issues caught before a meeting | 2 rises a month caught a week earlier | fewer wrong numbers presented |
+
+Measured by: weeks with a raised flag, and the time from a rise to its fix in the records.
+
+## How it works
+```mermaid
+flowchart LR
+    S[Monday schedule] --> B[Rebuild the lakehouse]
+    B --> R[Read gold.data_quality_snapshot]
+    R --> C{Compare with last report}
+    C -->|rose| A[Report + Slack alert]
+    C -->|nothing rose| N[Report only]
+```
+
+1. The Monday workflow rebuilds the lakehouse and runs the audit.
+2. It reads the snapshot of flags, compares each with the previous report and marks what rose.
+3. It writes one report per data date and, when a flag rose, one alert through the notifier.
+
+## Where AI enters
+Nowhere: it is deterministic.
+
+## Tokens and cost
+No model call. CI minutes only.
+
+## Monitoring
+Catalog card `weekly-audit`, status from `weekly-audit.yml`, expected every 8 days; the watchdog restarts it if late. The number to watch: flags that rose, week by week.
+
 ## Trigger
 Every Monday morning (UTC), and on demand. Scheduled by `.github/workflows/weekly-audit.yml`.
 
