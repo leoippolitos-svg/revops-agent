@@ -200,6 +200,13 @@ def test_a_big_result_is_cut_at_200_rows_and_says_so(db):
     assert result["truncated"] is True
 
 
+def test_a_cut_result_says_the_real_total_so_the_sample_is_never_reported_as_the_count(db):
+    full = rows(db, "SELECT count(*) AS n FROM big")[0][0]
+    result = query_gold("SELECT * FROM big;", db)
+    assert result["total_rows"] == full > 200
+    assert query_gold("SELECT * FROM big LIMIT 5", db)["total_rows"] == 5
+
+
 def test_a_result_of_exactly_200_rows_is_not_marked_as_cut(db):
     result = query_gold("SELECT * FROM big LIMIT 200", db)
     assert result["row_count"] == 200 and result["truncated"] is False

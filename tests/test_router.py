@@ -58,9 +58,41 @@ def test_questions_reach_the_intent_the_rules_promise(question, intent):
     assert route(question)["intent"] == intent
 
 
-def test_an_unclear_question_about_revenue_is_read_as_the_cheapest_intent():
+def test_an_unclear_question_about_revenue_falls_to_the_default_on_the_standard_tier():
     out = route("MQLs from webinars")
-    assert out["intent"] == "metric_lookup" and "cheapest" in out["reason"]
+    assert (out["intent"], out["via"], out["tier"]) == ("metric_lookup", "default", "standard")
+
+
+def test_a_plain_request_for_a_number_is_a_lookup_by_rule_on_the_fast_tier():
+    out = route("How many MQLs did we get in September?")
+    assert (out["intent"], out["via"], out["tier"]) == ("metric_lookup", "rules", "fast")
+
+
+def test_a_valid_classifier_answer_wins_and_is_logged_as_model():
+    out = route("MQLs from webinars", classifier=lambda q: "trend_analysis")
+    assert (out["intent"], out["via"]) == ("trend_analysis", "model")
+
+
+@pytest.mark.parametrize("answer", ["not_an_intent", None, RuntimeError("down")])
+def test_a_bad_or_failing_classifier_falls_back_to_the_rules(answer):
+    def classifier(question):
+        if isinstance(answer, Exception):
+            raise answer
+        return answer
+    out = route("Why did conversion drop last month?", classifier=classifier)
+    assert (out["intent"], out["via"]) == ("funnel_diagnosis", "rules")
+
+
+def test_a_write_request_never_reaches_the_classifier():
+    def classifier(question):
+        raise AssertionError("the classifier must not see a write request")
+    assert route("Update this deal to closed won", classifier=classifier)["intent"] == "out_of_scope"
+
+
+def test_every_intent_has_a_profile_with_fixed_documents_and_a_chunk_budget():
+    from router import load_profiles, load_routes
+    assert set(load_profiles()) == set(load_routes())
+    assert route("Why did conversion drop last month?")["fixed_docs"][0] == "funnel-stages"
 
 
 @pytest.mark.parametrize("question", ["", "   ", None, 5])

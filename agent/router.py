@@ -6,8 +6,12 @@ Rules, not a model, for three reasons: it costs nothing per question, it answers
 way every time, and a wrong route can be traced to one line below. The cost is that
 unusual wording falls through to the default; evals/run_router.py measures how often.
 
-The tools, tier and skill for each intent are read from routing.md, so that file stays the
-only place where they are written down.
+The tools, tier and skill for each intent, and its profile (fixed documents and how many
+context chunks), are read from routing.md, so that file stays the only place where they
+are written down. Classification is a cascade that never fails: an optional model
+classifier, then these rules, then the default, which runs on the standard tier because a
+question no rule understands is the one that least deserves the weakest model. The step
+that decided is returned as `via`.
 """
 
 import json
@@ -54,8 +58,12 @@ RULES = [
         r"\bimproving\b|\bgetting worse\b|\bmoved\b|\bplot\b|\bfaster\b|\bover time\b|"
         # "Why did churn go up" is a trend question, not a funnel one: no stage to blame.
         r"\bwhy\b.*\b(mrr|arr|churn\w*|revenue|customers?|mqls?)\b", re.I)),
+    # A plain request for a number is a lookup by rule, so it stays on the fast tier; only a
+    # question no rule understands falls to the default and its stronger model.
+    ("metric_lookup", "asks for a number", re.compile(
+        r"\bhow (many|much)\b|\bwhat (was|is|were|are) (the|our)\b|\btotal\b|\bnumber of\b|\bcount\b", re.I)),
 ]
-DEFAULT = ("metric_lookup", "no rule matched, so it is read as a lookup (the cheapest intent)")
+DEFAULT = ("metric_lookup", "no rule matched, so it is read as a lookup, on the standard tier")
 
 
 def load_routes(routing_md: Path | None = None) -> dict[str, dict]:
@@ -71,6 +79,18 @@ def load_routes(routing_md: Path | None = None) -> dict[str, dict]:
     return routes
 
 
+def load_profiles(routing_md: Path | None = None) -> dict[str, dict]:
+    """Fixed documents and context chunk budget per intent, from the profile table in routing.md."""
+    text = (routing_md or ROOT / "agent" / "directives" / "routing.md").read_text(encoding="utf-8")
+    profiles = {}
+    for line in text.splitlines():
+        cells = [c.strip() for c in line.strip().strip("|").split("|")]
+        if len(cells) == 3 and re.fullmatch(r"`[a-z_]+`", cells[0]) and cells[2].isdigit():
+            docs = [] if cells[1] == "—" else [d.strip() for d in cells[1].split(",")]
+            profiles[cells[0].strip("`")] = {"fixed_docs": docs, "chunks": int(cells[2])}
+    return profiles
+
+
 def classify(question: str) -> tuple[str, str]:
     """The intent and the reason for it."""
     for intent, why, pattern in RULES:
@@ -79,13 +99,30 @@ def classify(question: str) -> tuple[str, str]:
     return DEFAULT
 
 
-def route(question: str, routing_md: Path | None = None) -> dict:
+def route(question: str, routing_md: Path | None = None, classifier=None) -> dict:
+    """Route a question. `classifier`, when given, is a callable that returns an intent id."""
     if not isinstance(question, str) or not question.strip():
         raise ValueError("The question must be a non-empty string.")
-    intent, why = ("out_of_scope", "not about revenue")
-    if DOMAIN.search(question) or any(p.search(question) for i, _, p in RULES[:2]):
-        intent, why = classify(question)
-    return {"intent": intent, "reason": why, **load_routes(routing_md)[intent]}
+    routes = load_routes(routing_md)
+    intent, why, via = None, None, None
+    # A request to write or send is refused by rule before any model sees it.
+    if classifier is not None and not RULES[0][2].search(question):
+        try:
+            guess = str(classifier(question)).strip().strip("`")
+        except Exception:  # any failure falls through to the rules: classification never fails a question
+            guess = None
+        if guess in routes:
+            intent, why, via = guess, "the classifier chose it", "model"
+    if intent is None:
+        intent, why = ("out_of_scope", "not about revenue")
+        if DOMAIN.search(question) or any(p.search(question) for i, _, p in RULES[:2]):
+            intent, why = classify(question)
+        via = "default" if (intent, why) == DEFAULT else "rules"
+    decision = {"intent": intent, "reason": why, "via": via, **routes[intent],
+                **load_profiles(routing_md).get(intent, {"fixed_docs": [], "chunks": 0})}
+    if via == "default":
+        decision["tier"] = "standard"
+    return decision
 
 
 def main(argv: list[str]) -> int:

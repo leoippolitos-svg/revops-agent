@@ -13,6 +13,33 @@ The router classifies each question into one intent. Each intent sets the tools,
 | `report_request` | "Build me a pipeline review for Monday" | search_context, query_gold | standard | html-report |
 | `out_of_scope` | "Update this deal to closed won" | none | fast | — |
 
+## Category profiles
+
+What each intent loads besides the question. **Fixed documents** are read by exact id on every question of that intent, because retrieval is probabilistic and what an answer needs cannot depend on the luck of the top results. **Context chunks** is how many retrieved sections are added after them: an intent with many fixed documents needs fewer. `agent-security`, `AGENT.md` and `fallback.md` are in every prompt and are not listed.
+
+| Intent | Fixed documents | Context chunks |
+|---|---|---|
+| `metric_lookup` | company, entities, data-map | 3 |
+| `trend_analysis` | company, okrs, data-map | 4 |
+| `funnel_diagnosis` | funnel-stages, metrics-sales, crm-map, data-map | 3 |
+| `definition_question` | company | 5 |
+| `data_quality` | cross-cutting-rules, metrics-revops, data-map | 3 |
+| `past_work_lookup` | — | 2 |
+| `report_request` | company, okrs, data-map | 4 |
+| `out_of_scope` | — | 0 |
+
+Fewer tools give better answers: offering a tool the intent does not need invites the model to look in the wrong place, so each intent lists only its own.
+
+## How a question is classified
+
+In this order, and the step that decided is logged as `via`:
+
+1. **model**: when a classifier is configured, the cheapest model answers with one intent id and nothing else. An id that is not in the table above is ignored.
+2. **rules**: the patterns in `agent/router.py`.
+3. **default**: `metric_lookup`, on the **standard** tier, not the fast one. A question no rule understands is the one that least deserves the weakest model.
+
+Classification never fails a question: each step falls to the next.
+
 ## Model tiers
 
 - **fast**: short classification and lookups.

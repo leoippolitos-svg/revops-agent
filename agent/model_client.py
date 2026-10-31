@@ -65,9 +65,26 @@ def _to_api_messages(messages: list[dict]) -> list[dict]:
             converted.append({"role": "assistant", "content": [
                 {"type": "tool_use", "id": f"toolu_{call_number}", "name": call["name"], "input": call.get("input") or {}}]})
         else:  # "tool": the result of the call just above
-            converted.append({"role": "user", "content": [
-                {"type": "tool_result", "tool_use_id": f"toolu_{call_number}", "content": message["content"]}]})
+            result = {"type": "tool_result", "tool_use_id": f"toolu_{call_number}", "content": message["content"]}
+            if message.get("is_error"):
+                result["is_error"] = True  # the model sees a failed call, not data
+            converted.append({"role": "user", "content": [result]})
     return converted
+
+
+def _system_blocks(system):
+    """A plain string passes through; a list of {"text", "cache"} becomes text blocks, with a
+    cache marker on each cached one. Blocks after the last marker change per question and are
+    never cached, so they do not invalidate the prefix."""
+    if isinstance(system, str):
+        return system
+    blocks = []
+    for block in system:
+        item = {"type": "text", "text": block["text"]}
+        if block.get("cache"):
+            item["cache_control"] = {"type": "ephemeral"}
+        blocks.append(item)
+    return blocks
 
 
 class AnthropicClient:
@@ -80,8 +97,8 @@ class AnthropicClient:
         self._transport = transport or http_transport
         self._max_tokens = max_tokens
 
-    def build_request(self, model: str, system: str, messages: list[dict], tools: list[dict]) -> dict:
-        body = {"model": model, "max_tokens": self._max_tokens, "system": system,
+    def build_request(self, model: str, system, messages: list[dict], tools: list[dict]) -> dict:
+        body = {"model": model, "max_tokens": self._max_tokens, "system": _system_blocks(system),
                 "messages": _to_api_messages(messages)}
         if tools:  # with the budget spent the loop sends none, and the model can only answer
             body["tools"] = [{"name": t["name"], "description": t["description"],

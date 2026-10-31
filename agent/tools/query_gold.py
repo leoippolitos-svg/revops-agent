@@ -116,11 +116,19 @@ def query_gold(sql: str, db_path: Path | None = None) -> dict:
         timer.start()
         cursor = con.execute(sql)
         fetched = cursor.fetchmany(MAX_ROWS + 1)  # one extra row tells us the result was cut
+        columns = [column[0] for column in cursor.description]
+        truncated = len(fetched) > MAX_ROWS
+        total = min(len(fetched), MAX_ROWS)
+        if truncated:
+            # The sample is not the answer: count the real total so the model never reports
+            # 200 when there are 2,000. The statement already passed every check above.
+            total = con.execute(f"SELECT count(*) FROM ({sql.strip().rstrip(';')}) AS sampled").fetchone()[0]
         return {
-            "columns": [column[0] for column in cursor.description],
+            "columns": columns,
             "rows": [[_plain(v) for v in row] for row in fetched[:MAX_ROWS]],
             "row_count": min(len(fetched), MAX_ROWS),
-            "truncated": len(fetched) > MAX_ROWS,
+            "total_rows": total,
+            "truncated": truncated,
         }
     except duckdb.InterruptException as error:
         raise QueryFailed(f"The query took longer than {TIMEOUT_SECONDS} seconds.") from error
