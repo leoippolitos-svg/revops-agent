@@ -1,11 +1,13 @@
 """The RevOps agent loop: route, call tools within a budget, answer, log.
 
     python agent/agent.py --plan "Why did conversion drop last month?"
+    python agent/agent.py --ask "Why did conversion drop last month?"   # needs ANTHROPIC_API_KEY
 
 The loop does not know which model it talks to. It needs an object with one method,
 `complete(model, system, messages, tools)` (see ModelClient), so tests use a scripted
-stand-in and a real adapter can be added without touching this file (ADR-0015). No adapter
-exists yet, so `--plan` shows what the loop would send and calls nothing.
+stand-in and the adapter in model_client.py plugs in without touching this file (ADR-0015,
+ADR-0016). `--plan` calls nothing. `--ask` is the only path to a real model, and it stops
+at once when no key is set. It has never been run with a key in this repository.
 
 What holds regardless of the model:
 - the only tools are the four read-only ones in TOOLS, and only those the intent allows;
@@ -26,6 +28,7 @@ sys.path.insert(0, str(ROOT / "agent"))
 sys.path.insert(0, str(ROOT / "agent" / "tools"))
 
 from get_catalog import UnknownModel, get_catalog  # noqa: E402
+from model_client import AnthropicClient, ModelError  # noqa: E402
 from query_gold import QueryFailed, QueryRejected, query_gold  # noqa: E402
 from router import route  # noqa: E402
 from search_context import InvalidInput, search_context  # noqa: E402
@@ -166,10 +169,18 @@ def plan(question: str) -> dict:
 
 
 def main(argv: list[str]) -> int:
-    if len(argv) != 3 or argv[1] != "--plan":
-        print('usage: python agent/agent.py --plan "question"', file=sys.stderr)
+    if len(argv) != 3 or argv[1] not in ("--plan", "--ask"):
+        print('usage: python agent/agent.py --plan|--ask "question"', file=sys.stderr)
         return 1
-    print(json.dumps(plan(argv[2]), indent=2))
+    if argv[1] == "--plan":
+        print(json.dumps(plan(argv[2]), indent=2))
+        return 0
+    try:
+        outcome = run_agent(argv[2], AnthropicClient())  # raises MissingKey before any network use
+    except ModelError as error:
+        print(error, file=sys.stderr)
+        return 1
+    print(outcome["answer"])
     return 0
 
 

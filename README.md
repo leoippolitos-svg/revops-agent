@@ -118,7 +118,7 @@ Two kinds of skills live here on purpose: `.claude/skills/` teach the **coding a
 ## Quick start
 
 > [!IMPORTANT]
-> The data pipeline works end to end (Phase 1). Phases 3 to 6 are written as rules, specs and eval cases. Retrieval over the context documents is built and scored (`python evals/run_retrieval.py`); the four agent tools, the rule-based router and the agent loop are built and tested, the loop against a scripted model and not a real one; the real model adapter, the MCP server and the micro-app are not built yet.
+> The data pipeline works end to end (Phase 1). Phases 3 to 6 are written as rules, specs and eval cases. Retrieval over the context documents is built and scored (`python evals/run_retrieval.py`); the four agent tools, the rule-based router and the agent loop are built and tested, the loop against a scripted model and not a real one; the model adapter is built and tested against a fake API but has never been called with a key; the MCP server and the micro-app are not built yet.
 
 **Requirements:** Python 3.12, Git.
 
@@ -148,7 +148,7 @@ It generates fictional data, loads it into bronze, builds silver and gold with d
 - [x] **Phase 0** · Skeleton, standards, guardrails, CI
 - [x] **Phase 1** · Data generator and bronze → silver → gold
 - [x] **Phase 2** · First five context documents and catalog checks
-- [x] **Phase 3** · Agent rules: tool contracts, model tiers, retrieval approach and 90 eval cases (retrieval, the four tools, the router and the agent loop are built and tested; no real model has been called)
+- [x] **Phase 3** · Agent rules: tool contracts, model tiers, retrieval approach and 90 eval cases (retrieval, the four tools, the router and the agent loop are built and tested; the adapter is tested against a fake API; no real model has been called)
 - [x] **Phase 4** · Skills (7 new), connector registry check and MCP server contract (rules only; the MCP server code is not built)
 - [x] **Phase 5** · With-context vs without-context comparison (design, 18 questions and a results file; no run made)
 - [x] **Phase 6** · Example micro-app under the security standard (spec, design tokens and a spec checker; the app is not built)
