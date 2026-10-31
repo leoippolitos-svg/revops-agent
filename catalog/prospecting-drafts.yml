@@ -1,0 +1,15 @@
+id: prospecting-drafts
+name: Prospecting drafts
+kind: automation
+owner: Sales
+purpose: Drafts a first touch and a follow-up for the SDR from evidence-backed arguments;
+  never sends.
+trigger: a new lead with a qualification (run by hand here)
+where: automations/prospecting-drafts/SPEC.md
+writes: a drafts file; never the CRM, never a message
+ai: claude-haiku-5-5 through ai_step (demo without a key)
+cost: logged per run in ai-steps.jsonl; prices not set
+status_source:
+  type: log
+  pattern: prospecting-drafts-*.json
+situation: manual

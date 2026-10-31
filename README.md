@@ -11,7 +11,7 @@ Medallion lakehouse · context by area · intent routing · RAG with evals · re
 ![Python](https://img.shields.io/badge/python-3.12-3776AB?logo=python&logoColor=white)
 ![DuckDB](https://img.shields.io/badge/DuckDB-lakehouse-FFF000?logo=duckdb&logoColor=black)
 ![dbt](https://img.shields.io/badge/dbt-transformations-FF694B?logo=dbt&logoColor=white)
-![Tests](https://img.shields.io/badge/tests-534-brightgreen)
+![Tests](https://img.shields.io/badge/tests-558-brightgreen)
 ![Status](https://img.shields.io/badge/status-built%2C%20not%20run%20on%20a%20real%20model-yellow)
 
 [What this is](#what-this-is) · [Why](#why-it-exists) · [What it controls](#what-it-controls-and-what-it-cannot-touch) · [Worth](#what-it-is-worth-and-where-it-can-go) · [Reading guide](#reading-guide) · [See it](#see-it) · [Status](#what-is-built-and-what-is-not) · [How it works](#how-it-works) · [Structure](#project-structure) · [Run it](#run-it) · [Decisions](#design-decisions)
@@ -55,6 +55,8 @@ The design rule is that **the agent advises and people execute.** Each row is so
 | **Serves other tools** | Gold, the catalog and the documents, over MCP | Same guard as the agent; no SQL logic of its own ([ADR-0017](docs/adr/0017-mcp-server-speaks-json-rpc-by-hand.md)) | [`mcp_server/`](mcp_server) |
 | **Routes new leads** | One field: the lead's owner (simulated) | Kill switch, cap per run, circuit breaker, read-back, "needs review" never "skipped"; rules from the context document | [`automations/lead-routing/`](automations/lead-routing/SPEC.md) |
 | **Provisions a signed customer** | One workspace request per signed deal (simulated) | Same controls; held on a possible duplicate; no back-fill past 60 days | [`automations/closed-won-provisioning/`](automations/closed-won-provisioning/SPEC.md) |
+| **Runs process automations** | Onboarding milestones, churned workspaces, deal amount proposals | Rules from the context documents; every change in a shared movement log; the amount is a proposal approved item by item | [`automations/`](automations/README.md) |
+| **Uses AI inside automations, under code** | A company's website text; a lead and its qualification | Contact details removed before the model; fixed JSON validated in code; quotes checked against the source; only evidence-backed arguments reach the model; tokens and cost logged per run; drafts never sent | [`site-qualification/`](automations/site-qualification/SPEC.md), [`prospecting-drafts/`](automations/prospecting-drafts/SPEC.md) |
 | **Audits and reconciles weekly** | Reads gold, writes reports and alerts | Explicit-id joins; divergence, pending or known case; a proposal, never a correction ([audit standard](docs/standards/audits.md)) | [`automations/`](automations) |
 | **Watches everything that runs** | Workflow runs, job health, Slack threads | One card per job; alerts built by code; the on-call agent may only open a PR or ask for a rerun of an idempotent job ([ADR-0021](docs/adr/0021-an-on-call-agent-between-two-steps-without-ai.md)) | [`catalog/`](catalog), [`oncall/`](oncall) |
 | **Shows the numbers to leaders** | A read-only page over four gold tables | No form, no input, no script; labels the partial month | [`apps/revenue-snapshot/`](apps/revenue-snapshot/SPEC.md) |
@@ -96,10 +98,11 @@ Short on time? Read in this order.
 | 5 min | [`context/company/`](context/company), [`context/areas/area-sales.md`](context/areas/area-sales.md), [`context/metrics/metrics-sales.md`](context/metrics/metrics-sales.md) | How the business is written down: company, who is who, an area, its metrics |
 | 5 min | [`agent/directives/AGENT.md`](agent/directives/AGENT.md) and [`routing.md`](agent/directives/routing.md) | The reading order, the rules it never breaks, intents and their profiles |
 | 5 min | [`context/rules/writeback-rules.md`](context/rules/writeback-rules.md) and [`automations/lead-routing/SPEC.md`](automations/lead-routing/SPEC.md) | What may be written, by whom, under which controls |
+| 5 min | [`automations/README.md`](automations/README.md), then [`prospecting-drafts/SPEC.md`](automations/prospecting-drafts/SPEC.md) | Every automation with its goal and projected gain; one with AI explained end to end: problem, why, gains, diagram, guardrails, cost |
 | 5 min | [`automations/reconciliation/`](automations/reconciliation/SPEC.md) and [`docs/standards/audits.md`](docs/standards/audits.md) | An audit that proposes and never corrects |
 | 5 min | [`catalog/`](catalog), [`docs/run-catalog.md`](docs/run-catalog.md), [`oncall/`](oncall) | Everything that runs, its health, and who reacts when it breaks |
 | 5 min | [`analyses/2026-01-new-mrr-december/`](analyses/2026-01-new-mrr-december/result.md) | A finished analysis: question, query, data checks, definitions, limits |
-| 5 min | [`docs/adr/`](docs/adr) | 23 short decisions, each with the reason and the alternative rejected |
+| 5 min | [`docs/adr/`](docs/adr) | 24 short decisions, each with the reason and the alternative rejected |
 | 10 min | [`docs/standards/`](docs/standards) and [`docs/lessons-learned.md`](docs/lessons-learned.md) | The rules the repo enforces on itself, and where they came from |
 
 ## See it
@@ -167,7 +170,7 @@ This is a proposal. Nothing was corrected.
 
 | Piece | Built and tested | Run for real |
 |---|---|---|
-| Data pipeline: generator, bronze → silver → gold with dbt | Yes, 11 gold models with tests | Yes, end to end on fictional data |
+| Data pipeline: generator, bronze → silver → gold with dbt | Yes, 14 gold models with tests | Yes, end to end on fictional data |
 | Context layer: 7 concepts and 27 documents by kind, catalog, checks | Yes | Yes |
 | Retrieval by category, incremental reingest, 50 retrieval, 67 router and 12 profile cases | Yes | Yes, scored above |
 | Five agent tools, router cascade, category profiles, four-block prompt, cost per answer | Yes, with a scripted model | No model call; prices left empty, so cost is logged as null |
@@ -175,7 +178,8 @@ This is a proposal. Nothing was corrected.
 | Read-only MCP server (JSON-RPC over stdio) | Yes, against hand-made messages | No real MCP client |
 | Revenue-snapshot micro-app, app template and playbook | Yes | Page rendered from the local lakehouse |
 | Agent chat: local server, page, scripted model, trace of each answer | Yes, 13 tests | Runs locally on real gold data with the scripted model; never with a real model or hosted |
-| Automations: lead routing, provisioning (with write controls), weekly audit, reconciliation, duplicate queue, funnel review | Yes | The three weekly reads are scheduled; writes are simulated log lines |
+| Automations: lead routing, provisioning, onboarding auto-advance, churn deactivation, deal amount, weekly audit, reconciliation, duplicate queue, funnel review | Yes, each with a spec, gains, diagram and tests | The weekly reads and the daily deactivation are scheduled; writes are simulated and behind kill switches |
+| AI automations: site qualification, prospecting drafts | Yes, with a scripted model; validation, prompt hashes and cost logging tested | Never called a real model; prices not set, so cost is null |
 | Run catalog, job health, Slack alerts (simulated) | Yes | The collector is scheduled; Slack has never been posted to |
 | On-call agent and watchdog | Yes; the steps without AI are tested | Workflows exist; every switch is off and the agent step has never run |
 | Verification: reviewer agents, profile eval, personal-data guard, AI security review | Yes | The AI review is off until a key exists |
@@ -202,6 +206,8 @@ Open owner questions, such as the funnel-review thresholds, are in [`memory/deci
 - 🧩 **Four-block prompt with cache**: rules and category documents cached, today's date and retrieved context after the last marker
 - 🔎 **RAG with evals**: five categories, incremental reingest by hash, retrieval, router and profile evals
 - 🛡️ **Write controls**: kill switch, cap per run, circuit breaker, read-back, review queue, and a check that only authorised jobs write
+- 🤖 **Eleven automations, each documented the same way**: the problem, why the process exists, projected gains with their assumptions, a diagram, where AI enters, tokens and cost, monitoring
+- ✍️ **AI inside automations, kept under code**: prompts versioned with their hash checked in CI, outputs validated, guardrails structural, cost logged per run
 - 🧾 **Audits that propose**: explicit-id reconciliation with divergence, pending and known case, and a duplicate queue that never merges
 - 🚨 **Run catalog, Slack alerts, on-call agent, watchdog**, all with switches off until enabled
 - 💬 **A local chat** that shows each answer with its route, documents, prompt blocks and tools, no key needed
@@ -272,7 +278,7 @@ revops-agent/
 │   ├── rag/          # Corpus by category, retrieval, incremental ingest
 │   └── tools/        # Five read-only tools
 ├── mcp_server/       # Read-only MCP server over gold
-├── automations/      # Six automations and audits, plus the shared write controls
+├── automations/      # Eleven automations and audits, the shared write controls, movement log and AI step
 ├── catalog/          # One card per thing that runs
 ├── oncall/           # On-call agent prompt, executor and watchdog
 ├── observability/    # Agent log with cost, job health, Slack notifier
@@ -285,7 +291,7 @@ revops-agent/
 ├── connectors/       # Registry of every external connection
 ├── design-system/    # Design tokens used by the micro-apps
 ├── destinations/     # Simulated reverse ETL
-├── tests/            # 534 tests covering every piece above
+├── tests/            # 558 tests covering every piece above
 ├── docs/
 │   ├── standards/    # The rules: context, modeling, security, apps, audits, verification, process...
 │   ├── adr/          # Architecture decision records
@@ -326,6 +332,7 @@ Then try each piece. None of these calls a model.
 | A closed map (owners, stages, teams, job health) | `python agent/tools/get_map.py owners` |
 | The evals | `python evals/run_retrieval.py`, `run_router.py`, `run_profiles.py` |
 | The revenue page | `python apps/revenue-snapshot/snapshot.py --out snapshot.html` |
+| The AI automations in demo mode (no key) | `python automations/site-qualification/qualify.py --requests automations/site-qualification/examples/requests.json` and `python automations/prospecting-drafts/draft.py --leads automations/prospecting-drafts/examples/leads.json` |
 | The weekly audits (dry run) | `python automations/audits/audit.py`, `automations/reconciliation/reconcile.py`, `automations/duplicate-companies/duplicates.py` |
 | What runs and its health | `python tools/catalog.py check` and `python tools/catalog.py collect` |
 | The MCP server | `python mcp_server/server.py` (speaks JSON-RPC on stdin and stdout) |
@@ -383,6 +390,7 @@ Each decision is a short record with the context, the choice and the alternative
 | [0021](docs/adr/0021-an-on-call-agent-between-two-steps-without-ai.md) | An on-call agent between two steps without AI, and a watchdog |
 | [0022](docs/adr/0022-the-web-chat-app-waits-for-a-host-and-a-key.md) | The web chat app waits for a host and a key |
 | [0023](docs/adr/0023-a-local-chat-app-to-show-the-agent.md) | A local chat app shows the agent, with a scripted model when there is no key |
+| [0024](docs/adr/0024-automations-are-code-in-the-repository-not-a-workflow-tool.md) | Automations are code in the repository, not flows in a workflow tool |
 
 Standards live in [docs/standards/](docs/standards/).
 

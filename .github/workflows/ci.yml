@@ -55,6 +55,8 @@ jobs:
         run: python tools/check_automations.py
       - name: Warn about stale derived copies
         run: python tools/check_derived.py
+      - name: Check every automation prompt matches its recorded hash
+        run: python tools/check_prompts.py
       - name: Scan tracked files for personal data
         run: python tools/check_pii.py
       - name: Score the profile eval (deterministic, no model)

@@ -15,9 +15,11 @@ Everything that runs, generated from `catalog/*.yml` by `python tools/catalog.py
 | [Read-only MCP server](../catalog/mcp-server.yml) | server | manual | RevOps lead | started by an MCP client | nothing | none | none |
 | [Onboarding auto-advance](../catalog/onboarding-advance.yml) | automation | manual | Customer Success | a product event (run by hand here) | the onboarding milestone (simulated) and the movement log | none | movements-*.md |
 | [On-call agent](../catalog/oncall.yml) | agent | active | RevOps lead | after every collection | pull requests on oncall/<id> and reruns of rerun_ok workflows (both off until enabled) | claude-sonnet-5-5 through Claude Code, only when a problem exists (never run) | oncall.yml |
+| [Prospecting drafts](../catalog/prospecting-drafts.yml) | automation | manual | Sales | a new lead with a qualification (run by hand here) | a drafts file; never the CRM, never a message | claude-haiku-5-5 through ai_step (demo without a key) | prospecting-drafts-*.json |
 | [Deal and subscription reconciliation](../catalog/reconciliation.yml) | automation | active | RevOps lead | schedule, Mondays, in the weekly audit workflow | a report and a Slack alert (simulated) | none | weekly-audit.yml |
 | [Revenue snapshot page](../catalog/revenue-snapshot.yml) | app | manual | RevOps lead | by hand | nothing | none | none |
 | [RevOps agent](../catalog/revops-agent.yml) | agent | manual | RevOps lead | a question | nothing | claude-haiku-5-5 and claude-sonnet-5-5 (never called) | agent.jsonl |
+| [Site qualification](../catalog/site-qualification.yml) | automation | manual | Sales | a qualification request (run by hand here) | the qualification field (simulated) | claude-haiku-5-5 through ai_step (demo without a key) | site-qualification-*.json |
 | [Slack alerts](../catalog/slack-alerts.yml) | job | manual | RevOps lead | called by the collector and the audits | one message per finding (simulated) | none | slack-*.md |
 | [Watchdog](../catalog/watchdog.yml) | job | active | RevOps lead | schedule, daily 09:30 UTC | reruns of rerun_ok workflows (off until enabled) | none | watchdog.yml |
 | [Weekly data-quality audit](../catalog/weekly-audit.yml) | automation | active | RevOps lead | schedule, Mondays 07:00 UTC | a report artifact | none | weekly-audit.yml |
