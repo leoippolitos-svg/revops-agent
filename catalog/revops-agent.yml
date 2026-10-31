@@ -1,0 +1,14 @@
+id: revops-agent
+name: RevOps agent
+kind: agent
+owner: RevOps lead
+purpose: Answers revenue questions from gold and the context documents, read-only.
+trigger: a question
+where: agent/agent.py
+writes: nothing
+ai: claude-haiku-5-5 and claude-sonnet-5-5 (never called)
+cost: logged per answer; prices not set
+status_source:
+  type: log
+  pattern: agent.jsonl
+situation: manual

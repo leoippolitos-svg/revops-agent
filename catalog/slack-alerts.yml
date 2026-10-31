@@ -1,0 +1,15 @@
+id: slack-alerts
+name: Slack alerts
+kind: job
+owner: RevOps lead
+purpose: Sends alerts built by code to the alerts channel, one thread per item; simulated
+  as a log file.
+trigger: called by the collector and the audits
+where: observability/notify.py
+writes: one message per finding (simulated)
+ai: none
+cost: free
+status_source:
+  type: log
+  pattern: slack-*.md
+situation: manual

@@ -1,0 +1,37 @@
+name: Run catalog collector
+
+# Reads the last run of every card in catalog/ and writes the job health file
+# (tools/catalog.py, catalog/README.md). Items that are failing or late get one Slack
+# alert each, through observability/notify.py: simulated as a log file unless the
+# kill switch SLACK_ALERTS_ENABLED is true and SLACK_WEBHOOK_URL exists as a secret.
+on:
+  schedule:
+    - cron: "0 8,13,18 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read   # gh run list needs to read workflow runs, nothing more
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: Collect health and alert
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SLACK_ALERTS_ENABLED: ${{ vars.SLACK_ALERTS_ENABLED }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: python tools/catalog.py collect --write --notify
+      - uses: actions/upload-artifact@v4
+        with:
+          name: job-health
+          path: |
+            observability/logs/job-health.json
+            observability/logs/slack-*.md
+          if-no-files-found: warn

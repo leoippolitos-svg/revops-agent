@@ -1,0 +1,16 @@
+id: catalog-collect
+name: Run catalog collector
+kind: job
+owner: RevOps lead
+purpose: Reads the last run of every card three times a day and alerts on anything
+  failing or late.
+trigger: schedule, 08:00, 13:00 and 18:00 UTC
+where: tools/catalog.py
+writes: job health file and Slack alerts (simulated)
+ai: none
+cost: free (CI minutes)
+status_source:
+  type: github_actions
+  workflow: catalog-collect.yml
+  expected_every_days: 1
+situation: active

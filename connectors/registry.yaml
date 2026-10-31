@@ -51,13 +51,13 @@ connectors:
 
   - id: slack
     system: Slack
-    status: documented
+    status: simulated
     access: read-write
-    scopes: ["post to #revops-alerts"]
-    auth: bot token (documented only)
-    consumers: [pipeline checks, automations/audits]
+    scopes: ["post to #revops-alerts through an incoming webhook"]
+    auth: incoming webhook URL in the SLACK_WEBHOOK_URL secret (never set here); kill switch SLACK_ALERTS_ENABLED
+    consumers: [tools/catalog.py, automations/audits, observability/notify.py]
     owner: RevOps
-    note: needs an ADR before going live; simulated by writing alerts to observability/logs
+    note: ADR-0020; messages are built by code and written to observability/logs/slack-<date>.md; the webhook host must be hooks.slack.com
 
   - id: crm-owner-assignment
     system: CRM (HubSpot-like)

@@ -1,0 +1,13 @@
+id: mcp-server
+name: Read-only MCP server
+kind: server
+owner: RevOps lead
+purpose: Offers gold, the catalog and the context documents to any MCP client.
+trigger: started by an MCP client
+where: mcp_server/server.py
+writes: nothing
+ai: none
+cost: free
+status_source:
+  type: none
+situation: manual

@@ -17,7 +17,7 @@ Five tools, all read-only (ADR-0006, ADR-0019). A tool that can write does not b
 | `search_context` | question (at most 500 characters), k (default 3, from 1 to 5) | the k best context sections with document id, status and, for draft or deprecated documents, a warning | Searches `context/` only. Draft and deprecated documents are returned with their status so the answer can say so. |
 | `get_catalog` | model name (`gold.mrr_monthly`, or `mrr_monthly` for gold) | the model and column descriptions, and the context documents that use it | Reads the dbt `schema.yml` files, never the database. A name not in the catalog is rejected and the gold models are listed. |
 | `search_records` | question, k (default 3, from 1 to 5) | the k best past records from `records/` | Returns the record title, date and conclusion. |
-| `get_map` | one key: `owners`, `funnel_stages`, `teams`, `segments`, `pipelines`, `apps` | the rows of a fixed gold query, or one section of a context document | The key is never turned into a path or a query. Any other key is refused and the known keys are listed. |
+| `get_map` | one key: `owners`, `funnel_stages`, `teams`, `segments`, `pipelines`, `apps`, `jobs` | the rows of a fixed gold query, or one section of a context document | The key is never turned into a path or a query. Any other key is refused and the known keys are listed. |
 
 ## Prices
 

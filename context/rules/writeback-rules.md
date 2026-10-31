@@ -29,6 +29,7 @@ The single list of what may be written into another system, by which automation,
 |---|---|---|---|---|---|
 | CRM | the owner of a new lead | `lead-routing` | recurring | ADR-0010 | 50 |
 | Product | one workspace and its onboarding kickoff per signed deal | `closed-won-provisioning` | recurring | ADR-0011 | 20 |
+| Slack | one alert message per finding, in the alerts channel | `slack-alerts` | recurring | ADR-0020 | 30 |
 
 The cap is read by the automation at run time: past it, the rest of the run waits for review. Each automation writes only when its kill switch, `<NAME>_ENABLED=true` (for example `LEAD_ROUTING_ENABLED`), is set; without it a `--write` run is a shadow run.
 
@@ -37,6 +38,7 @@ The cap is read by the automation at run time: past it, the rest of the run wait
 - **Recurring authorization**: the automation may write on every run within the scope above. The section that grants it carries the marker `RECURRING-AUTHORIZATION: <automation>`, its scope and what is out of scope. Turning the automation off removes the marker in the same pull request.
   - RECURRING-AUTHORIZATION: lead-routing. Scope: the owner of a new lead. Out of scope: any other field, any existing owner change beyond the routing rule.
   - RECURRING-AUTHORIZATION: closed-won-provisioning. Scope: one workspace request and one kickoff request per signed deal. Out of scope: plan, price, users, and anything for a deal that is not closed won.
+  - RECURRING-AUTHORIZATION: slack-alerts. Scope: one message per finding in the alerts channel, text built by code, one thread per item. Out of scope: direct messages, any other channel, any text written by a model.
 - **Proposal and approval**: for a sensitive field (an amount, a status that affects billing), the automation only writes a proposal. A person approves item by item, never in bulk, and a separate manual step applies it with the approver's name and the previous value.
 - **Forbidden**: everything not listed.
 

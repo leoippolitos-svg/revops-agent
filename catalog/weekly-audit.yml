@@ -1,0 +1,16 @@
+id: weekly-audit
+name: Weekly data-quality audit
+kind: automation
+owner: RevOps lead
+purpose: Counts the data-quality flags in gold every Monday and says which rose since
+  the last report.
+trigger: schedule, Mondays 07:00 UTC
+where: automations/audits/SPEC.md
+writes: a report artifact
+ai: none
+cost: free (CI minutes)
+status_source:
+  type: github_actions
+  workflow: weekly-audit.yml
+  expected_every_days: 8
+situation: active

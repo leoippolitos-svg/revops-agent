@@ -1,0 +1,15 @@
+id: funnel-review
+name: Weekly funnel review
+kind: automation
+owner: RevOps lead
+purpose: Names the funnel stage that moved most and hands the cause to the diagnosis
+  skill.
+trigger: by hand; not scheduled while the data has a fixed date
+where: automations/funnel-review/SPEC.md
+writes: a report file
+ai: the agent half (never run)
+cost: not measured
+status_source:
+  type: log
+  pattern: funnel-review-*.md
+situation: manual
