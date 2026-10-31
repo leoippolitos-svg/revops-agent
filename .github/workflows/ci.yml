@@ -53,6 +53,8 @@ jobs:
         run: python tools/check_apps.py
       - name: Check the automation specs
         run: python tools/check_automations.py
+      - name: Warn about stale derived copies
+        run: python tools/check_derived.py
 
   # The README and this job use Python 3.12; local development may use a newer one.
   tests:
