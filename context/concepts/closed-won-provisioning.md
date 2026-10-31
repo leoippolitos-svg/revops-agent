@@ -22,6 +22,7 @@ Provisioning is the step where a customer who just signed gets a workspace in th
 - A deal that already has a subscription is not provisioned again. The subscription means billing has started, see [[silver.subscription.deal_id]].
 - The plan and the monthly price come from billing when the subscription starts ([[silver.subscription.plan]]), never from the CRM or from the automation.
 - Onboarding follows the milestones kickoff, configured and go_live ([[silver.onboarding_milestone.milestone]]). Provisioning only requests the kickoff. The onboarding team records the others.
+- A deal won more than 60 days ago is never provisioned automatically: there is no silent back-fill of old deals, and the deal is listed for a person.
 - A subscription starts within two weeks of the win. A closed_won deal still without a subscription after two weeks is listed for Finance. The size of that backlog is [[gold.data_quality_snapshot.closed_won_without_subscription]].
 
 ## Gotchas

@@ -34,6 +34,8 @@ If `gold.owner_workload` is missing or empty, the run stops with an error and as
 ## Dry run
 Dry-run is the default: the assignments are printed and nothing is written. `--write` turns the effect on, and in this repository the effect is only the log file. Running twice for the same lead overwrites the same line.
 
+Writes go through the shared controls (`automations/_lib/controls.py`): `--write` writes only when the kill switch `LEAD_ROUTING_ENABLED=true` is set, otherwise the run is a shadow run that reports what it would write. At most 50 writes per run, a cap read from the write-back rules; three failed writes in a row stop the run; every write is read back, and anything not written is listed as "needs review", never as skipped.
+
 ## Security checklist
 Standard: `docs/standards/security.md`, automation checklist. Ticked in the PR that built it (`route.py`, `tests/test_lead_routing.py`).
 

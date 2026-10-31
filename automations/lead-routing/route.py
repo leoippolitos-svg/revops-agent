@@ -22,6 +22,9 @@ from pathlib import Path
 import duckdb
 
 ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT / "automations" / "_lib"))
+
+from controls import ControlsError, WriteControls  # noqa: E402
 HEADER = ["# Lead routing", "", "| Lead | Outcome | Owner | Previous owner | Rule |", "|---|---|---|---|---|"]
 # The context document spells segments the way people say them. The data spells them like this.
 SEGMENT_WORDS = {"small business": "smb", "mid market": "mid_market", "enterprise": "enterprise"}
@@ -142,9 +145,10 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     try:
+        controls = WriteControls("lead-routing", args.write)
         leads = check_leads(json.loads(args.leads.read_text(encoding="utf-8")))
         decisions = route(leads, read_workload(args.db), load_rules())
-    except (RoutingError, ValueError, OSError) as error:
+    except (RoutingError, ControlsError, ValueError, OSError) as error:
         # Never report a failure as "all routed": say it and stop with nothing assigned.
         print(f"ERROR {error}", file=sys.stderr)
         return 1
@@ -152,12 +156,20 @@ def main(argv: list[str] | None = None) -> int:
     print("\n".join(HEADER + [_line(d) for d in decisions]))
     unrouted = sum(d["outcome"] == "not routed" for d in decisions)
     print(f"\n{len(decisions) - unrouted} assigned, {unrouted} not routed.")
-    if args.write:
-        path = args.logs / f"lead-routing-{args.date}.md"
-        write_log(path, decisions)
-        print(f"wrote {path}")
-    else:
-        print("dry run: nothing written (use --write)")
+    if controls.mode != "write":
+        print(controls.describe())
+        return 0
+    path = args.logs / f"lead-routing-{args.date}.md"
+    # Leads that were not routed are a review list, a report and not a CRM write.
+    write_log(path, [d for d in decisions if d["outcome"] != "assigned"])
+    # Each assignment is the simulated CRM write, so it goes through the controls one by one.
+    assigned = {d["lead_id"]: d for d in decisions if d["outcome"] == "assigned"}
+    outcome = controls.apply(list(assigned), write_one=lambda lead: write_log(path, [assigned[lead]]),
+                             read_back=lambda lead: _line(assigned[lead]) in path.read_text(encoding="utf-8"))
+    for lead, reason in outcome.needs_review.items():
+        write_log(path, [{**assigned[lead], "outcome": "needs review", "owner_id": "-", "rule": reason}])
+    print(f"{controls.describe()}\nwrote {path}: {len(outcome.applied)} assigned, "
+          f"{len(outcome.needs_review)} need review")
     return 0
 
 

@@ -49,6 +49,10 @@ Every app in `apps/` passes this before merge:
 - [ ] Failures are logged and alerted, never swallowed
 - [ ] Credentials scoped to the minimum and registered
 - [ ] Dry-run mode for anything that would write to an external system
+- [ ] A kill switch (`<NAME>_ENABLED`) that turns writes off without a deploy, and a cap per run from `context/rules/writeback-rules.md`
+- [ ] A circuit breaker on consecutive failures, a check after every write, and "needs review" (never "skipped") for anything not written
+- [ ] Matches on an explicit id only, never on a name, and no silent back-fill past a date cutoff
+- [ ] A `RECURRING-AUTHORIZATION` for the automation in the write-back rules (`tools/check_automations.py` enforces it)
 
 ## Engineering rules for any code that serves people or data
 
