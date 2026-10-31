@@ -16,6 +16,11 @@ It checks four things and exits with code 1 if any fails:
   3. Catalog: every dbt model has a description, every column has a description,
      and every model file has an entry in a schema.yml (and the other way
      round). An undocumented model fails (docs/standards/data-modeling.md).
+  4. Other documents: the company, area, metrics, CRM map, report and rule
+     documents listed under "documents" in context/index.yaml. Each kind has its
+     own required sections, all of them open with "Purpose", and their
+     annotations are checked the same way. Only the kinds that hold a model
+     query (crm-map, data-map) may contain a code block.
 """
 
 import re
@@ -32,6 +37,29 @@ MAX_DEFINITION_SENTENCES = 3
 INDEX_STATUS = VALID_STATUS | {"planned"}
 LAYERS = ("silver", "gold")
 ANNOTATION = re.compile(r"\[\[([^\]]+)\]\]")
+DOCUMENT_FRONT_MATTER = REQUIRED_FRONT_MATTER + ("kind",)
+# Every kind of document has its own shape. "Purpose" comes first in all of them:
+# what the document is for, who reads it and when, what does not belong in it,
+# and who owns it. A new reader decides in one paragraph whether to keep reading.
+KIND_SECTIONS = {
+    "company": ("Purpose", "What Fernway sells", "Customers and segments", "How Fernway sells",
+                "Systems and sources of truth", "Glossary"),
+    "okrs": ("Purpose", "Cycle", "Objectives and key results", "Area, OKR and metric", "How the agent uses them"),
+    "entities": ("Purpose", "Teams", "People and roles", "Segments", "Pipelines", "Resolving vague references"),
+    "area": ("Purpose", "Mission", "People", "Objectives", "KPIs", "CRM objects", "Benchmarks",
+             "Frequent questions", "Anti-confusions"),
+    "metrics": ("Purpose", "Metrics", "Window and grain", "Internal benchmark", "Interpretation notes"),
+    "crm-map": ("Purpose", "Pipelines and stages", "Fields", "Owners", "Loss reasons", "Where it lands in gold",
+                "Model query", "Gotchas"),
+    "data-map": ("Purpose", "Layers and access", "Tables and grain", "Canonical joins", "Model query",
+                 "Validation queries", "Gotchas"),
+    "report": ("Purpose", "Numbers and how they are computed", "Filters", "Gotchas", "Changelog"),
+    "benchmark": ("Purpose", "How the agent uses them", "Benchmarks", "Sources"),
+    "rule": ("Purpose", "Rules", "Owner and approvers"),
+    "inventory": ("Purpose", "Items", "Rules for the agent"),
+    "process": ("Purpose", "Steps", "Template"),
+}
+CODE_KINDS = {"crm-map", "data-map"}
 
 
 def load_catalog(root: Path, errors: list[str]) -> dict[str, dict[str, str]]:
@@ -120,6 +148,9 @@ def check(root: Path) -> list[str]:
             errors.append(f"context/index.yaml: {concept_id} has invalid status {entry.get('status')!r}")
 
     documents = {cid for cid, e in entries.items() if e.get("status") != "planned"}
+    other = {d["id"]: d for d in index.get("documents", [])}
+    for clash in sorted(set(other) & set(entries)):
+        errors.append(f"context/index.yaml: {clash} is listed both as a concept and as a document")
     for concept_id in sorted(documents):
         path = root / "context" / entries[concept_id]["path"]
         where = path.relative_to(root).as_posix()
@@ -135,19 +166,71 @@ def check(root: Path) -> list[str]:
         if front.get("status") != entries[concept_id].get("status"):
             errors.append(f"{where}: status differs between the document and context/index.yaml")
         for related in front.get("related", []):
-            if related not in entries:
+            if related not in entries and related not in other:
                 errors.append(f"{where}: related concept {related} is not in index.yaml")
 
-        for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
-            for ref in ANNOTATION.findall(line):
-                if not annotation_exists(ref, catalog, documents):
-                    errors.append(f"{where}:{number}: annotation [[{ref}]] does not resolve")
+        errors.extend(annotation_errors(path, where, catalog, documents, set(other)))
+
+    errors.extend(document_errors(root, other, entries, catalog, documents))
     return errors
 
 
-def annotation_exists(ref: str, catalog: dict, documents: set[str]) -> bool:
+def document_errors(root: Path, other: dict, entries: dict, catalog: dict, concepts: set[str]) -> list[str]:
+    """Check the non-concept documents: index entry, front matter, the sections of their kind."""
+    errors = []
+    for doc_id, entry in sorted(other.items()):
+        kind = entry.get("kind")
+        if kind not in KIND_SECTIONS:
+            errors.append(f"context/index.yaml: {doc_id} has unknown kind {kind!r}; "
+                          f"use one of {sorted(KIND_SECTIONS)}")
+            continue
+        if entry.get("status") not in VALID_STATUS:
+            errors.append(f"context/index.yaml: {doc_id} has invalid status {entry.get('status')!r}")
+        path = root / "context" / entry["path"]
+        where = path.relative_to(root).as_posix()
+        if not path.is_file():
+            errors.append(f"{where}: listed in index.yaml but the file does not exist")
+            continue
+        text = path.read_text(encoding="utf-8")
+        front, body = split_front_matter(text)
+        for key in DOCUMENT_FRONT_MATTER:
+            if key not in front:
+                errors.append(f"{where}: front matter is missing {key}")
+        if front.get("id") != doc_id or path.stem != doc_id:
+            errors.append(f"{where}: front matter id, file name and index id must all be {doc_id}")
+        if front.get("kind") != kind:
+            errors.append(f"{where}: kind differs between the document and context/index.yaml")
+        if front.get("status") != entry.get("status"):
+            errors.append(f"{where}: status differs between the document and context/index.yaml")
+        found = sections(body)
+        for name in KIND_SECTIONS[kind]:
+            if name not in found:
+                errors.append(f"{where}: a {kind} document needs the section '{name}'")
+            elif not found[name].strip():
+                errors.append(f"{where}: the section '{name}' is empty")
+        if "```" in body and kind not in CODE_KINDS:
+            errors.append(f"{where}: only {sorted(CODE_KINDS)} documents may hold a code block")
+        for related in front.get("related", []):
+            if related not in entries and related not in other:
+                errors.append(f"{where}: related document {related} is not in index.yaml")
+        errors.extend(annotation_errors(path, where, catalog, concepts, set(other)))
+    return errors
+
+
+def annotation_errors(path: Path, where: str, catalog: dict, concepts: set[str], docs: set[str]) -> list[str]:
+    errors = []
+    for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
+        for ref in ANNOTATION.findall(line):
+            if not annotation_exists(ref, catalog, concepts, docs):
+                errors.append(f"{where}:{number}: annotation [[{ref}]] does not resolve")
+    return errors
+
+
+def annotation_exists(ref: str, catalog: dict, documents: set[str], docs: set[str] = frozenset()) -> bool:
     if ref.startswith("concept:"):
         return ref.removeprefix("concept:") in documents
+    if ref.startswith("doc:"):
+        return ref.removeprefix("doc:") in docs
     parts = ref.split(".")
     table = ".".join(parts[:2])
     if table not in catalog:
