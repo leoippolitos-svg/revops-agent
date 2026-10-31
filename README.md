@@ -300,16 +300,6 @@ Standards live in [docs/standards/](docs/standards/).
 | Tests | pytest |
 | CI | GitHub Actions, gitleaks |
 
-## Credits
-
-Ideas, not code, came from:
-
-- Anthropic: [Effective context engineering for AI agents](https://www.anthropic.com/research/effective-context-engineering-for-ai-agents) and *The Complete Guide to Building Skills for Claude*
-- [Nekt Academy](https://academy.nekt.com/): context documents, catalog organization, the medallion lakehouse
-- Winning by Design: the Bowtie model of the customer journey
-- Tech Leads Club: [harness-toolkit](https://github.com/tech-leads-club/harness-toolkit) and [the-judge](https://agent-skills.techleads.club/skills/the-judge)
-- Scient: GTM Engineering course
-
 ## Contributing
 
 This is a personal portfolio project and does not accept pull requests. Feedback is welcome through [issues](https://github.com/leoippolitos-svg/revops-agent/issues). See [CONTRIBUTING.md](CONTRIBUTING.md).

@@ -63,4 +63,4 @@ should_not_trigger:
 
 ## Third-party skills
 
-Do not copy them into the repo. Read them for ideas, write our own, and credit the source in the README.
+Do not copy them into the repo. Read them for ideas and write our own.
