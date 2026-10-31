@@ -61,3 +61,5 @@ documents:
   - {id: icp, kind: rule, path: rules/icp.md, status: draft, summary: "Ideal customer profile and anti-profile"}
   - {id: writeback-rules, kind: rule, path: rules/writeback-rules.md, status: canonical, summary: "The only fields automations may write, and the controls they need"}
   - {id: apps, kind: inventory, path: rules/apps.md, status: canonical, summary: "Internal apps and what each computes"}
+  - {id: agent-security, kind: rule, path: rules/agent-security.md, status: canonical, summary: "What the agent may answer, for whom, and what it refuses"}
+  - {id: session-closing, kind: process, path: rules/session-closing.md, status: canonical, summary: "How every session leaves its knowledge in the repository"}

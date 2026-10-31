@@ -23,6 +23,7 @@ No exceptions, including analyses and context changes. A PR is ready when:
 - the checks pass,
 - a record exists in `records/` (use the `open-pr` skill),
 - every business rule that changed is updated in `context/`,
+- the session is closed: the project digest in `projects/<name>/CONTEXT.md` is written and every scratch file is promoted or deleted (context document `session-closing`; the project index is `WORKSPACE.md`),
 - the PR template is filled in.
 
 Rules: [docs/standards/pull-requests.md](docs/standards/pull-requests.md)
