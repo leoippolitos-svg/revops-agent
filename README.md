@@ -77,13 +77,15 @@ So this project treats the agent as the last mile of a data and context system, 
 | Read-only MCP server (JSON-RPC over stdio) | Yes, against hand-made messages | No real MCP client |
 | Revenue-snapshot micro-app, app template and playbook | Yes | Page rendered from the local lakehouse |
 | Agent chat: local server, page, scripted model, trace of each answer | Yes, 13 tests | Runs locally on real gold data with the scripted model; never with a real model or hosted |
-| Automations: lead routing, provisioning, onboarding auto-advance, churn deactivation, deal amount, weekly audit, reconciliation, duplicate queue, funnel review | Yes, each with a spec, gains, diagram and tests | The weekly reads and the daily deactivation are scheduled; writes are simulated and behind kill switches |
+| Automations: lead routing, provisioning, onboarding auto-advance, churn deactivation, deal amount, weekly audit, reconciliation, duplicate queue, funnel review | Yes, each with a spec, gains, diagram and tests | Ran on schedule on fictional data, now switched off (see below); writes are simulated and behind kill switches |
 | AI automations: site qualification, prospecting drafts, proposal generator, account review narrative | Yes, with a scripted model; validation, prompt hashes and cost logging tested | Never called a real model; prices not set, so cost is null |
-| Run catalog, job health, Slack alerts (simulated) | Yes | The collector is scheduled; Slack has never been posted to |
-| On-call agent and watchdog | Yes; the steps without AI are tested | Workflows exist; every switch is off and the agent step has never run |
+| Run catalog, job health, Slack alerts (simulated) | Yes | The collector ran on schedule, now switched off; Slack has never been posted to |
+| On-call agent and watchdog | Yes; the steps without AI are tested | Workflows exist and are switched off; the agent step has never run |
 | Verification: reviewer agents, profile eval, personal-data guard, prompt hashes | Yes | Yes, in CI |
 | Security review pipeline: AI review of each diff, red on HIGH or CRITICAL, Slack alert, push scan | Yes, evaluator and scan tested both ways | Off until the action is pinned and a key exists |
 | With vs without context comparison | Design and 18 questions | No, needs a model |
+
+**Nothing runs on its own.** This repository is meant to be read: the scheduled workflows (daily automations, weekly audit, run catalog, watchdog, on-call agent, retrieval reingest) are switched off in GitHub Actions, and their files are kept to show the design. Only CI runs, on each pull request. Any of them can be run by hand or switched back on with `gh workflow enable <file>`.
 
 Open owner questions, such as the funnel-review thresholds, are in [`memory/decisions/`](memory/decisions) and [`BACKLOG.md`](BACKLOG.md), not buried in code.
 
