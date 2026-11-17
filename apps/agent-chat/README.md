@@ -2,7 +2,7 @@
 
 A local web chat that shows the RevOps agent answering, and how it got to each answer. No key, no hosting, no external dependency.
 
-![The agent chat: an answer and, under it, the route, documents, prompt blocks and tools](../../docs/img/agent-chat.jpg)
+![The agent chat: an answer and, under it, the route, documents, prompt blocks and tools](../../docs/img/agent-chat.png)
 
 ## How to run it
 
@@ -38,7 +38,7 @@ sequenceDiagram
     S-->>U: answer + trace (route, documents, blocks, tools called)
 ```
 
-In demo mode, `demo_model.py` plays the model: it picks one tool the intent allows, with a fixed query for the question's topic, and writes a short answer from the real rows. Everything else is the real agent: the router, the profile, the four prompt blocks, the budget, the tool guards, the refusal of a write request and the log.
+In demo mode, `demo_model.py` plays the model: it picks one tool the intent allows, with a fixed query for the question's topic, and writes a short answer that points to the real rows, which the page draws as a table. Everything else is the real agent: the router, the profile, the four prompt blocks, the budget, the tool guards, the refusal of a write request and the log.
 
 ## Files
 

@@ -69,6 +69,17 @@ def test_a_tool_error_is_reported_not_hidden():
     assert "failed: lakehouse not found" in text
 
 
+def test_query_rows_go_to_a_table_not_into_the_sentence():
+    result = {"name": "query_gold", "content": json.dumps(
+        {"columns": ["month", "mqls"], "rows": [["2025-12-01", 15], ["2025-11-01", 28]], "total_rows": 2})}
+    assert demo_model.DemoModel._table([result]) == {"columns": ["month", "mqls"],
+                                                     "rows": [["2025-12-01", 15], ["2025-11-01", 28]]}
+    text = demo_model.DemoModel._answer("metric_lookup", [result])
+    assert "returned 2 row(s), shown in the table below" in text and "2025-12-01" not in text
+    # A search result has no rows, so there is no table to draw.
+    assert demo_model.DemoModel._table([{"name": "search_context", "content": json.dumps({"results": []})}]) is None
+
+
 @pytest.fixture
 def running(tmp_path):
     server.Handler.log_path = tmp_path / "log.jsonl"

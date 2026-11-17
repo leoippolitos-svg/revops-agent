@@ -8,8 +8,10 @@
 </head>
 <body>
   <header>
+    <p class="kicker">AI agent for Revenue Operations</p>
     <h1>RevOps agent</h1>
-    <p class="muted">Ask a revenue question about Fernway, a fictional company. Every answer shows how the agent got there: the route, the documents it loaded, the prompt blocks and the tools it called. <strong id="mode">Demo mode: no language model is called.</strong></p>
+    <p class="muted">Ask a revenue question about Fernway, a fictional company. Every answer shows how the agent got there: the route, the documents it loaded, the prompt blocks and the tools it called.</p>
+    <span class="badge" id="mode">Demo mode: no language model is called</span>
   </header>
   <main id="thread" aria-live="polite"></main>
   <form id="ask" autocomplete="off">
@@ -17,7 +19,7 @@
     <input id="question" maxlength="500" placeholder="How many MQLs did we get last month?" required>
     <button type="submit">Ask</button>
   </form>
-  <p class="examples muted">Try: <button type="button" class="example">How many MQLs did we get in September?</button>
+  <p class="examples muted">Try <button type="button" class="example">How many MQLs did we get in September?</button>
     <button type="button" class="example">Why did conversion drop last month?</button>
     <button type="button" class="example">What counts as an active customer?</button>
     <button type="button" class="example">Update this deal to closed won</button></p>

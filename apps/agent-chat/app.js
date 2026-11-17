@@ -12,13 +12,52 @@ function el(tag, text, className) {
 }
 
 function table(rows) {
-  const t = el("table");
+  const t = el("table", undefined, "trace");
   for (const [label, value] of rows) {
     const tr = el("tr");
     tr.append(el("th", label), el("td", value));
     t.append(tr);
   }
   return t;
+}
+
+// The rows the query returned, drawn as a table with a header, so numbers are read in columns.
+function dataTable(result) {
+  const t = el("table", undefined, "data");
+  const head = el("tr");
+  for (const column of result.columns) head.append(el("th", column));
+  t.append(head);
+  for (const row of result.rows) {
+    const tr = el("tr");
+    for (const value of row) tr.append(el("td", value));
+    t.append(tr);
+  }
+  return t;
+}
+
+// The answer arrives as paragraphs; the demo label and the suggested next question get their own style.
+function answerBlock(text) {
+  const block = el("div", undefined, "answer");
+  for (const paragraph of String(text).split("\n\n")) {
+    let kind;
+    if (paragraph.startsWith("Demo answer:")) kind = "note";
+    else if (paragraph.startsWith("Next you could ask")) kind = "next";
+    block.append(el("p", paragraph, kind));
+  }
+  return block;
+}
+
+// The route at a glance: what the router decided and what was used, before the full trace.
+function pills(data) {
+  const box = el("div", undefined, "pills");
+  const items = [["intent", data.route.intent], ["tier", data.route.tier],
+    ["tools", data.tools_called.join(", ") || "none"], ["decided by", data.route.via]];
+  for (const [label, value] of items) {
+    const pill = el("span", undefined, "pill");
+    pill.append(el("b", label), document.createTextNode(String(value)));
+    box.append(pill);
+  }
+  return box;
 }
 
 function trace(data) {
@@ -55,7 +94,9 @@ async function ask(question) {
     if (!response.ok) {
       turn.append(el("div", data.error || "The request was refused.", "answer error"));
     } else {
-      turn.append(el("div", data.answer, "answer"), trace(data));
+      turn.append(pills(data), answerBlock(data.answer));
+      if (data.table && data.table.rows.length) turn.append(dataTable(data.table));
+      turn.append(trace(data));
     }
   } catch (error) {
     turn.append(el("div", "The local server did not answer. Is it running?", "answer error"));
@@ -77,5 +118,5 @@ for (const button of document.querySelectorAll(".example")) {
 }
 
 fetch("/api/health").then((r) => r.json()).then((h) => {
-  if (h.mode === "model") document.getElementById("mode").textContent = "Model mode: answers come from a real model.";
+  if (h.mode === "model") document.getElementById("mode").textContent = "Model mode: answers come from a real model";
 });

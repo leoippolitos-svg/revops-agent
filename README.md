@@ -11,7 +11,7 @@ Medallion lakehouse · context by area · intent routing · RAG with evals · re
 ![Python](https://img.shields.io/badge/python-3.12-3776AB?logo=python&logoColor=white)
 ![DuckDB](https://img.shields.io/badge/DuckDB-lakehouse-FFF000?logo=duckdb&logoColor=black)
 ![dbt](https://img.shields.io/badge/dbt-transformations-FF694B?logo=dbt&logoColor=white)
-![Tests](https://img.shields.io/badge/tests-587-brightgreen)
+![Tests](https://img.shields.io/badge/tests-588-brightgreen)
 ![Status](https://img.shields.io/badge/status-built%2C%20not%20run%20on%20a%20real%20model-yellow)
 
 [Quick start](#quick-start) · [What this is](#what-this-is) · [Why](#why-it-exists) · [Status](#what-is-built-and-what-is-not) · [What it controls](#what-it-controls-and-what-it-cannot-touch) · [Proof](#proof-it-works) · [Reading guide](#reading-guide) · [How it works](#how-it-works) · [Run it](#run-it) · [Decisions](#design-decisions)
@@ -27,7 +27,7 @@ Medallion lakehouse · context by area · intent routing · RAG with evals · re
 
 <div align="center">
 
-<img src="docs/img/agent-chat.jpg" alt="The local agent chat: an answer and, under it, the intent, tier, tools, documents loaded, prompt blocks and tools called" width="680">
+<img src="docs/img/agent-chat.png" alt="The local agent chat: an answer and, under it, the intent, tier, tools, documents loaded, prompt blocks and tools called" width="680">
 
 </div>
 
@@ -295,7 +295,7 @@ revops-agent/
 ├── connectors/       # Registry of every external connection
 ├── design-system/    # Design tokens used by the micro-apps
 ├── destinations/     # Simulated reverse ETL
-├── tests/            # 587 tests covering every piece above
+├── tests/            # 588 tests covering every piece above
 ├── docs/
 │   ├── standards/    # The rules: context, modeling, security, apps, audits, verification, process...
 │   ├── adr/          # Architecture decision records
