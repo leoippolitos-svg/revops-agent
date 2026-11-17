@@ -115,6 +115,8 @@ def answer(question: str, use_model: bool = False, log_path: Path | None = None)
         "tools_called": outcome["tools_called"],
         "budget_exhausted": outcome["budget_exhausted"],
         "model_calls": steps,
+        # Only the scripted model keeps the rows apart; a real model writes them into its answer.
+        "table": client.last_table if isinstance(client, DemoModel) else None,
     }
 
 

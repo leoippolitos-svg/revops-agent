@@ -12,7 +12,7 @@ The agent runs only from the command line, so nobody can see how it works withou
 ## Screens
 One page.
 
-1. **Thread**: each question with its answer. In demo mode the answer starts with "Demo answer: no language model was called".
+1. **Thread**: each question with its answer. In demo mode the answer starts with "Demo answer: no language model was called", and the rows of a query are drawn as a table under it. A row of pills above the answer shows the intent, tier, tools called and which cascade step decided.
 2. **How the agent got here**, under each answer: intent and the cascade step that chose it, model tier and budget, tools offered, documents always loaded, skill, the four prompt blocks with their size and cache flag, tools called, model calls, and the mode.
 3. **Ask box** and four example questions, one of them a write request that the agent refuses.
 

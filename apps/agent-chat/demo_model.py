@@ -48,6 +48,7 @@ class DemoModel:
 
     def __init__(self):
         self.calls = []
+        self.last_table = None  # the rows of the last query, for the page to draw as a table
 
     def complete(self, model, system, messages, tools):
         self.calls.append({"model": model, "tools": [t["name"] for t in tools], "messages": len(messages)})
@@ -59,7 +60,25 @@ class DemoModel:
         usage = {"input_tokens": 0, "output_tokens": 0}  # no model, no tokens: cost stays at zero tokens
         if not results and offered:
             return {"text": None, "tool_call": self._pick_tool(intent, question, offered), "usage": usage}
+        self.last_table = self._table(results)
         return {"text": self._answer(intent, results), "tool_call": None, "usage": usage}
+
+    @staticmethod
+    def _table(results):
+        """The columns and rows of the last query result, or None when the last tool was not a query.
+
+        The page draws these as a real table; the answer text then only says how many rows came back,
+        instead of squeezing every value into one sentence.
+        """
+        if not results:
+            return None
+        try:
+            data = json.loads(results[-1]["content"].split(" ... [result cut")[0])
+        except ValueError:
+            return None
+        if not isinstance(data, dict) or "rows" not in data:
+            return None
+        return {"columns": data.get("columns", []), "rows": data["rows"][:4]}
 
     @staticmethod
     def _pick_tool(intent, question, offered):
@@ -82,9 +101,8 @@ class DemoModel:
         if last.get("is_error") or "error" in data:
             body = f"The {last['name']} call failed: {data.get('error', 'unreadable result')}"
         elif "rows" in data:
-            rows = data["rows"][:4]
-            cells = "; ".join(", ".join(f"{c}={v}" for c, v in zip(data.get("columns", []), r)) for r in rows)
-            body = f"The query returned {data.get('total_rows', data.get('row_count', len(rows)))} row(s). {cells}"
+            total = data.get("total_rows", data.get("row_count", len(data["rows"])))
+            body = f"The query on the gold layer returned {total} row(s), shown in the table below."
         elif "results" in data:
             found = [f"{r['doc_id']} ({r.get('section') or r.get('title', '')})" for r in data["results"]]
             body = "Most relevant: " + ", ".join(found) if found else "Nothing relevant was found."
